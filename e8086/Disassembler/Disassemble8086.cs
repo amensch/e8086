@@ -95,6 +95,7 @@ namespace KDS.e8086
                 byte reg = GetREG(buffer[pc + 1]);
                 OpCodeTable oc = i8086Table.opCodes[op];
                 bool imm_in_addr = false;
+                bytes_read += 1; // one for the address byte
 
                 // operand1
                 if (oc.arg1_mode == "R/M")
@@ -104,7 +105,6 @@ namespace KDS.e8086
                 else if (oc.arg1_mode == "REG")
                 {
                     operand1 = RegField[reg, w];
-                    bytes_read += 1;  // 1 for the address byte
                 }
                 else if (oc.arg1_mode == "I")
                 {
@@ -133,7 +133,6 @@ namespace KDS.e8086
                 else if (oc.arg2_mode == "REG")
                 {
                     operand2 = RegField[reg, w];
-                    bytes_read += 1;  // 1 for the address byte
                 }
                 else if (oc.arg2_mode == "I")
                 {
@@ -222,7 +221,7 @@ namespace KDS.e8086
 
         private static UInt32 GetRMOperand(byte[] buffer, UInt32 pc, out string operand)
         {
-            UInt32 bytes_read = 1; // 1 for the address byte
+            UInt32 bytes_read = 0; // report extra after address byte
             byte op = buffer[pc];
             byte addr_byte = buffer[pc + 1];
             pc++;  // increment pc for reading the addr byte
