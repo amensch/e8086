@@ -10,15 +10,6 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test00()
         {
-            /*
-            d=0: R/M is dest, REG is src
-            w=0: byte
-            mod=11 use REG table for R/M
-            11 011 000
-
-
-
-            */
             TestDasm(new byte[] { 0x00, 0xd8 }, "add al,bl" );
         }
         [TestMethod]
@@ -42,22 +33,6 @@ namespace e8086UnitTests
         {
             TestDasm(new byte[] { 0x05, 0xbd, 0x7e }, "add ax,7ebd");
         }
-
-        //[TestMethod]
-        //public void TestMOV()
-        //{
-        //    TestDasm(new byte[] { 0x89, 0xd8 }, "mov ax,bx");
-
-        //    TestDasm(new byte[] { 0x88, 0x4f, 0x10 }, "mov [bx+10],cl");
-
-        //    TestDasm(new byte[] { 0x89, 0x4f, 0x10 }, "mov [bx+10],cx");
-
-        //    TestDasm(new byte[] { 0x89, 0x8f, 0x10, 0x00 }, "mov [bx+0010],cl");
-
-        //    TestDasm(new byte[] { 0xa1, 0x00, 0x01 }, "mov ax,[0100]");
-
-        //    TestDasm(new byte[] { 0x8b, 0x06, 0x00, 0x01 }, "mov ax,[0100]");
-        //}
 
         private string GetDasm(byte[] buffer)
         {
