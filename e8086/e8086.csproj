@@ -54,6 +54,8 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="i8086\i8086Table.cs" />
+    <Compile Include="i8086\OpCodeTable.cs" />
     <Compile Include="Loader\FileLoader.cs" />
     <Compile Include="Loader\ICodeLoader.cs" />
     <Compile Include="Program.cs" />
@@ -84,9 +86,7 @@
   <ItemGroup>
     <Content Include="Disassembler\8086 disassembly notes.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="i8086\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

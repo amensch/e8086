@@ -5,6 +5,14 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "e8086", "e8086\e8086.csproj", "{9881AEDE-ED95-4871-878F-A250251001BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "e8086UnitTests", "e8086UnitTests\e8086UnitTests.csproj", "{2D066A6A-94EB-4B7B-8392-A54E9A178586}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{FE84472D-EB00-4B5A-9C28-E4B5EA088051}"
+	ProjectSection(SolutionItems) = preProject
+		Resources\8086 op code list.xlsx = Resources\8086 op code list.xlsx
+		Resources\8086-instformat.pdf = Resources\8086-instformat.pdf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,10 @@ Global
 		{9881AEDE-ED95-4871-878F-A250251001BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9881AEDE-ED95-4871-878F-A250251001BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9881AEDE-ED95-4871-878F-A250251001BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D066A6A-94EB-4B7B-8392-A54E9A178586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D066A6A-94EB-4B7B-8392-A54E9A178586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D066A6A-94EB-4B7B-8392-A54E9A178586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D066A6A-94EB-4B7B-8392-A54E9A178586}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
