@@ -8,14 +8,11 @@ This is my on going project of implementing an 8086 emulator.  My goals beginnin
 	5. Use TDD to drive the project.
 	
 
-	08-JAN-2016
-	-----------
-	All but two instructions (the TEST instructions) are now implemented for disassembly with unit tests passing.
-	
-	07-JAN-2016
-	-----------
-	The first 5 op codes pass unit tests.	
-	
-	01-JAN-2016
-	-----------
-	After research and design work coding has begun on the disassembler.
+08-JAN-2016
+All but two instructions (the TEST instructions) are now implemented for disassembly with unit tests passing.
+
+07-JAN-2016
+The first 5 op codes pass unit tests.	
+
+01-JAN-2016
+After research and design work coding has begun on the disassembler.
