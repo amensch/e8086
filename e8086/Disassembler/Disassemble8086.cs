@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Diagnostics;
 using KDS.Loader;
 
 namespace KDS.e8086
@@ -74,7 +75,9 @@ namespace KDS.e8086
 
             while (pc < buffer.Length)
             {
+                output.Append(pc.ToString("X4") + "\t\t");
                 pc += DisassembleNext(buffer, pc, startingAddress, out line);
+                Debug.WriteLine(line);
                 output.AppendLine(line);
             }
 
@@ -106,6 +109,7 @@ namespace KDS.e8086
                 OpCodeTable oc = i8086Table.opCodes[op];
                 string op_string = "";
                 byte reg = GetREG(buffer,pc);
+                int w = GetW(op);
                 if (op == 0xf6 || op == 0xf7)
                 {
                     op_string = Group3Table[reg];
@@ -132,9 +136,19 @@ namespace KDS.e8086
                 else if (oc.arg1_mode == "J")
                 {
                     // jump commands contain an offset added to the next instruction location
-                    byte result = (byte)(buffer[pc + 1] + (pc + 2));
-                    output = string.Format(i8086Table.opCodes[op].dasm_format, result.ToString("X2"));
-                    bytes_read += 1;
+
+                    if (w == 0)
+                    {
+                        byte result = (byte)(buffer[pc + 1] + (pc + 2));
+                        output = string.Format(i8086Table.opCodes[op].dasm_format, result.ToString("X2"));
+                        bytes_read += 1;
+                    }
+                    else
+                    {
+                        UInt32 result = GetValue16(buffer[pc + 2], buffer[pc + 1]) + (pc + 3);
+                        output = string.Format(i8086Table.opCodes[op].dasm_format, result.ToString("X4"));
+                        bytes_read += 2;
+                    }
                 }
                 else if (oc.arg1_mode == "A")
                 {
@@ -185,7 +199,6 @@ namespace KDS.e8086
                 {
                     op_string = Group2Table[reg];
                 } 
-
 
                 // operand1
                 if (oc.arg1_mode == "R/M")
@@ -444,6 +457,9 @@ namespace KDS.e8086
             return bytes_read;
         }
 
-
+        public static UInt16 GetValue16(byte hi, byte lo)
+        {
+            return (UInt16)(((UInt32)hi << 8 | (UInt32)lo) & 0xffff);
+        }
     }
 }

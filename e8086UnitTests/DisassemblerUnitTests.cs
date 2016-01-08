@@ -223,6 +223,11 @@ namespace e8086UnitTests
             TestDasm(new byte[] { 0xe7, 0x05 }, "out 05,ax", 2);
         }
         [TestMethod]
+        public void TestE9()
+        {
+            TestDasm(new byte[] { 0xe9, 0x09, 0x00 }, "jmp 000c", 3);
+        }
+        [TestMethod]
         public void TestF6()
         {
             TestDasm(new byte[] { 0xf6, 0xfe }, "idiv dh", 2);

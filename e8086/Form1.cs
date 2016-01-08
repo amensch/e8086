@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using KDS.e8086;
+using KDS.Loader;
 
 namespace e8086
 {
@@ -15,6 +18,14 @@ namespace e8086
         public Form1()
         {
             InitializeComponent();
+
+            FileLoader load = new FileLoader();
+            load.AddFile("C:\\Users\\menschas\\Documents\\My Projects\\e8086\\Resources\\vc.com");
+
+            Disassemble8086 dasm = new Disassemble8086();
+            string output = dasm.Disassemble(load);
+
+
         }
     }
 }
