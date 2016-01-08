@@ -1,4 +1,4 @@
-## e8086 - An Intel 8086 emulator written in C#
+## e8086 - An Intel 8086 emulator written in C# 
 
 This is my on going project of implementing an 8086 emulator.  My goals beginning this project are:
 
