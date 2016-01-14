@@ -86,7 +86,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test72()
         {
-            TestDasm(new byte[] { 0x72, 0x20, 0x90 }, "jb 22", 2);
+            TestDasm(new byte[] { 0x72, 0x20, 0x90 }, "jb short 0022", 2);
         }
         [TestMethod]
         public void Test80()
@@ -226,6 +226,11 @@ namespace e8086UnitTests
         public void TestE9()
         {
             TestDasm(new byte[] { 0xe9, 0x09, 0x00 }, "jmp 000c", 3);
+        }
+        [TestMethod]
+        public void TestEA()
+        {
+            TestDasm(new byte[] { 0xea, 0x6b, 0xb4, 0x76, 0xf6 }, "jmp f676:b46b", 5);
         }
         [TestMethod]
         public void TestF6()

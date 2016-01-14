@@ -86,228 +86,356 @@ namespace KDS.e8086
 
         public static UInt32 DisassembleNext(byte[] buffer, UInt32 pc, UInt16 startingAddress, out string output)
         {
+            // formatting note:  immediate data does not get brackets
+            // data from memory or calculations get brackets
+
+            // something went terribly wrong
             if (buffer.Length <= pc)
                 throw new IndexOutOfRangeException("Index pc exceeds the bounds of the buffer");
 
+            UInt32 bytes_read = 1;
             byte op = buffer[pc];
+            OpCodeTable op_table = i8086Table.opCodes[op];
             output = "";
-            UInt32 bytes_read = 1; // 1 for the program counter
 
-            // these are unimplemented instructions from the op code table
-            if (i8086Table.opCodes[op].num_operands == -1)
-                throw new NotImplementedException("The instruction " + op.ToString("X2") + " is not implemented");
-
-            // with no operands just return the string directly from the table
-            if (i8086Table.opCodes[op].num_operands == 0)
+            // if there is no entry for this code in the op_table it is unused
+            if (op_table.op_name == "")
             {
-                output = i8086Table.opCodes[op].dasm_format;
+                output = "UNDEFINED OP CODE " + op.ToString("X2");
             }
 
-            // instructions with 1 operand
-            else if (i8086Table.opCodes[op].num_operands == 1)
+            // if there is no info for the 2nd byte then it is a one byte op code with a static string
+            else if (op_table.addr_byte == "")
             {
-                OpCodeTable oc = i8086Table.opCodes[op];
-                string op_string = "";
-                byte reg = GetREG(buffer,pc);
-                int w = GetW(op);
-                if (op == 0xf6 || op == 0xf7)
-                {
-                    op_string = Group3Table[reg];
-                }
-                else if (op == 0xfe)
-                {
-                    op_string = Group4Table[reg];
-                }
-                else if (op == 0xff)
-                {
-                    op_string = Group5Table[reg];
-                }
-
-                if (oc.arg1_mode == "R/M")
-                {
-                    string operand;
-                    bytes_read += 1; // one for the address byte
-                    bytes_read += GetRMOperand(buffer, pc, false, out operand);
-                    if( op_string == "")
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, operand);
-                    else
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, op_string, operand);
-                }
-                else if (oc.arg1_mode == "J")
-                {
-                    // jump commands contain an offset added to the next instruction location
-
-                    if (w == 0)
-                    {
-                        byte result = (byte)(buffer[pc + 1] + (pc + 2));
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, result.ToString("X2"));
-                        bytes_read += 1;
-                    }
-                    else
-                    {
-                        UInt32 result = GetValue16(buffer[pc + 2], buffer[pc + 1]) + (pc + 3);
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, result.ToString("X4"));
-                        bytes_read += 2;
-                    }
-                }
-                else if (oc.arg1_mode == "A")
-                {
-                    // direct address
-                    string addr = buffer[pc + 4].ToString("X2") + buffer[pc + 3].ToString("X2") + ":" +
-                                    buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
-                    output = string.Format(i8086Table.opCodes[op].dasm_format, addr);
-                    bytes_read += 4;
-                }
-                else if (oc.arg1_mode == "I")
-                {
-                    // one operand instructions with immediate begin with the 2nd byte
-                    if( oc.arg1_operand == "b")
-                    {
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, buffer[pc + 1].ToString("X2"));
-                        bytes_read += 1;
-                    }
-                    else
-                    {
-                        output = string.Format(i8086Table.opCodes[op].dasm_format, buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2"));
-                        bytes_read += 2;
-                    }
-
-                }
-                else
-                    throw new NotImplementedException("Instruction " + op.ToString("X2") + " has 1 operand and is not implemented");
+                output = op_table.op_name;
             }
 
-            // special processing for instructions with 2 operands
-            else // 2 operands
+            // Otherwise use the addr_byte format to determine next steps
+            // Possible values: A-LO, D-8, D-LO, IP-INC-8, IP-INC-LO, IP-LO, MRR
+
+            // A-LO: 2nd & 3rd bytes point to data at a memory location
+            else if (op_table.addr_byte == "A-LO")
             {
-                string op_string = "";
-                string operand1 = "";
-                string operand2 = "";
-                int w = GetW(op);
-                byte reg = GetREG(buffer,pc);
-                OpCodeTable oc = i8086Table.opCodes[op];
-                bool imm_in_addr = false;
-                bytes_read += 1; // one for the address byte
+                bytes_read += 2;
 
-                // Group op codes
-                if (op == 0x80 || op == 0x81 || op == 0x82 || op == 0x83)
+                if (op_table.op_fmt_1.StartsWith("M-"))
                 {
-                    op_string = Group1Table[reg];
-                }
-                // Group op codes
-                else if (op == 0xd0 || op == 0xd1 || op == 0xd2 || op == 0xd3)
-                {
-                    op_string = Group2Table[reg];
-                } 
-
-                // operand1
-                if (oc.arg1_mode == "R/M")
-                {
-                    bytes_read += GetRMOperand(buffer, pc, (oc.arg2_mode == "S"), out operand1);
-                }
-                else if (oc.arg1_mode == "REG")
-                {
-                    operand1 = RegField[reg, w];
-                }
-                else if (oc.arg1_mode == "I")
-                {
-                    if (oc.arg1_operand == "b")
-                    {
-                        operand1 = buffer[pc + 1].ToString("X2");
-                    }
-                    else
-                    {
-                        operand1 = buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
-                        bytes_read += 1;
-                    }
-                }
-                else if( oc.arg1_mode == "S")
-                {
-                    operand1 = SegRegTable[reg];
-                }
-                else if( oc.arg1_mode == "O")
-                {
-                    operand1 = "[" + buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2") + "]";
-                    bytes_read += 1;
+                    output = string.Format("{0} [{1}],{2}", op_table.op_name,
+                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"),
+                                             op_table.op_fmt_2);
                 }
                 else
                 {
-                    operand1 = oc.arg1_mode;
-                    imm_in_addr = true;
+                    output = string.Format("{0} {1},[{2}]", op_table.op_name,
+                                             op_table.op_fmt_1,
+                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
                 }
+            }
 
-                // for operand2 calculate an offset for immediate bytes
-                UInt32 imm_offset = 0;
-                if( bytes_read > 2 )
-                {
-                    imm_offset = bytes_read - 2;
-                }
+            // The 2nd byte is 8 bit immediate data
+            else if (op_table.addr_byte == "D-8")
+            {
+                bytes_read++; // these are two byte instructions
 
-                // operand2
-                if (oc.arg2_mode == "R/M")
+                if (op_table.op_fmt_1 == "I-8")
                 {
-                    bytes_read += GetRMOperand(buffer, pc, (oc.arg1_mode == "S"), out operand2);
-                }
-                else if (oc.arg2_mode == "REG")
-                {
-                    operand2 = RegField[reg, w];
-                }
-                else if (oc.arg2_mode == "I")
-                {
-                    if (w == 0)
-                    {
-                        if (imm_in_addr)
-                        {
-                            operand2 = buffer[pc + 1].ToString("X2");
-                        }
-                        else
-                        {
-                            operand2 = buffer[pc + 2 + imm_offset].ToString("X2");
-                            bytes_read += 1;
-                        }
-                    }
-                    else
-                    {
-                        if (imm_in_addr)
-                        {
-                            operand2 = buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
-                            bytes_read += 1;
-                        }
-                        else
-                        {
-                            operand2 = buffer[pc + 3 + imm_offset].ToString("X2") + buffer[pc + 2 + imm_offset].ToString("X2");
-                            bytes_read += 2;
-                        }
-                    }
-
-                }
-                else if (oc.arg2_mode == "S")
-                {
-                    operand2 = SegRegTable[reg];
-                }
-                else if (oc.arg2_mode == "O")
-                {
-                    operand2 = "[" + buffer[pc + 2 + imm_offset].ToString("X2") + buffer[pc + 1 + imm_offset].ToString("X2") + "]";
-                    bytes_read += 1;
+                    output = string.Format("{0} {1},{2}", op_table.op_name, buffer[pc + 1].ToString("X2"), op_table.op_fmt_2);
                 }
                 else
                 {
-                    operand2 = oc.arg2_mode;
+                    output = string.Format("{0} {1},{2}", op_table.op_name, op_table.op_fmt_1, buffer[pc + 1].ToString("X2"));
                 }
+            }
 
-                if (op_string != "")
+            // D-LO: 2nd & 3rd bytes are 16 bit immediate data
+            else if (op_table.addr_byte == "D-LO")
+            {
+                bytes_read += 2; // these are three byte instructions
+
+                if (op_table.op_fmt_1 == "I-16")
                 {
-                    output = string.Format(oc.dasm_format, op_string, operand1, operand2);
+                    output = string.Format("{0} {1}", op_table.op_name,
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+
+                }
+                else if (op_table.op_fmt_1 == "FAR")
+                {
+                    output = string.Format("{0} {1}:{2}", op_table.op_name,
+                                            GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                    bytes_read += 2; // two additional bytes
                 }
                 else
                 {
-                    output = string.Format(oc.dasm_format, operand1, operand2);
+                    output = string.Format("{0} {1},{2}", op_table.op_name, op_table.op_fmt_1,
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
                 }
+            }
+
+            // IP-INC-8: Add the 8 bit number to the value of the program counter for the next instruction
+            else if( op_table.addr_byte == "IP-INC-8")
+            {
+                UInt32 immediate = pc + 2 + buffer[pc+1];
+                bytes_read++; // two byte instruction
+
+                output = string.Format("{0} {1} {2}", op_table.op_name, op_table.op_fmt_1, immediate.ToString("X4"));
+            }
+
+            // IP-INC-LO: 2nd & 3rd bytes are 16 bites of immediate data to be added to the program counter of the
+            // next instruction
+            else if (op_table.addr_byte == "IP-INC-LO")
+            {
+                UInt32 immediate = pc + 3 + GetValue16(buffer[pc + 2], buffer[pc + 1]);
+                bytes_read += 2; // three byte instruction
+
+                output = string.Format("{0} {2}", op_table.op_name, immediate.ToString("X4"));
+            }
+
+            // IP-LO: next 4 bytes are IP-LO, IP-HI, CS-LO, CS-HI
+            else if( op_table.addr_byte == "IP-LO" )
+            {
+                bytes_read += 4; // five byte instruction
+                output = string.Format("{0} {1}:{2}", op_table.op_name,
+                                                        GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
+                                                        GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+
+            }
+
+            // MRR: the biggie
+            else if( op_table.addr_byte == "MRR")
+            {
+                output = op_table.op_name;
             }
 
             output = output.ToLower();
             return bytes_read;
         }
+
+
+        //public static UInt32 DisassembleNext_Old(byte[] buffer, UInt32 pc, UInt16 startingAddress, out string output)
+        //{
+        //    if (buffer.Length <= pc)
+        //        throw new IndexOutOfRangeException("Index pc exceeds the bounds of the buffer");
+
+        //    byte op = buffer[pc];
+        //    output = "";
+        //    UInt32 bytes_read = 1; // 1 for the program counter
+
+        //    // these are unimplemented instructions from the op code table
+        //    if (i8086Table.opCodes[op].num_operands == -1)
+        //        throw new NotImplementedException("The instruction " + op.ToString("X2") + " is not implemented");
+
+        //    // with no operands just return the string directly from the table
+        //    if (i8086Table.opCodes[op].num_operands == 0)
+        //    {
+        //        output = i8086Table.opCodes[op].addr_byte;
+        //    }
+
+        //    // instructions with 1 operand
+        //    else if (i8086Table.opCodes[op].num_operands == 1)
+        //    {
+        //        OpCodeTable oc = i8086Table.opCodes[op];
+        //        string op_string = "";
+        //        byte reg = GetREG(buffer,pc);
+        //        int w = GetW(op);
+        //        if (op == 0xf6 || op == 0xf7)
+        //        {
+        //            op_string = Group3Table[reg];
+        //        }
+        //        else if (op == 0xfe)
+        //        {
+        //            op_string = Group4Table[reg];
+        //        }
+        //        else if (op == 0xff)
+        //        {
+        //            op_string = Group5Table[reg];
+        //        }
+
+        //        if (oc.next_bytes == "R/M")
+        //        {
+        //            string operand;
+        //            bytes_read += 1; // one for the address byte
+        //            bytes_read += GetRMOperand(buffer, pc, false, out operand);
+        //            if( op_string == "")
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, operand);
+        //            else
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, op_string, operand);
+        //        }
+        //        else if (oc.next_bytes == "J")
+        //        {
+        //            // jump commands contain an offset added to the next instruction location
+
+        //            if (w == 0)
+        //            {
+        //                byte result = (byte)(buffer[pc + 1] + (pc + 2));
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, result.ToString("X2"));
+        //                bytes_read += 1;
+        //            }
+        //            else
+        //            {
+        //                UInt32 result = GetValue16(buffer[pc + 2], buffer[pc + 1]) + (pc + 3);
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, result.ToString("X4"));
+        //                bytes_read += 2;
+        //            }
+        //        }
+        //        else if (oc.next_bytes == "A")
+        //        {
+        //            // direct address
+        //            string addr = buffer[pc + 4].ToString("X2") + buffer[pc + 3].ToString("X2") + ":" +
+        //                            buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
+        //            output = string.Format(i8086Table.opCodes[op].addr_byte, addr);
+        //            bytes_read += 4;
+        //        }
+        //        else if (oc.next_bytes == "I")
+        //        {
+        //            // one operand instructions with immediate begin with the 2nd byte
+        //            if( oc.op_name == "b")
+        //            {
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, buffer[pc + 1].ToString("X2"));
+        //                bytes_read += 1;
+        //            }
+        //            else
+        //            {
+        //                output = string.Format(i8086Table.opCodes[op].addr_byte, buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2"));
+        //                bytes_read += 2;
+        //            }
+
+        //        }
+        //        else
+        //            throw new NotImplementedException("Instruction " + op.ToString("X2") + " has 1 operand and is not implemented");
+        //    }
+
+        //    // special processing for instructions with 2 operands
+        //    else // 2 operands
+        //    {
+        //        string op_string = "";
+        //        string operand1 = "";
+        //        string operand2 = "";
+        //        int w = GetW(op);
+        //        byte reg = GetREG(buffer,pc);
+        //        OpCodeTable oc = i8086Table.opCodes[op];
+        //        bool imm_in_addr = false;
+        //        bytes_read += 1; // one for the address byte
+
+        //        // Group op codes
+        //        if (op == 0x80 || op == 0x81 || op == 0x82 || op == 0x83)
+        //        {
+        //            op_string = Group1Table[reg];
+        //        }
+        //        // Group op codes
+        //        else if (op == 0xd0 || op == 0xd1 || op == 0xd2 || op == 0xd3)
+        //        {
+        //            op_string = Group2Table[reg];
+        //        } 
+
+        //        // operand1
+        //        if (oc.next_bytes == "R/M")
+        //        {
+        //            bytes_read += GetRMOperand(buffer, pc, (oc.op_fmt_1 == "S"), out operand1);
+        //        }
+        //        else if (oc.next_bytes == "REG")
+        //        {
+        //            operand1 = RegField[reg, w];
+        //        }
+        //        else if (oc.next_bytes == "I")
+        //        {
+        //            if (oc.op_name == "b")
+        //            {
+        //                operand1 = buffer[pc + 1].ToString("X2");
+        //            }
+        //            else
+        //            {
+        //                operand1 = buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
+        //                bytes_read += 1;
+        //            }
+        //        }
+        //        else if( oc.next_bytes == "S")
+        //        {
+        //            operand1 = SegRegTable[reg];
+        //        }
+        //        else if( oc.next_bytes == "O")
+        //        {
+        //            operand1 = "[" + buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2") + "]";
+        //            bytes_read += 1;
+        //        }
+        //        else
+        //        {
+        //            operand1 = oc.next_bytes;
+        //            imm_in_addr = true;
+        //        }
+
+        //        // for operand2 calculate an offset for immediate bytes
+        //        UInt32 imm_offset = 0;
+        //        if( bytes_read > 2 )
+        //        {
+        //            imm_offset = bytes_read - 2;
+        //        }
+
+        //        // operand2
+        //        if (oc.op_fmt_1 == "R/M")
+        //        {
+        //            bytes_read += GetRMOperand(buffer, pc, (oc.next_bytes == "S"), out operand2);
+        //        }
+        //        else if (oc.op_fmt_1 == "REG")
+        //        {
+        //            operand2 = RegField[reg, w];
+        //        }
+        //        else if (oc.op_fmt_1 == "I")
+        //        {
+        //            if (w == 0)
+        //            {
+        //                if (imm_in_addr)
+        //                {
+        //                    operand2 = buffer[pc + 1].ToString("X2");
+        //                }
+        //                else
+        //                {
+        //                    operand2 = buffer[pc + 2 + imm_offset].ToString("X2");
+        //                    bytes_read += 1;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                if (imm_in_addr)
+        //                {
+        //                    operand2 = buffer[pc + 2].ToString("X2") + buffer[pc + 1].ToString("X2");
+        //                    bytes_read += 1;
+        //                }
+        //                else
+        //                {
+        //                    operand2 = buffer[pc + 3 + imm_offset].ToString("X2") + buffer[pc + 2 + imm_offset].ToString("X2");
+        //                    bytes_read += 2;
+        //                }
+        //            }
+
+        //        }
+        //        else if (oc.op_fmt_1 == "S")
+        //        {
+        //            operand2 = SegRegTable[reg];
+        //        }
+        //        else if (oc.op_fmt_1 == "O")
+        //        {
+        //            operand2 = "[" + buffer[pc + 2 + imm_offset].ToString("X2") + buffer[pc + 1 + imm_offset].ToString("X2") + "]";
+        //            bytes_read += 1;
+        //        }
+        //        else
+        //        {
+        //            operand2 = oc.op_fmt_1;
+        //        }
+
+        //        if (op_string != "")
+        //        {
+        //            output = string.Format(oc.addr_byte, op_string, operand1, operand2);
+        //        }
+        //        else
+        //        {
+        //            output = string.Format(oc.addr_byte, operand1, operand2);
+        //        }
+        //    }
+
+        //    output = output.ToLower();
+        //    return bytes_read;
+        //}
 
         private static string RegBitmap16(byte offset)
         {
