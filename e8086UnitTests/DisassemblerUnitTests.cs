@@ -218,6 +218,11 @@ namespace e8086UnitTests
             TestDasm(new byte[] { 0xd5, 0x62 }, "aad 62", 2);
         }
         [TestMethod]
+        public void TestE4()
+        {
+            TestDasm(new byte[] { 0xe4, 0xf8 }, "in al,f8", 2);
+        }
+        [TestMethod]
         public void TestE7()
         {
             TestDasm(new byte[] { 0xe7, 0x05 }, "out 05,ax", 2);

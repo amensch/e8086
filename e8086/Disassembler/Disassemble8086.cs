@@ -139,7 +139,14 @@ namespace KDS.e8086
 
                 if (op_table.op_fmt_1 == "I-8")
                 {
-                    output = string.Format("{0} {1},{2}", op_table.op_name, buffer[pc + 1].ToString("X2"), op_table.op_fmt_2);
+                    if( op_table.op_fmt_2 == "" )
+                    {
+                        output = string.Format("{0} {1}", op_table.op_name, buffer[pc + 1].ToString("X2"));
+                    }
+                    else
+                    {
+                        output = string.Format("{0} {1},{2}", op_table.op_name, buffer[pc + 1].ToString("X2"), op_table.op_fmt_2);
+                    }
                 }
                 else
                 {
@@ -204,10 +211,135 @@ namespace KDS.e8086
             // MRR: the biggie
             else if( op_table.addr_byte == "MRR")
             {
-                output = op_table.op_name;
+                byte addr_mode = buffer[pc + 1];
+                bytes_read++;
+
+                // possible formatting values:
+                // M-8, M-16, I-8, I-16, R-8, R-16, RM-8, RM-16, SEG
+                string oper1 = "";
+                string oper2 = "";
+
+                if (op_table.op_fmt_1 == "RM-8" || op_table.op_fmt_1 == "M-8")
+                {
+                    bytes_read += DisassembleRM(buffer, pc, 1, GetMOD(addr_mode), GetRM(addr_mode), 0, out oper1);
+                }
+                else if (op_table.op_fmt_1 == "RM-16" || op_table.op_fmt_1 == "M-16")
+                {
+                    bytes_read += DisassembleRM(buffer, pc, 1, GetMOD(addr_mode), GetRM(addr_mode), 1, out oper1);
+                }
+                else if (op_table.op_fmt_1 == "R-8")
+                {
+                    oper1 = RegField[GetREG(buffer, pc), 0];
+                }
+                else if (op_table.op_fmt_1 == "R-16")
+                {
+                    oper1 = RegField[GetREG(buffer, pc), 1];
+                }
+                else if (op_table.op_fmt_1 == "SEG")
+                {
+                    oper1 = SegRegTable[GetREG(buffer, pc)];
+                }
+                else if (op_table.op_fmt_1 == "I-8")
+                {
+                    oper1 = buffer[pc + 2].ToString("X2");
+                    bytes_read++;
+                }
+                else if (op_table.op_fmt_1 == "I-16")
+                {
+                    oper1 = buffer[pc + 3].ToString("X2") + buffer[pc + 2].ToString("X2");
+                    bytes_read += 2;
+                }
+
+                UInt32 immed_offset = bytes_read - 1;
+
+                if (op_table.op_fmt_2 == "RM-8" || op_table.op_fmt_2 == "M-8")
+                {
+                    bytes_read += DisassembleRM(buffer, pc, immed_offset, GetMOD(addr_mode), GetRM(addr_mode), 0, out oper2);
+                }
+                else if (op_table.op_fmt_2 == "RM-16" || op_table.op_fmt_2 == "M-16")
+                {
+                    bytes_read += DisassembleRM(buffer, pc, immed_offset, GetMOD(addr_mode), GetRM(addr_mode), 1, out oper2);
+                }
+                else if (op_table.op_fmt_2 == "R-8")
+                {
+                    oper2 = RegField[GetREG(buffer, pc), 0];
+                }
+                else if (op_table.op_fmt_2 == "R-16")
+                {
+                    oper2 = RegField[GetREG(buffer, pc), 1];
+                }
+                else if (op_table.op_fmt_2 == "SEG")
+                {
+                    oper2 = SegRegTable[GetREG(buffer, pc)];
+                }
+                else if (op_table.op_fmt_2 == "I-8")
+                {
+                    oper2 = buffer[pc + immed_offset + 1].ToString("X2");
+                    bytes_read++;
+                }
+                else if (op_table.op_fmt_2 == "I-16")
+                {
+                    oper2 = buffer[pc + immed_offset + 2].ToString("X2") + buffer[pc + immed_offset + 1].ToString("X2");
+                    bytes_read += 2;
+                }
+
+                if (op_table.op_fmt_2 == "")
+                {
+                    output = string.Format("{0} {1}", op_table.op_name, oper1);
+                }
+                else
+                {
+                    output = string.Format("{0} {1},{2}", op_table.op_name, oper1, oper2);
+                }
             }
 
             output = output.ToLower();
+            return bytes_read;
+        }
+
+        public static UInt32 DisassembleRM(byte[] buffer, UInt32 pc, UInt32 offset, byte mod, byte rm, byte word_oper, out string output)
+        {
+            UInt32 bytes_read = 0;
+            output = "";
+
+            if (mod == 0x00) // R/M Table 1
+            {
+                if (rm == 0x06) // direct address, special case
+                {
+                    if (word_oper == 1) // 16 bit immediate
+                    {
+                        output = "[" + buffer[pc + offset + 2].ToString("X2") + buffer[pc + offset + 1].ToString("X2") + "]";
+                        bytes_read += 2;
+                    }
+                    else // 8 bit immediate
+                    {
+                        output = "[" + buffer[pc + offset + 1].ToString("X2") + "]";
+                        bytes_read += 1;
+                    }
+                }
+                else
+                {
+                    output = "[" + RMTable1[rm] + "]";
+                }
+            }
+            else if (mod == 0x01) // R/M Table 2 with 8 bit displacement
+            {
+                output = "[" + RMTable2[rm] + "+" + buffer[pc + offset+ 1].ToString("X2") + "]";
+                bytes_read += 1;
+            }
+            else if (mod == 0x02) // R/M Table 2 with 16 bit displacement
+            {
+                output = "[" + RMTable2[rm] + "+" + buffer[pc + offset + 2].ToString("X2") + buffer[pc + offset + 1].ToString("X2") + "]";
+                bytes_read += 2;
+            }
+            else if (mod == 0x03) // Use REG table with R/M value
+            {
+                output = RegField[rm, word_oper];
+            }
+            else
+                throw new InvalidOperationException("The value of mod " + mod.ToString("X2") + " is invalid");
+
+
             return bytes_read;
         }
 
