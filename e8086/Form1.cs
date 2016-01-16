@@ -24,6 +24,8 @@ namespace e8086
             load.AddFile("C:\\Users\\adam\\Documents\\8086\\hexit157\\vc.com");
             Disassemble8086 dasm = new Disassemble8086();
             string output = dasm.Disassemble(load);
+
+            File.WriteAllText("C:\\Users\\adam\\Documents\\8086\\hexit157\\vc_com_dasm.txt",output);
         }
     }
 }

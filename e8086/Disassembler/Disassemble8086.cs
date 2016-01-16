@@ -32,7 +32,7 @@ namespace KDS.e8086
 
         public static string[] SegRegTable = new string[]
         {
-            "es","cs","ss","ds"
+            "es","cs","ss","ds","fs"
         };
 
         // op codes 0x80, 0x81, 0x82, 0x83 (name == GRP1)  
@@ -82,7 +82,7 @@ namespace KDS.e8086
             {
                 output.Append(pc.ToString("X4") + "\t\t");
                 pc += DisassembleNext(buffer, pc, startingAddress, out line);
-                Debug.WriteLine(line);
+                //Debug.WriteLine(line);
                 output.AppendLine(line);
             }
 
@@ -323,16 +323,8 @@ namespace KDS.e8086
             {
                 if (rm == 0x06) // direct address, special case
                 {
-                    if (word_oper == 1) // 16 bit immediate
-                    {
-                        output = "[" + buffer[pc + offset + 2].ToString("X2") + buffer[pc + offset + 1].ToString("X2") + "]";
-                        bytes_read += 2;
-                    }
-                    else // 8 bit immediate
-                    {
-                        output = "[" + buffer[pc + offset + 1].ToString("X2") + "]";
-                        bytes_read += 1;
-                    }
+                    output = "[" + buffer[pc + offset + 2].ToString("X2") + buffer[pc + offset + 1].ToString("X2") + "]";
+                    bytes_read += 2;
                 }
                 else
                 {
