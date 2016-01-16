@@ -195,7 +195,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestCA()
         {
-            TestDasm(new byte[] { 0xca, 0x7b, 0xb6 }, "retf b67b", 3);
+            TestDasm(new byte[] { 0xca, 0x7b, 0xb6 }, "ret b67b", 3);
         }
         [TestMethod]
         public void TestCD()
@@ -240,12 +240,16 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestF6()
         {
-            TestDasm(new byte[] { 0xf6, 0xfe }, "idiv dh", 2);
+            TestDasm(new byte[] { 0xf6, 0xfe, 0x00, 0x00 }, "idiv dh", 2);
         }
         [TestMethod]
         public void TestFF()
         {
-            TestDasm(new byte[] { 0xff, 0xf0 }, "push ax", 2);
+            TestDasm(new byte[] { 0xff, 0x2d }, "jmp [di]", 2);
+            TestDasm(new byte[] { 0xff, 0x8b, 0x7c, 0xff }, "dec [bp+di+ff7c]", 4);
+            TestDasm(new byte[] { 0xff, 0xd0 }, "call ax", 2);
+            TestDasm(new byte[] { 0xff, 0xe8 }, "jmp ax", 2);
+            TestDasm(new byte[] { 0xff, 0x0a }, "dec [bp+si]", 2);
         }
     }
 }
