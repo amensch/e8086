@@ -18,6 +18,14 @@ namespace KDS.e8086
         public UInt16 SI { get; set; }
         public UInt16 DI { get; set; }
 
+        public i8086Registers()
+        {
+            SP = 0;
+            BP = 0;
+            SI = 0;
+            DI = 0;
+        }
+
         public UInt16 AX
         {
             get { return _ax.Register; }

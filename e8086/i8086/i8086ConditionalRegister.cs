@@ -128,6 +128,8 @@ namespace KDS.e8086
                 SetBit(OVERFLOW_FLAG, value);
             }
         }
+
+
         public void CalcCarryFlag(UInt16 result)
         {
             CarryFlag = (result > 0xff);

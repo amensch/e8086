@@ -57,10 +57,13 @@
     <Compile Include="Components\DataRegister16.cs" />
     <Compile Include="i8086\i8086BusInterfaceUnit.cs" />
     <Compile Include="i8086\i8086ConditionalRegister.cs" />
+    <Compile Include="i8086\i8086CPU.cs" />
     <Compile Include="i8086\i8086ExecutionUnit.cs" />
     <Compile Include="i8086\i8086Registers.cs" />
-    <Compile Include="Components\i8086Table.cs" />
-    <Compile Include="Components\OpCodeTable.cs" />
+    <Compile Include="Disassembler\OpCodeDasmTable.cs" />
+    <Compile Include="Disassembler\OpCodeDasmRecord.cs" />
+    <Compile Include="i8086\OpCode List\OpCodeRecord.cs" />
+    <Compile Include="i8086\OpCode List\OpCodeTable.cs" />
     <Compile Include="Loader\FileLoader.cs" />
     <Compile Include="Loader\ICodeLoader.cs" />
     <Compile Include="Program.cs" />

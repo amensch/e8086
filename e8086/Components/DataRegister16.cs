@@ -11,6 +11,12 @@ namespace KDS.e8086
         public byte HI { get; set; }
         public byte LO { get; set; }
 
+        public DataRegister16()
+        {
+            HI = 0;
+            LO = 0;
+        }
+
         public UInt16 Register
         {
             get

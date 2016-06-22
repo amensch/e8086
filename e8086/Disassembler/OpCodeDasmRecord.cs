@@ -2,7 +2,7 @@
 
 namespace KDS.e8086
 {
-    public class OpCodeTable
+    public class OpCodeDasmRecord
     {
         public UInt16 op { get; set; }
         public string addr_byte { get; set; }
@@ -11,7 +11,7 @@ namespace KDS.e8086
         public string op_fmt_1 { get; set; }
         public string op_fmt_2  { get; set; }
 
-        public OpCodeTable(UInt16 _op, string _addr_byte, string _next_bytes, string _op_name, string _op_fmt_1, string _op_fmt_2)
+        public OpCodeDasmRecord(UInt16 _op, string _addr_byte, string _next_bytes, string _op_name, string _op_fmt_1, string _op_fmt_2)
         {
             op = _op;
             addr_byte = _addr_byte;

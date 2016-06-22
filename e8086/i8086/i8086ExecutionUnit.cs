@@ -34,11 +34,68 @@ namespace KDS.e8086
 
          */
 
+        // Table of OpCodes
+        private OpCodeTable _opTable = new OpCodeTable();
+
         // General Registers: AX, BX, CX, DX and SP, BP, SI, DI
         private i8086Registers _reg = new i8086Registers();
 
         // Flags
         private i8086ConditionalRegister _creg = new i8086ConditionalRegister();
+
+        // Bus Interface Unit
+        private i8086BusInterfaceUnit _bus;
+
+        public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
+        {
+            _bus = bus;
+            InitOpCodeTable();
+        }
+
+        private void InitOpCodeTable()
+        {
+            _opTable[0x88] = new OpCodeRecord(0x88, 10, ExecuteMOV_88);
+            _opTable[0x89] = new OpCodeRecord(0x88, 10, ExecuteMOV_89);
+            _opTable[0x8a] = new OpCodeRecord(0x88, 10, ExecuteMOV_90);
+            _opTable[0x8b] = new OpCodeRecord(0x88, 10, ExecuteMOV_91);
+        }
+
+
+        private int ExecuteMOV_88()
+        {
+            return 2;
+        }
+
+        private int ExecuteMOV_89()
+        {
+            return 2;
+        }
+        private int ExecuteMOV_90()
+        {
+            return 2;
+        }
+        private int ExecuteMOV_91()
+        {
+            return 2;
+        }
+
+        public void AdjustAfterAddition()
+        {
+            if( _reg.AL > 9 || _creg.AuxCarryFlag )
+            {
+                _reg.AL += 6;
+                _reg.AH += 1;
+                _creg.AuxCarryFlag = true;
+                _creg.CarryFlag = true;
+            }
+            else
+            {
+                _creg.AuxCarryFlag = false;
+                _creg.CarryFlag = false;
+            }
+            // always clear high nibble of AL
+            _reg.AL = (byte)(_reg.AL & 0x0f);
+        }
 
     }
 }

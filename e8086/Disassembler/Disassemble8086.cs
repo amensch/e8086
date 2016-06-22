@@ -101,7 +101,7 @@ namespace KDS.e8086
 
             UInt32 bytes_read = 1;
             byte op = buffer[pc];
-            OpCodeTable op_table = i8086Table.opCodes[op];
+            OpCodeDasmRecord op_table = OpCodeDasmTable.opCodes[op];
             output = "";
 
             // if there is no entry for this code in the op_table it is unused
@@ -379,7 +379,7 @@ namespace KDS.e8086
 
         private static string GetOpName(byte op, byte reg)
         {
-            string output = i8086Table.opCodes[op].op_name;
+            string output = OpCodeDasmTable.opCodes[op].op_name;
             if (output == "GRP1")
             {
                 output = Group1Table[reg];
@@ -531,7 +531,7 @@ namespace KDS.e8086
         private static string GetFirstOper(byte[] buffer, UInt32 pc)
         {
             byte op = buffer[pc];
-            string output = i8086Table.opCodes[op].op_fmt_1;
+            string output = OpCodeDasmTable.opCodes[op].op_fmt_1;
 
             if( op == 0xff )
             {
