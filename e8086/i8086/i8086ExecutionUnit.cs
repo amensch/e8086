@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KDS.Utility;
 
 namespace KDS.e8086
 {
@@ -63,6 +64,46 @@ namespace KDS.e8086
 
         private int ExecuteMOV_88()
         {
+            // MOV Eb Gb
+            //
+            // d=0 (src=REG, dst=R/M)
+            // w=0 (8 bit)
+            
+            // get address byte
+            byte addr = _bus.NextIP();
+
+            // get the source value
+            byte src_value = GetRegResult8(Util.GetREGValue(addr));
+
+            // get mod and R/M to determine destination
+            byte mod = Util.GetMODValue(addr);
+            byte rm = Util.GetRMValue(addr);
+
+            UInt16 dest_addr = 0;
+
+            // mod determines the destination address or register
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        dest_addr = GetRMTable1(rm);
+                        break;
+                    }
+                case 0x01:
+                    {
+                        break;
+                    }
+                case 0x02:
+                    {
+                        break;
+                    }
+                case 0x03:
+                    {
+                        break;
+                    }
+            }
+
+
             return 2;
         }
 
@@ -97,5 +138,284 @@ namespace KDS.e8086
             _reg.AL = (byte)(_reg.AL & 0x0f);
         }
 
+        #region "Operand Functions"
+
+        // Get 8 bit REG result (or R/M mod=11)
+        private byte GetRegResult8(byte reg)
+        {
+            byte result = 0;
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        result = _reg.AL;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = _reg.CL;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = _reg.DL;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = _reg.BL;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = _reg.AH;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = _reg.CH;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = _reg.DH;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = _reg.BH;
+                        break;
+                    }
+            }
+            return result;
+        }
+
+        // Get 16 bit REG result (or R/M mod=11)
+        private UInt16 GetRegResult16(byte reg)
+        {
+            UInt16 result = 0;
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        result = _reg.AX;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = _reg.CX;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = _reg.DX;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = _reg.BX;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = _reg.SP;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = _reg.BP;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = _reg.SI;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = _reg.DI;
+                        break;
+                    }
+            }
+            return result;
+        }
+
+        // Get 16 bit SREG result
+        private UInt16 GetSegRegResult(byte reg)
+        {
+            UInt16 result = 0;
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        result = _bus.ES;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = _bus.CS;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = _bus.SS;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = _bus.DS;
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid reg value for SREG. reg={0:X2}", reg));
+                    }
+            }
+            return result;
+        }
+
+        // R/M Table 1 (mod=00)
+        private UInt16 GetRMTable1(byte rm)
+        {
+            UInt16 result = 0;
+            switch (rm)
+            {
+                case 0x00:
+                    {
+                        result = (UInt16)(_reg.BX + _reg.SI);
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = (UInt16)(_reg.BX + _reg.DI);
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = (UInt16)(_reg.BP + _reg.SI);
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = (UInt16)(_reg.BP + _reg.DI);
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = _reg.SI;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = _reg.DI;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        // direct address
+                        result = GetImmediate();
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = _reg.BX;
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid RM Table1 value. rm={0:X2}", rm));
+                    }
+            }
+            return result;
+        }
+
+        // R/M Table 2 
+        //      with 8 bit signed displacement (mod=01)
+        //      with 16 bit unsigned displacement (mod=10)
+        //
+        // NOTE: rm=0x06 uses SS instead of DS as segment base
+        private UInt16 GetRMTable2(byte mod, byte rm)
+        {
+            UInt16 result = 0;
+            UInt16 disp = 0;
+            switch (rm)
+            {
+                case 0x00:
+                    {
+                        result = (UInt16)(_reg.BX + _reg.SI);
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = (UInt16)(_reg.BX + _reg.DI);
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = (UInt16)(_reg.BP + _reg.SI);
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = (UInt16)(_reg.BP + _reg.DI);
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = _reg.SI;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = _reg.DI;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = _reg.BP;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = _reg.BX;
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid RM Table2 value. rm={0:X2}", rm));
+                    }
+            }
+            switch(mod)
+            {
+                case 0x01:
+                    {
+                        // 8 bit displacement
+                        disp = _bus.NextIP();
+                        break;
+                    }
+                case 0x02:
+                    {
+                        // 16 bit displacement
+                        disp = GetImmediate();
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid RM Table2 mod value. mod={0:X2}", mod));
+                    }
+            }
+            return (UInt16) (result+disp);
+
+        }
+
+        #endregion
+
+        // Gets the immediate 16 bit value
+        private UInt16 GetImmediate()
+        {
+            byte lo = _bus.NextIP();
+            byte hi = _bus.NextIP();
+            return Util.GetValue16(hi, lo);
+        }
     }
 }

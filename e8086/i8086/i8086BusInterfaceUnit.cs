@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KDS.Utility;
 
 namespace KDS.e8086
 {
@@ -41,7 +42,7 @@ namespace KDS.e8086
             CS = startupCS;
             IP = startupIP;
 
-            int addr = GetAddress(CS, IP);
+            int addr = Util.ConvertLogicalToPhysical(CS, IP);
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} IP={1:X4}", CS, IP));
@@ -53,7 +54,7 @@ namespace KDS.e8086
         // fetch the byte pointed to by the program counter
         public byte NextIP()
         {
-            int pc = GetAddress(CS, IP);
+            int pc = Util.ConvertLogicalToPhysical(CS, IP);
 
             if( pc >= MAX_MEMORY )
             {
@@ -65,10 +66,50 @@ namespace KDS.e8086
             return mem;
         }
 
-        // calculate the physical address into RAM
-        private int GetAddress(UInt16 segment, UInt16 offset)
+        // fetch the 8 bit value at the requested offset
+        public byte GetFromRAM(UInt16 offset)
         {
-            return (segment << 4) + offset;
+            int addr = (UInt16)((CS << 4) + offset);
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} offset={1:X4}", CS, offset));
+            }
+            return _ram[addr];
         }
+
+        // fetch the 16 bit value at the requested offset
+        public UInt16 GetFromRAM16(UInt16 offset)
+        {
+            int addr = (UInt16)((CS << 4) + offset);
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} offset={1:X4}", CS, offset));
+            }
+            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
+        //// retrieve 16 bit value from a physical memory location
+        //public UInt16 GetFromRAM(int addr)
+        //{
+        //    return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        //}
+
+        //// retrieve 16 bit value from a logical memory location
+        //public UInt16 GetFromRAM(UInt16 segment, UInt16 offset)
+        //{
+        //    return GetFromRAM(Util.ConvertLogicalToPhysical(segment, offset));
+        //}
+
+        //// retrieve 16 bit value which is pointed to by the given physical address
+        //public UInt16 GetFromPointer(int addr)
+        //{
+        //    return GetFromRAM(GetFromRAM(addr + 2), GetFromRAM(addr));
+        //}
+
+        //// retrieve 16 bit value which is pointed to by the given logical address
+        //public UInt16 GetFromPointer(UInt16 segment, UInt16 offset)
+        //{
+        //    return GetFromPointer(Util.ConvertLogicalToPhysical(segment, offset));
+        //}
     }
 }
