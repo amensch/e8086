@@ -67,25 +67,47 @@ namespace KDS.e8086
         }
 
         // fetch the 8 bit value at the requested offset
-        public byte GetFromRAM(UInt16 offset)
+        public byte GetData8(UInt16 offset)
         {
-            int addr = (UInt16)((CS << 4) + offset);
+            int addr = (UInt16)((DS << 4) + offset);
             if (addr >= MAX_MEMORY)
             {
-                throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} offset={1:X4}", CS, offset));
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
             return _ram[addr];
         }
 
-        // fetch the 16 bit value at the requested offset
-        public UInt16 GetFromRAM16(UInt16 offset)
+        // save the 8 bit value at the requested offset
+        public void SaveData8(UInt16 offset, byte value)
         {
-            int addr = (UInt16)((CS << 4) + offset);
+            int addr = (UInt16)((DS << 4) + offset);
             if (addr >= MAX_MEMORY)
             {
-                throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} offset={1:X4}", CS, offset));
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
+            }
+            _ram[addr] = value;
+        }
+
+        // fetch the 16 bit value at the requested offset
+        public UInt16 GetData16(UInt16 offset)
+        {
+            int addr = (UInt16)((DS << 4) + offset);
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
             return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
+        // save the 16 bit value at the requested offset
+        public void SaveData16(UInt16 offset, UInt16 value)
+        {
+            int addr = (UInt16)((DS << 4) + offset);
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
+            }
+            
         }
 
         //// retrieve 16 bit value from a physical memory location

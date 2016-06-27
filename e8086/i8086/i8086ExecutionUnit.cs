@@ -68,25 +68,16 @@ namespace KDS.e8086
             //
             // d=0 (src=REG, dst=R/M)
             // w=0 (8 bit)
-            
-            // get address byte
-            byte addr = _bus.NextIP();
 
-            // get the source value
-            byte src_value = GetRegResult8(Util.GetREGValue(addr));
-
-            // get mod and R/M to determine destination
-            byte mod = Util.GetMODValue(addr);
-            byte rm = Util.GetRMValue(addr);
-
-            UInt16 dest_addr = 0;
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
             // mod determines the destination address or register
             switch (mod)
             {
                 case 0x00:
                     {
-                        dest_addr = GetRMTable1(rm);
+                        _ ram[GetRMTable1(rm)] = GetRegField8(reg);
                         break;
                     }
                 case 0x01:
@@ -140,8 +131,10 @@ namespace KDS.e8086
 
         #region "Operand Functions"
 
+        #region "REG field operations"
+
         // Get 8 bit REG result (or R/M mod=11)
-        private byte GetRegResult8(byte reg)
+        private byte GetRegField8(byte reg)
         {
             byte result = 0;
             switch (reg)
@@ -186,12 +179,69 @@ namespace KDS.e8086
                         result = _reg.BH;
                         break;
                     }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid REG value. reg={0:X2}", reg));
+                    }
             }
             return result;
         }
 
+        // Save 8 bit value in register indicated by REG
+        private void SaveRegField8(byte reg, byte value)
+        {
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                       _reg.AL = value;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        _reg.CL = value;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        _reg.DL = value;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        _reg.BL = value;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        _reg.AH = value;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        _reg.CH = value;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        _reg.DH = value;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        _reg.BH = value;
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid REG value. reg={0:X2}", reg));
+                    }
+            }
+
+        }
+
         // Get 16 bit REG result (or R/M mod=11)
-        private UInt16 GetRegResult16(byte reg)
+        private UInt16 GetRegField16(byte reg)
         {
             UInt16 result = 0;
             switch (reg)
@@ -236,9 +286,68 @@ namespace KDS.e8086
                         result = _reg.DI;
                         break;
                     }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid REG value. reg={0:X2}", reg));
+                    }
             }
             return result;
         }
+
+        // Save 16 bit value in register indicated by REG
+        private void SaveRegField16(byte reg, UInt16 value)
+        {
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        _reg.AX = value;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        _reg.CX = value;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        _reg.DX = value;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        _reg.BX = value;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        _reg.SP = value;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        _reg.BP = value;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        _reg.SI = value;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        _reg.DI = value;
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid REG value. reg={0:X2}", reg));
+                    }
+            }
+
+        }
+
+        #endregion  
 
         // Get 16 bit SREG result
         private UInt16 GetSegRegResult(byte reg)
@@ -274,10 +383,13 @@ namespace KDS.e8086
             return result;
         }
 
+        #region "R/M field operations"
         // R/M Table 1 (mod=00)
-        private UInt16 GetRMTable1(byte rm)
+        // returns the physical address as a result of the operand
+        private int GetRMTable1(byte rm)
         {
             UInt16 result = 0;
+            UInt16 segment = _bus.DS;
             switch (rm)
             {
                 case 0x00:
@@ -313,7 +425,7 @@ namespace KDS.e8086
                 case 0x06:
                     {
                         // direct address
-                        result = GetImmediate();
+                        result = GetImmediate16();
                         break;
                     }
                 case 0x07:
@@ -326,7 +438,7 @@ namespace KDS.e8086
                         throw new InvalidOperationException(string.Format("Invalid RM Table1 value. rm={0:X2}", rm));
                     }
             }
-            return result;
+            return Util.ConvertLogicalToPhysical(segment, result);
         }
 
         // R/M Table 2 
@@ -334,10 +446,13 @@ namespace KDS.e8086
         //      with 16 bit unsigned displacement (mod=10)
         //
         // NOTE: rm=0x06 uses SS instead of DS as segment base
-        private UInt16 GetRMTable2(byte mod, byte rm)
+        // 
+        // Returns the physical address as a result of the operand
+        private int GetRMTable2(byte mod, byte rm)
         {
             UInt16 result = 0;
             UInt16 disp = 0;
+            UInt16 segment = _bus.DS;
             switch (rm)
             {
                 case 0x00:
@@ -372,6 +487,7 @@ namespace KDS.e8086
                     }
                 case 0x06:
                     {
+                        segment = _bus.SS;
                         result = _reg.BP;
                         break;
                     }
@@ -396,7 +512,7 @@ namespace KDS.e8086
                 case 0x02:
                     {
                         // 16 bit displacement
-                        disp = GetImmediate();
+                        disp = GetImmediate16();
                         break;
                     }
                 default:
@@ -404,18 +520,27 @@ namespace KDS.e8086
                         throw new InvalidOperationException(string.Format("Invalid RM Table2 mod value. mod={0:X2}", mod));
                     }
             }
-            return (UInt16) (result+disp);
+            return Util.ConvertLogicalToPhysical(segment, (UInt16)(result+disp));
 
         }
 
         #endregion
 
+        #endregion
+
         // Gets the immediate 16 bit value
-        private UInt16 GetImmediate()
+        private UInt16 GetImmediate16()
         {
             byte lo = _bus.NextIP();
             byte hi = _bus.NextIP();
             return Util.GetValue16(hi, lo);
+        }
+
+        private void SplitAddrByte(byte addr, ref byte mod, ref byte reg, ref byte rm)
+        {
+            mod = Util.GetMODValue(addr);
+            reg = Util.GetREGValue(addr);
+            rm = Util.GetRMValue(addr);
         }
     }
 }

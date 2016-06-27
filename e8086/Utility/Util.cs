@@ -9,6 +9,12 @@ namespace KDS.Utility
             return (UInt16)(((UInt32)hi << 8 | (UInt32)lo) & 0xffff);
         }
 
+        public static void SplitValue16(UInt16 num, ref byte hi, ref byte lo)
+        {
+            hi = (byte)((num >> 8) & 0x00ff);
+            lo = (byte)(num & 0x00ff);
+        }
+
         public static byte GetMODValue(byte b)
         {
             return (byte)((b >> 6) & 0x03);
