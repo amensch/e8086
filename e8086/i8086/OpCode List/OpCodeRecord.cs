@@ -8,7 +8,7 @@ namespace KDS.e8086
 {
     public class OpCodeRecord
     {
-        public delegate int OpCodeAction();
+        public delegate void OpCodeAction();
 
         public OpCodeAction opAction { get; set; }
 

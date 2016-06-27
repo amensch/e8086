@@ -32,7 +32,7 @@ namespace KDS.e8086
             }
         }
 
-        private int OpCodeNotImplemented()
+        private void OpCodeNotImplemented()
         {
             throw new NotImplementedException("Instruction not implemented");
         }

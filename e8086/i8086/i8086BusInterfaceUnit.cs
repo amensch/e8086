@@ -16,6 +16,7 @@ namespace KDS.e8086
         public UInt16 SS { get; set; }  // stack segment
         public UInt16 ES { get; set; }  // extra segmemt
         public UInt16 IP { get; set; }  // instruction pointer
+        public bool UsingBasePointer { get; set; } // when using base pointer, use SS instead of DS as segment
 
         private byte[] _ram;
 
@@ -26,6 +27,7 @@ namespace KDS.e8086
             SS = 0x0000;
             ES = 0x0000;
             IP = 0x0000;
+            UsingBasePointer = false;
 
             _ram = new byte[MAX_MEMORY];  // 1,048,576 bytes (maximum addressable by the 8086)
 
@@ -69,7 +71,7 @@ namespace KDS.e8086
         // fetch the 8 bit value at the requested offset
         public byte GetData8(int offset)
         {
-            int addr = (DS << 4) + offset;
+            int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
@@ -80,7 +82,7 @@ namespace KDS.e8086
         // save the 8 bit value at the requested offset
         public void SaveData8(int offset, byte value)
         {
-            int addr = (DS << 4) + offset;
+            int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
@@ -91,7 +93,7 @@ namespace KDS.e8086
         // fetch the 16 bit value at the requested offset
         public UInt16 GetData16(int offset)
         {
-            int addr = (DS << 4) + offset;
+            int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
@@ -102,7 +104,7 @@ namespace KDS.e8086
         // save the 16 bit value at the requested offset
         public void SaveData16(int offset, UInt16 value)
         {
-            int addr = (DS << 4) + offset;
+            int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
@@ -110,28 +112,15 @@ namespace KDS.e8086
             Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
         }
 
-        //// retrieve 16 bit value from a physical memory location
-        //public UInt16 GetFromRAM(int addr)
-        //{
-        //    return Util.GetValue16(_ram[addr + 1], _ram[addr]);
-        //}
-
-        //// retrieve 16 bit value from a logical memory location
-        //public UInt16 GetFromRAM(UInt16 segment, UInt16 offset)
-        //{
-        //    return GetFromRAM(Util.ConvertLogicalToPhysical(segment, offset));
-        //}
-
-        //// retrieve 16 bit value which is pointed to by the given physical address
-        //public UInt16 GetFromPointer(int addr)
-        //{
-        //    return GetFromRAM(GetFromRAM(addr + 2), GetFromRAM(addr));
-        //}
-
-        //// retrieve 16 bit value which is pointed to by the given logical address
-        //public UInt16 GetFromPointer(UInt16 segment, UInt16 offset)
-        //{
-        //    return GetFromPointer(Util.ConvertLogicalToPhysical(segment, offset));
-        //}
+        private UInt16 GetDataSegment()
+        {
+            if (UsingBasePointer)
+            {
+                UsingBasePointer = false;
+                return SS;
+            }
+            else
+                return DS;
+        }
     }
 }
