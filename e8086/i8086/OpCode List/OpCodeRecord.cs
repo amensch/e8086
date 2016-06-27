@@ -10,14 +10,10 @@ namespace KDS.e8086
     {
         public delegate int OpCodeAction();
 
-        public UInt16 op { get; set; }
-        public int clocks { get; set; }
         public OpCodeAction opAction { get; set; }
 
-        public OpCodeRecord(UInt16 _op, int _clocks, OpCodeAction _opAction)
+        public OpCodeRecord(OpCodeAction _opAction)
         {
-            op = _op;
-            clocks = _clocks;
             opAction = _opAction;
         }
     }

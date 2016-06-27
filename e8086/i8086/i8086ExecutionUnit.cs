@@ -53,14 +53,34 @@ namespace KDS.e8086
             InitOpCodeTable();
         }
 
-        private void InitOpCodeTable()
+        public void NextInstruction()
         {
-            _opTable[0x88] = new OpCodeRecord(0x88, 10, ExecuteMOV_88);
-            _opTable[0x89] = new OpCodeRecord(0x88, 10, ExecuteMOV_89);
-            _opTable[0x8a] = new OpCodeRecord(0x88, 10, ExecuteMOV_90);
-            _opTable[0x8b] = new OpCodeRecord(0x88, 10, ExecuteMOV_91);
+            byte op = _bus.NextIP();
+            _opTable[op].opAction();
         }
 
+        public i8086Registers Registers
+        {
+            get { return _reg; }
+        }
+
+        public i8086ConditionalRegister CondReg
+        {
+            get { return _creg; }
+        }
+
+        public i8086BusInterfaceUnit Bus
+        {
+            get { return _bus; }
+        }
+
+        private void InitOpCodeTable()
+        {
+            _opTable[0x88] = new OpCodeRecord(ExecuteMOV_88);
+            _opTable[0x89] = new OpCodeRecord(ExecuteMOV_89);
+            _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_8a);
+            _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_8b);
+        }
 
         private int ExecuteMOV_88()
         {
@@ -77,61 +97,136 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        _ ram[GetRMTable1(rm)] = GetRegField8(reg);
+                        _bus.SaveData8(GetRMTable1(rm), GetRegField8(reg));
                         break;
                     }
                 case 0x01:
                     {
+                        _bus.SaveData8(GetRMTable2(mod, rm), GetRegField8(reg));
                         break;
                     }
                 case 0x02:
                     {
+                        _bus.SaveData8(GetRMTable2(mod, rm), GetRegField8(reg));
                         break;
                     }
                 case 0x03:
                     {
+                        SaveRegField8(rm, GetRegField8(reg));
                         break;
                     }
             }
-
-
-            return 2;
+            return 1;
         }
-
         private int ExecuteMOV_89()
         {
-            return 2;
-        }
-        private int ExecuteMOV_90()
-        {
-            return 2;
-        }
-        private int ExecuteMOV_91()
-        {
-            return 2;
-        }
+            // MOV Ew Gw
+            //
+            // d=0 (src=REG, dst=R/M)
+            // w=1 (16 bit)
 
-        public void AdjustAfterAddition()
-        {
-            if( _reg.AL > 9 || _creg.AuxCarryFlag )
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            // mod determines the destination address or register
+            switch (mod)
             {
-                _reg.AL += 6;
-                _reg.AH += 1;
-                _creg.AuxCarryFlag = true;
-                _creg.CarryFlag = true;
+                case 0x00:
+                    {
+                        _bus.SaveData16(GetRMTable1(rm), GetRegField16(reg));
+                        break;
+                    }
+                case 0x01:
+                    {
+                        _bus.SaveData16(GetRMTable2(mod, rm), GetRegField16(reg));
+                        break;
+                    }
+                case 0x02:
+                    {
+                        _bus.SaveData16(GetRMTable2(mod, rm), GetRegField16(reg));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        SaveRegField16(rm, GetRegField16(reg));
+                        break;
+                    }
             }
-            else
+            return 1;
+        }
+        private int ExecuteMOV_8a()
+        {
+            // MOV Gb Eb
+            //
+            // d=1 (src=R/M, dst=REG)
+            // w=0 (8 bit)
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            // mod determines the destination address or register
+            switch (mod)
             {
-                _creg.AuxCarryFlag = false;
-                _creg.CarryFlag = false;
+                case 0x00:
+                    {
+                        SaveRegField8(reg, _bus.GetData8(GetRMTable1(rm)));
+                        break;
+                    }
+                case 0x01:
+                    {
+                        SaveRegField8(reg, _bus.GetData8(GetRMTable2(mod,rm)));
+                        break;
+                    }
+                case 0x02:
+                    {
+                        SaveRegField8(reg, _bus.GetData8(GetRMTable2(mod,rm)));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        SaveRegField8(reg, GetRegField8(rm));
+                        break;
+                    }
             }
-            // always clear high nibble of AL
-            _reg.AL = (byte)(_reg.AL & 0x0f);
+            return 1;
+        }
+        private int ExecuteMOV_8b()
+        {
+            // MOV Gw Ew
+            //
+            // d=1 (src=R/M, dst=REG)
+            // w=1 (16 bit)
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            // mod determines the destination address or register
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        SaveRegField16(reg, _bus.GetData16(GetRMTable1(rm)));
+                        break;
+                    }
+                case 0x01:
+                    {
+                        SaveRegField16(reg, _bus.GetData16(GetRMTable2(mod, rm)));
+                        break;
+                    }
+                case 0x02:
+                    {
+                        SaveRegField16(reg, _bus.GetData16(GetRMTable2(mod, rm)));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        SaveRegField16(reg, GetRegField16(rm));
+                        break;
+                    }
+            }
+            return 1;
         }
 
-        #region "Operand Functions"
-
-        #region "REG field operations"
 
         // Get 8 bit REG result (or R/M mod=11)
         private byte GetRegField8(byte reg)
@@ -347,8 +442,6 @@ namespace KDS.e8086
 
         }
 
-        #endregion  
-
         // Get 16 bit SREG result
         private UInt16 GetSegRegResult(byte reg)
         {
@@ -383,7 +476,6 @@ namespace KDS.e8086
             return result;
         }
 
-        #region "R/M field operations"
         // R/M Table 1 (mod=00)
         // returns the physical address as a result of the operand
         private int GetRMTable1(byte rm)
@@ -523,10 +615,6 @@ namespace KDS.e8086
             return Util.ConvertLogicalToPhysical(segment, (UInt16)(result+disp));
 
         }
-
-        #endregion
-
-        #endregion
 
         // Gets the immediate 16 bit value
         private UInt16 GetImmediate16()

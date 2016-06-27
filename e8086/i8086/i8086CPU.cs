@@ -18,7 +18,16 @@ namespace KDS.e8086
         {
             // For now we will hard code the BIOS to start at a particular code segment.
             _eu = new i8086ExecutionUnit(new i8086BusInterfaceUnit(0x0000, 0x0000, program));
+        }
 
+        public void NextInstruction()
+        {
+            _eu.NextInstruction();
+        }
+
+        public i8086ExecutionUnit EU
+        {
+            get { return _eu; }
         }
 
     }

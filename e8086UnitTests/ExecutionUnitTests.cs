@@ -63,8 +63,76 @@ namespace e8086UnitTests
         public void TestAAA()
         {
             i8086CPU cpu = new i8086CPU();
-            
+        }
 
+        [TestMethod]
+        public void Test88()
+        {
+            i8086CPU cpu = new i8086CPU();
+            byte value8;
+
+            cpu.Boot(new byte[] { 0x88, 0x4f, 0x10 } /* MOV [bx+10],CL */);
+            value8 = 0x2f;
+
+            cpu.EU.Registers.CL = value8;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(value8, cpu.EU.Bus.GetData8(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
+
+            cpu.Boot(new byte[] { 0x88, 0x8f, 0x10, 0x00 } /* MOV [bx+10],CL using 16 bit displacement */);
+            value8 = 0x2f;
+
+            cpu.EU.Registers.CL = value8;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(value8, cpu.EU.Bus.GetData8(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
+
+        }
+
+        [TestMethod]
+        public void Test89()
+        {
+            i8086CPU cpu = new i8086CPU();
+
+            cpu.Boot(new byte[] { 0x89, 0xd8, 0x10 } /* MOV ax,bx */);
+
+            cpu.EU.Registers.AX = 0x11ab;
+            cpu.EU.Registers.BX = 0x22fe;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(0x22fe, cpu.EU.Registers.AX, "Instruction 0x89 failed");
+        }
+
+        [TestMethod]
+        public void Test8a()
+        {
+            i8086CPU cpu = new i8086CPU();
+            byte value8;
+
+            cpu.Boot(new byte[] { 0x8a, 0x4f, 0x10 } /* MOV CL, [BX+10] */);
+            value8 = 0x2f;
+
+            cpu.EU.Registers.BX = 0x10ff;
+            cpu.EU.Registers.CL = 0xff;
+            cpu.EU.Bus.SaveData8(cpu.EU.Registers.BX + 0x10, value8);
+            cpu.NextInstruction();
+
+            Assert.AreEqual(value8, cpu.EU.Registers.CL, "Instruction 0x8a failed");
+
+        }
+
+        [TestMethod]
+        public void Test8b()
+        {
+            i8086CPU cpu = new i8086CPU();
+
+            cpu.Boot(new byte[] { 0x8b, 0xc8 } /* MOV cx,ax (16 bit) */);
+
+            cpu.EU.Registers.AX = 0x11ab;
+            cpu.EU.Registers.CX = 0x22fe;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(0x11ab, cpu.EU.Registers.CX, "Instruction 0x8b failed");
         }
     }
 }

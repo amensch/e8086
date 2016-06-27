@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    class i8086ConditionalRegister
+    public class i8086ConditionalRegister
     {
         private const UInt16 OVERFLOW_FLAG = 0x800;
         private const UInt16 DIR_FLAG = 0x0400;

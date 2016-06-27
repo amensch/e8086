@@ -52,6 +52,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BusUnitTests.cs" />
     <Compile Include="DisassemblerUnitTests.cs" />
     <Compile Include="ExecutionUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
