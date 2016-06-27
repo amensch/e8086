@@ -68,6 +68,22 @@ namespace KDS.e8086
             return mem;
         }
 
+        public int GetData(int word_size, int offset)
+        {
+            if (word_size == 0)
+                return GetData8(offset);
+            else
+                return GetData16(offset);
+        }
+
+        public void SaveData(int word_size, int offset, int value)
+        {
+            if (word_size == 0)
+                SaveData8(offset, (byte)value);
+            else
+                SaveData16(offset, (UInt16)value);
+        }
+
         // fetch the 8 bit value at the requested offset
         public byte GetData8(int offset)
         {

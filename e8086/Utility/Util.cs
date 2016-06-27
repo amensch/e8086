@@ -30,6 +30,16 @@ namespace KDS.Utility
             return (byte)(b & 0x07);
         }
 
+        public static int GetDirection(byte b)
+        {
+            return (b >> 1) & 0x01;
+        }
+
+        public static int GetWordSize(byte b)
+        {
+            return b & 0x01;
+        }
+
         // convert a segment and offset into a physical ram address
         public static int ConvertLogicalToPhysical(UInt16 segment, UInt16 offset)
         {

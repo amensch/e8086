@@ -79,18 +79,20 @@ namespace KDS.e8086
 
         private void InitOpCodeTable()
         {
-            _opTable[0x88] = new OpCodeRecord(ExecuteMOV_88);
-            _opTable[0x89] = new OpCodeRecord(ExecuteMOV_89);
-            _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_8a);
-            _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_8b);
-            _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_8c);
+            _opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
 
-            _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_8e);
+            _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
+            _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
+            _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
+            _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
+            _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
 
-            _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_a0);
-            _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_a1);
-            _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_a2);
-            _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_a3);
+            _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
+
+            _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
+            _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
+            _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
+            _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
 
             _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
@@ -113,221 +115,73 @@ namespace KDS.e8086
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
         }
 
-        private void ExecuteMOV_88()
+        private void ExecuteADD_General()
         {
-            // MOV RM-8, REG-8
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
-
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        _bus.SaveData8(GetRMTable1(rm), GetRegField8(reg));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        _bus.SaveData8(GetRMTable2(mod, rm), GetRegField8(reg));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        _bus.SaveData8(GetRMTable2(mod, rm), GetRegField8(reg));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveRegField8(rm, GetRegField8(reg));
-                        break;
-                    }
-            }
-        }
-        private void ExecuteMOV_89()
-        {
-            // MOV RM-16, REG-16
+            // Op Codes: 00-07
+            // operand1 = operand1 + operand2
+            // Flags: O S Z A P C
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        _bus.SaveData16(GetRMTable1(rm), GetRegField16(reg));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        _bus.SaveData16(GetRMTable2(mod, rm), GetRegField16(reg));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        _bus.SaveData16(GetRMTable2(mod, rm), GetRegField16(reg));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveRegField16(rm, GetRegField16(reg));
-                        break;
-                    }
-            }
-        }
-        private void ExecuteMOV_8a()
-        {
-            // MOV R-8, RM-8
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
 
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            int result = ADD_Destination(source, direction, word_size, mod, reg, rm);
+        }
+
+        #region "MOV instructions"
+        private void ExecuteMOV_General()
+        {
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        SaveRegField8(reg, _bus.GetData8(GetRMTable1(rm)));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        SaveRegField8(reg, _bus.GetData8(GetRMTable2(mod,rm)));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        SaveRegField8(reg, _bus.GetData8(GetRMTable2(mod,rm)));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveRegField8(reg, GetRegField8(rm));
-                        break;
-                    }
-            }
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            SaveToDestination(source, direction, word_size, mod, reg, rm);
         }
-        private void ExecuteMOV_8b()
+        private void ExecuteMOV_SReg()
         {
-            // MOV REG-16, RM-16
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        SaveRegField16(reg, _bus.GetData16(GetRMTable1(rm)));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        SaveRegField16(reg, _bus.GetData16(GetRMTable2(mod, rm)));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        SaveRegField16(reg, _bus.GetData16(GetRMTable2(mod, rm)));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveRegField16(reg, GetRegField16(rm));
-                        break;
-                    }
-            }
-        }
-        private void ExecuteMOV_8c()
-        {
-            // MOV RM-16, SEGREG
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
 
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        _bus.SaveData16(GetRMTable1(rm), GetSegRegField(reg));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        _bus.SaveData16(GetRMTable2(mod, rm), GetSegRegField(reg));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        _bus.SaveData16(GetRMTable2(mod, rm), GetSegRegField(reg));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveRegField16(rm, GetSegRegField(reg));
-                        break;
-                    }
-            }
+            int source = GetSourceData(direction, word_size, mod, reg, rm, true);
+            SaveToDestination(source, direction, word_size, mod, reg, rm, true);
         }
-        private void ExecuteMOV_8e()
+        private void ExecuteMOV_Mem()
         {
-            // MOV SEGREG, RM-16
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
-
-            AssertMOD(mod);
-            switch (mod)
-            {
-                case 0x00:
-                    {
-                        SaveSegRegField(reg, _bus.GetData16(GetRMTable1(rm)));
-                        break;
-                    }
-                case 0x01:
-                    {
-                        SaveSegRegField(reg, _bus.GetData16(GetRMTable2(mod, rm)));
-                        break;
-                    }
-                case 0x02:
-                    {
-                        SaveSegRegField(reg, _bus.GetData16(GetRMTable2(mod, rm)));
-                        break;
-                    }
-                case 0x03:
-                    {
-                        SaveSegRegField(reg, GetRegField16(rm) );
-                        break;
-                    }
-            }
-        }
-        private void ExecuteMOV_a0()
-        {
-            // MOV AL,MEM-8
+            // MOV MEM <-> IMM (8 and 16)
             byte lo = Bus.NextIP();
             byte hi = Bus.NextIP();
-            _reg.AL = _bus.GetData8(Util.GetValue16(hi, lo));
-        }
-        private void ExecuteMOV_a1()
-        {
-            // MOV AX,MEM-16
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
-            _reg.AX = _bus.GetData16(Util.GetValue16(hi, lo));
-        }
-        private void ExecuteMOV_a2()
-        {
-            // MOV MEM-8,AL
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
-            _bus.SaveData8(Util.GetValue16(hi, lo), _reg.AL);
-        }
-        private void ExecuteMOV_a3()
-        {
-            // MOV MEM-16,AX
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
-            _bus.SaveData16(Util.GetValue16(hi, lo), _reg.AX);
+            switch(_currentOP)
+            {
+                case 0xa0:
+                    {
+                        _reg.AL = _bus.GetData8(Util.GetValue16(hi, lo));
+                        break;
+                    }
+                case 0xa1:
+                    {
+                        _reg.AX = _bus.GetData16(Util.GetValue16(hi, lo));
+                        break;
+                    }
+                case 0xa2:
+                    {
+                        _bus.SaveData8(Util.GetValue16(hi, lo), _reg.AL);
+                        break;
+                    }
+                case 0xa3:
+                    {
+                        _bus.SaveData16(Util.GetValue16(hi, lo), _reg.AX);
+                        break;
+                    }
+            }
         }
         private void ExecuteMOV_Imm8()
         {
@@ -509,7 +363,232 @@ namespace KDS.e8086
                     }
             }
         }
+        #endregion
 
+        #region "Generic Retrieve and Store functions"
+        // Generic function to retrieve source data based on the op code and addr byte
+        private int GetSourceData(int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            return GetSourceData(direction, word_size, mod, reg, rm, false);
+        }
+        private int GetSourceData(int direction, int word_size, byte mod, byte reg, byte rm, bool useSREG)
+        {
+            int result = 0;
+
+            // Action is the same if the direction is 0 (source is REG)
+            if (direction == 0)
+            {
+                if (useSREG)
+                {
+                    result = GetSegRegField(reg);
+                }
+                else
+                {
+                    if (word_size == 0)
+                    {
+                        result = GetRegField8(reg);
+                    }
+                    else
+                    {
+                        result = GetRegField16(reg);
+                    }
+                }
+            }
+            else
+            {
+                AssertMOD(mod);
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                result = _bus.GetData8(GetRMTable1(rm));
+                            }
+                            else //if ((direction == 1) && (word_size == 1))
+                            {
+                                result = _bus.GetData16(GetRMTable1(rm));
+                            }
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:   // difference is processed in the GetRMTable2 function
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                result = _bus.GetData8(GetRMTable2(mod, rm));
+                            }
+                            else //if ((direction == 1) && (word_size == 1))
+                            {
+                                result = _bus.GetData16(GetRMTable2(mod, rm));
+                            }
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                result = GetRegField8(rm);
+                            }
+                            else //if ((direction == 1) && (word_size == 1))
+                            {
+                                result = GetRegField16(rm);
+                            }
+                            break;
+                        }
+                }
+            }
+            return result;
+        }
+
+        // Generic function to retrieve the current data in the destination based on the op code and addr byte
+        private int GetDestinationData(int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            if(direction == 0)
+            {
+                return GetSourceData(1, word_size, mod, reg, rm);
+            }
+            else
+            {
+                return GetSourceData(0, word_size, mod, reg, rm);
+            }
+        }
+
+        // Generic function to save data to a destination based on the op code and address bytes
+        private void SaveToDestination(int data, int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            SaveToDestination(data, direction, word_size, mod, reg, rm, false);
+        }
+        private void SaveToDestination(int data, int direction, int word_size, byte mod, byte reg, byte rm, bool useSREG)
+        {
+            AssertMOD(mod);
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (useSREG)
+                {
+                    SaveSegRegField(reg, (UInt16)data);
+                }
+                else
+                {
+                    if (word_size == 0)
+                    {
+                        SaveRegField8(reg, (byte)data);
+                    }
+                    else
+                    {
+                        SaveRegField16(reg, (UInt16)data);
+                    }
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                _bus.SaveData8(GetRMTable1(rm), (byte)data);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                _bus.SaveData16(GetRMTable1(rm), (UInt16)data);
+                            }
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                _bus.SaveData8(GetRMTable2(mod, rm), (byte)data);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                _bus.SaveData16(GetRMTable2(mod, rm), (UInt16)data);
+                            }
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if ((word_size == 0) && !useSREG)
+                            {
+                                SaveRegField8(rm, (byte)data);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                SaveRegField16(rm, (UInt16)data);
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+        #endregion
+
+        // returns the result
+        private int ADD_Destination(int data, int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            AssertMOD(mod);
+            int result = 0;
+            int offset;
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (word_size == 0)
+                {
+                    result = data + GetRegField8(reg);
+                    SaveRegField8(reg, (byte)result);
+                }
+                else
+                {
+                    result = data + GetRegField16(reg);
+                    SaveRegField16(reg, (UInt16)result);
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            offset = GetRMTable1(rm);
+                            result = _bus.GetData(word_size, offset) + data;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            offset = GetRMTable2(mod, rm);
+                            result = _bus.GetData(word_size, offset) + data;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if (word_size == 0) 
+                            {
+                                result = data + GetRegField8(rm);
+                                SaveRegField8(rm, (byte)result);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                result = data + GetRegField16(rm);
+                                SaveRegField16(rm, (UInt16)result);
+                            }
+                            break;
+                        }
+                }
+            }
+            return result;
+        }
+
+
+        #region "Get and Set registers"
         // Get 8 bit REG result (or R/M mod=11)
         private byte GetRegField8(byte reg)
         {
@@ -771,7 +850,9 @@ namespace KDS.e8086
                     }
             }
         }
+        #endregion
 
+        #region "R/M Tables"
         // R/M Table 1 (mod=00)
         // returns the offset as a result of the operand
         private int GetRMTable1(byte rm)
@@ -903,6 +984,7 @@ namespace KDS.e8086
             return (UInt16)(result + disp);
 
         }
+        #endregion  
 
         // Gets the immediate 16 bit value
         private UInt16 GetImmediate16()
