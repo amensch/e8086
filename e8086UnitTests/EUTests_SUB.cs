@@ -21,56 +21,31 @@ namespace e8086UnitTests
         public void Test28()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0xd8, /* SUB AL,BL */
-                                      0x00, 0xd1, /* SUB CL,DL */
-                                      0x00, 0xe7, /* SUB BH,AH */
-                                      0x00, 0x36, 0x15, 0x01 /* SUB [0115],DH */
+            i8086CPU cpu = GetCPU(new byte[] { 0x28, 0xd8, /* SUB AL,BL */
+                                      0x28, 0xd1 /* SUB CL,DL */
                         });
 
-            cpu.EU.Registers.AL = 0xf7;
-            cpu.EU.Registers.BL = 0x28;  // F7+28=11F.  Carry=1, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
+            cpu.EU.Registers.AL = 0x00;
+            cpu.EU.Registers.BL = 0x00;  
             cpu.NextInstruction();
-            Assert.AreEqual(0x1f, cpu.EU.Registers.AL, "SUB (1) result failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (1) carry flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.ParityFlag, "SUB (1) parity flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "SUB (1) zero flag failed");
+            Assert.AreEqual(0x00, cpu.EU.Registers.AL, "SUB (1) result failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "SUB (1) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SUB (1) parity flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SUB (1) zero flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "SUB (1) sign flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "SUB (1) auxcarry flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "SUB (1) overflow flag failed");
 
             cpu.EU.Registers.CL = 0x80;
-            cpu.EU.Registers.DL = 0x80;  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.EU.Registers.DL = 0x80; 
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.CL, "SUB (2) result failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (2) carry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "SUB (2) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SUB (2) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SUB (2) zero flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "SUB (2) sign flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "SUB (2) auxcarry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (2) overflow flag failed");
-
-            cpu.EU.Registers.BH = 0x40;
-            cpu.EU.Registers.AH = 0x40;  // 40+40=80.  Carry=0, Parity=0, Zero=0, Sign=1, AuxCarry=0, Overflow=1
-            cpu.NextInstruction();
-            Assert.AreEqual(0x80, cpu.EU.Registers.BH, "SUB (3) result failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "SUB (3) carry flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.ParityFlag, "SUB (3) parity flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "SUB (3) zero flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.SignFlag, "SUB (3) sign flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "SUB (3) auxcarry flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (3) overflow flag failed");
-
-            cpu.EU.Registers.DH = 0xff;
-            cpu.EU.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
-            cpu.NextInstruction();
-            Assert.AreEqual(0x00, cpu.EU.Bus.GetData8(0x0115), "SUB (4) result failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (4) carry flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SUB (4) parity flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SUB (4) zero flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "SUB (4) sign flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.AuxCarryFlag, "SUB (4) auxcarry flag failed");
-            Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "SUB (4) overflow flag failed");
-
         }
 
         [TestMethod]

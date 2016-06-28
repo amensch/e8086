@@ -87,12 +87,27 @@ namespace KDS.e8086
             _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
 
+            // 06-07
+
+            _opTable[0x08] = new OpCodeRecord(ExecuteLogical_General);      // OR 
+            _opTable[0x09] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x0a] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x0b] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x0c] = new OpCodeRecord(ExecuteLogical_Immediate);
+            _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
+
+            // 0E
+
+            // 0F - NOT USED
+
             _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
+
+            // 16-17
 
             _opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
@@ -101,6 +116,17 @@ namespace KDS.e8086
             _opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
 
+            // 1E-1F
+
+            _opTable[0x20] = new OpCodeRecord(ExecuteLogical_General);     // AND
+            _opTable[0x21] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x22] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x23] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
+            _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
+
+            // 26-27
+
             _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
@@ -108,18 +134,65 @@ namespace KDS.e8086
             _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
 
+            // 2E-2F
+
+            _opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
+            _opTable[0x31] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x32] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x33] = new OpCodeRecord(ExecuteLogical_General);
+            _opTable[0x34] = new OpCodeRecord(ExecuteLogical_Immediate);
+            _opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
+
+            // 36-37
+
+            _opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
+            _opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x3b] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            _opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
+
+            // 3E-3F
+
+            _opTable[0x40] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x41] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x42] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x43] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x44] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x45] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x46] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x47] = new OpCodeRecord(ExecuteINC);
+            _opTable[0x48] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x49] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4a] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4b] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4c] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4d] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4e] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x4f] = new OpCodeRecord(ExecuteDEC);
+
+            // 50-5F
+            // 60-6F NOT USED
+            // 70-87
+
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
 
+            // 8D
+
             _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
+
+            // 8F-9F
 
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
+
+            // A4-AF
 
             _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
@@ -138,8 +211,18 @@ namespace KDS.e8086
             _opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
 
+            // C0-C1 NOT USED
+            // C2-C5
+
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
+
+            // C8-C9 NOT USED
+            // CA-D5
+            // D6 NOT USED
+            // D7-F0
+            // F1 NOT USED
+            // F2-FF
         }
 
         #region ADD and ADC instructions
@@ -192,10 +275,12 @@ namespace KDS.e8086
         private void ExecuteSUB_General()
         {
             // Op Codes: SUB 28-2B, SBB 18-1B
+            //         : CMP 38-3B
             // operand1 = operand1 - operand2
             // Flags: O S Z A P C
 
             bool with_carry = (_currentOP & 0x10) == 0x10;
+            bool comp_only = (_currentOP & 0x30) == 0x30;
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
@@ -204,15 +289,16 @@ namespace KDS.e8086
             int word_size = Util.GetWordSize(_currentOP);
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int result = SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry);
+            int result = SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry, comp_only);
         }
 
         private void ExecuteSUB_Immediate()
         {
-            // Op Codes: SUB 2C-2D, SBB 1C-1D
+            // Op Codes: SUB 2C-2D, SBB 1C-1D, CMP 3C-3D
             // operand1 = operand1 - operand2
             // Flags: O S Z A P C
             bool with_carry = (_currentOP & 0x10) == 0x10;
+            bool comp_only = (_currentOP & 0x30) == 0x30;
 
             int direction = 0;
             int word_size = Util.GetWordSize(_currentOP);
@@ -224,9 +310,136 @@ namespace KDS.e8086
                 source = GetImmediate16();
 
             // Set flags so the result gets stored in the proper accumulator (AL or AX)
-            int result = SUB_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
+            int result = SUB_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry, comp_only);
         }
 
+        #endregion
+
+        #region Logical Operators (AND, OR, XOR)
+        private void ExecuteLogical_General()
+        {
+            //  OR: 08-0B
+            // AND: 20-23
+            // XOR: 30-33
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            int result;
+
+            // test op code to determine the operator
+            switch( (byte)(_currentOP >> 4))
+            {
+                case 0x00: // OR
+                    {
+                        result = OR_Destination(source, direction, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x20: // AND
+                    {
+                        result = AND_Destination(source, direction, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x30: // XOR
+                    {
+                        result = XOR_Destination(source, direction, word_size, mod, reg, rm);
+                        break;
+                    }
+            }
+        }
+
+        private void ExecuteLogical_Immediate()
+        {
+            //  OR: 0C-0D
+            // AND: 24-25
+            // XOR: 34-35
+
+            int direction = 0;
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int source;
+
+            if (word_size == 0)
+                source = _bus.NextIP();
+            else
+                source = GetImmediate16();
+
+            int result;
+
+            // test op code to determine the operator
+            switch ((byte)(_currentOP >> 4))
+            {
+                case 0x00: // OR
+                    {
+                        result = OR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        break;
+                    }
+                case 0x20: // AND
+                    {
+                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        break;
+                    }
+                case 0x30: // XOR
+                    {
+                        result = XOR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        break;
+                    }
+            }
+        }
+        #endregion
+
+        #region Increment and Decrement
+        private void ExecuteINC()
+        {
+            // Op Codes: 40-47 INC
+
+            // Parse the op code, the affected register is the last 3 bits
+            // (similiar to using RM as REG field)
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
+
+            UInt16 source = 0x01;
+            UInt16 dest = GetRegField16(rm);
+            UInt16 result = (UInt16)(dest + 1);
+            SaveRegField16(rm, result);
+
+            // Flags: O S Z A P
+            // Flags are set as if ADD instruction was used with operand2 = 1
+            // Carry flag is not affected by increment
+            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcSignFlag(1, result);
+            _creg.CalcZeroFlag(1, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+        }
+
+        private void ExecuteDEC()
+        {
+            // Op Codes: 48-4F DEC
+
+            // Parse the op code, the affected register is the last 3 bits
+            // (similiar to using RM as REG field)
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
+
+            UInt16 source = 0x01;
+            UInt16 dest = GetRegField16(rm);
+            UInt16 result = (UInt16)(dest - 1);
+            SaveRegField16(rm, result);
+
+            // Flags: O S Z A P
+            // Flags are set as if SUB instruction was used with operand2 = 1
+            // Carry flag is not affected by decrement
+            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcSignFlag(1, result);
+            _creg.CalcZeroFlag(1, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+        }
         #endregion
 
         #region MOV instructions
@@ -711,7 +924,7 @@ namespace KDS.e8086
         }
 
         // returns the result
-        private int SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
+        private int SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry, bool comp_only)
         {
             AssertMOD(mod);
             int result = 0;
@@ -732,13 +945,13 @@ namespace KDS.e8086
                 {
                     dest = GetRegField8(reg);
                     result = dest - source - carry;
-                    SaveRegField8(reg, (byte)result);
+                    if(!comp_only) SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetRegField16(reg);
                     result = dest - source - carry;
-                    SaveRegField16(reg, (UInt16)result);
+                    if (!comp_only) SaveRegField16(reg, (UInt16)result);
                 }
             }
             else
@@ -750,7 +963,7 @@ namespace KDS.e8086
                             offset = GetRMTable1(rm);
                             dest = _bus.GetData(word_size, offset);
                             result = dest - source - carry;
-                            _bus.SaveData(word_size, offset, result);
+                            if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
@@ -759,7 +972,7 @@ namespace KDS.e8086
                             offset = GetRMTable2(mod, rm);
                             dest = _bus.GetData(word_size, offset);
                             result = dest - source - carry;
-                            _bus.SaveData(word_size, offset, result);
+                            if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -768,19 +981,18 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField8(rm);
                                 result = dest - source - carry;
-                                SaveRegField8(rm, (byte)result);
+                                if (!comp_only) SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
                                 dest = GetRegField16(rm);
                                 result = dest - source - carry;
-                                SaveRegField16(rm, (UInt16)result);
+                                if (!comp_only) SaveRegField16(rm, (UInt16)result);
                             }
                             break;
                         }
                 }
             }
-
 
             // Flags: O S Z A P C
             _creg.CalcOverflowFlag(word_size, source, dest);
@@ -791,6 +1003,229 @@ namespace KDS.e8086
             _creg.CalcCarryFlag(word_size, result);
             return result;
         }
+
+        // returns the result
+        private int AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            AssertMOD(mod);
+            int result = 0;
+            int offset;
+            int dest = 0;
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (word_size == 0)
+                {
+                    dest = GetRegField8(reg);
+                    result = dest & source;
+                    SaveRegField8(reg, (byte)result);
+                }
+                else
+                {
+                    dest = GetRegField16(reg);
+                    result = dest & source;
+                    SaveRegField16(reg, (UInt16)result);
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            offset = GetRMTable1(rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest & source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            offset = GetRMTable2(mod, rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest & source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if (word_size == 0)
+                            {
+                                dest = GetRegField8(rm);
+                                result = dest & source;
+                                SaveRegField8(rm, (byte)result);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                dest = GetRegField16(rm);
+                                result = dest & source;
+                                SaveRegField16(rm, (UInt16)result);
+                            }
+                            break;
+                        }
+                }
+            }
+
+            // Flags: O S Z A P C
+            //        0 x x ? x 0
+            _creg.OverflowFlag = false;
+            _creg.CarryFlag = false;
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcParityFlag(result);
+            return result;
+        }
+
+        // returns the result
+        private int OR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            AssertMOD(mod);
+            int result = 0;
+            int offset;
+            int dest = 0;
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (word_size == 0)
+                {
+                    dest = GetRegField8(reg);
+                    result = dest | source;
+                    SaveRegField8(reg, (byte)result);
+                }
+                else
+                {
+                    dest = GetRegField16(reg);
+                    result = dest | source;
+                    SaveRegField16(reg, (UInt16)result);
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            offset = GetRMTable1(rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest | source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            offset = GetRMTable2(mod, rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest | source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if (word_size == 0)
+                            {
+                                dest = GetRegField8(rm);
+                                result = dest | source;
+                                SaveRegField8(rm, (byte)result);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                dest = GetRegField16(rm);
+                                result = dest | source;
+                                SaveRegField16(rm, (UInt16)result);
+                            }
+                            break;
+                        }
+                }
+            }
+
+            // Flags: O S Z A P C
+            //        0 x x ? x 0
+            _creg.OverflowFlag = false;
+            _creg.CarryFlag = false;
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcParityFlag(result);
+            return result;
+        }
+
+        // returns the result
+        private int XOR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        {
+            AssertMOD(mod);
+            int result = 0;
+            int offset;
+            int dest = 0;
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (word_size == 0)
+                {
+                    dest = GetRegField8(reg);
+                    result = dest ^ source;
+                    SaveRegField8(reg, (byte)result);
+                }
+                else
+                {
+                    dest = GetRegField16(reg);
+                    result = dest ^ source;
+                    SaveRegField16(reg, (UInt16)result);
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            offset = GetRMTable1(rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest ^ source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            offset = GetRMTable2(mod, rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest ^ source;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if (word_size == 0)
+                            {
+                                dest = GetRegField8(rm);
+                                result = dest ^ source;
+                                SaveRegField8(rm, (byte)result);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                dest = GetRegField16(rm);
+                                result = dest ^ source;
+                                SaveRegField16(rm, (UInt16)result);
+                            }
+                            break;
+                        }
+                }
+            }
+
+            // Flags: O S Z A P C
+            //        0 x x ? x 0
+            _creg.OverflowFlag = false;
+            _creg.CarryFlag = false;
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcParityFlag(result);
+            return result;
+        }
+
 
         #endregion
 
