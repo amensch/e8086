@@ -185,7 +185,18 @@ namespace KDS.e8086
 
             _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
 
-            // 8F-9F
+            // 8F
+
+            _opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x92] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x93] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x94] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x95] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
+            _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
+
+            // 98-9F
 
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -439,6 +450,26 @@ namespace KDS.e8086
             _creg.CalcZeroFlag(1, result);
             _creg.CalcAuxCarryFlag(source, dest);
             _creg.CalcParityFlag(result);
+        }
+        #endregion
+
+        #region XCHG instructions
+        private void ExecuteXCHG_AX()
+        {
+            // Op Codes: 90-97
+            // note 90 is XCHG AX,AX and thus is a NOP
+
+            // Parse the op code, last 3 bits indicates register.
+            // All swaps are done with AX
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
+
+            int first = GetRegField16(rm);
+            SaveRegField16(rm, _reg.AX);
+            _reg.AX = (UInt16)first;
+
+            // no flags are affected
         }
         #endregion
 
@@ -1225,7 +1256,6 @@ namespace KDS.e8086
             _creg.CalcParityFlag(result);
             return result;
         }
-
 
         #endregion
 
