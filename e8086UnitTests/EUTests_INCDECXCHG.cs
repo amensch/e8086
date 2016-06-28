@@ -5,7 +5,7 @@ using KDS.e8086;
 namespace e8086UnitTests
 {
     [TestClass]
-    public class EUTests_INCandDEC
+    public class EUTests_INCDECXCHG
     {
         private i8086CPU GetCPU(byte[] program)
         {
@@ -84,6 +84,32 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.SignFlag, "DEC (3) sign flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "DEC (3) auxcarry flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "DEC (3) overflow flag failed");
+        }
+
+        [TestMethod]
+        public void Test86()
+        {
+            // Test Flags
+            i8086CPU cpu = GetCPU(new byte[] { 0x86, 0xd1 });  // XCHG CL,DL
+
+            cpu.EU.Registers.CL = 0x57;
+            cpu.EU.Registers.DL = 0xf3;
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0x57, cpu.EU.Registers.DL, "XCHG (1) DL failed");
+            Assert.AreEqual(0xf3, cpu.EU.Registers.CL, "XCHG (1) CL failed");
+
+            cpu = GetCPU(new byte[] { 0x86, 0x36, 0x15, 0x01 }); /* XCHG [0115],DH */
+            
+            cpu.EU.Registers.DH = 0x57;
+            cpu.EU.Bus.SaveData8(0x0115, 0xf3);
+
+            cpu.NextInstruction();
+
+            //TODO: IMMEDIATE ADDRESS IS READ TWICE
+            Assert.AreEqual(0x57, cpu.EU.Bus.GetData8(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0xf3, cpu.EU.Registers.DH, "XCHG (2) DH failed");
+
         }
     }
 }

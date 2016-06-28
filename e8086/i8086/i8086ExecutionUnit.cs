@@ -173,8 +173,10 @@ namespace KDS.e8086
 
             // 50-5F
             // 60-6F NOT USED
-            // 70-87
+            // 70-85
 
+            _opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
+            _opTable[0x87] = new OpCodeRecord(ExecuteXCHG_General);
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
@@ -470,6 +472,28 @@ namespace KDS.e8086
             _reg.AX = (UInt16)first;
 
             // no flags are affected
+        }
+
+        private void ExecuteXCHG_General()
+        {
+            // Op Codes: 86-87
+            // no flags
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            int dest = GetDestinationData(direction, word_size, mod, reg, rm);
+
+            SaveToDestination(source, direction, word_size, mod, reg, rm);
+
+            // flip destination so this is saved to the original source
+            direction ^= 1;
+
+            SaveToDestination(dest, direction, word_size, mod, reg, rm);
         }
         #endregion
 
