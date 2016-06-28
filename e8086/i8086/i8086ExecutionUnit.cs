@@ -83,6 +83,8 @@ namespace KDS.e8086
             _opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x02] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x03] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
+            _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
 
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
@@ -120,7 +122,7 @@ namespace KDS.e8086
 
         private void ExecuteADD_General()
         {
-            // Op Codes: 00-07
+            // Op Codes: 00-03
             // operand1 = operand1 + operand2
             // Flags: O S Z A P C
 
@@ -132,6 +134,25 @@ namespace KDS.e8086
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
             int result = ADD_Destination(source, direction, word_size, mod, reg, rm);
+        }
+
+        private void ExecuteADD_Immediate()
+        {
+            // Op Codes: 04-05
+            // operand1 = operand1 + operand2
+            // Flags: O S Z A P C
+
+            int direction = 0;
+            int word_size = Util.GetWordSize(_currentOP);
+            int source;
+
+            if (word_size == 0)
+                source = _bus.NextIP();
+            else
+                source = GetImmediate16();
+
+            // Set flags so the result gets stored in the proper accumulator (AL or AX)
+            int result = ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
         }
 
         #region "MOV instructions"

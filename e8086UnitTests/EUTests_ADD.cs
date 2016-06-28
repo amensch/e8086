@@ -241,5 +241,86 @@ namespace e8086UnitTests
 
         }
 
+
+        [TestMethod]
+        public void Test04()
+        {
+            // Test Flags
+            i8086CPU cpu = GetCPU(new byte[] { 0x04, 0x28, /* ADD AL,28H */
+                                      0x04, 0x80, /* ADD AL,80H */
+                                      0x04, 0x40 /* ADD BH,40H */
+                        });
+
+            cpu.EU.Registers.AL = 0xf7; // F7+28=11F.  Carry=1, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
+            cpu.NextInstruction();
+            Assert.AreEqual(0x1f, cpu.EU.Registers.AL, "ADD (1) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (1) carry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ParityFlag, "ADD (1) parity flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (1) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (1) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (1) auxcarry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "ADD (1) overflow flag failed");
+
+            cpu.EU.Registers.AL = 0x80;  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x00, cpu.EU.Registers.AL, "ADD (2) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (2) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (2) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
+
+            cpu.EU.Registers.AL = 0x40; // 40+40=80.  Carry=0, Parity=0, Zero=0, Sign=1, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x80, cpu.EU.Registers.AL, "ADD (3) result failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "ADD (3) carry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ParityFlag, "ADD (3) parity flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (3) zero flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.SignFlag, "ADD (3) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (3) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
+        }
+
+        [TestMethod]
+        public void Test05()
+        {
+            // Test Flags
+            i8086CPU cpu = GetCPU(new byte[] { 0x05, 0x00, 0x28, /* ADD AX,2800H */
+                                      0x05, 0x00, 0x80, /* ADD AX,8000H */
+                                      0x05, 0x00, 0x40 /* ADD AX,4000H */
+                        });
+
+            cpu.EU.Registers.AX = 0xf700;  // F700+2800=11F00.  Carry=1, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
+            cpu.NextInstruction();
+            Assert.AreEqual(0x1f00, cpu.EU.Registers.AX, "ADD (1) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (1) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (1) parity flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (1) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (1) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (1) auxcarry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "ADD (1) overflow flag failed");
+
+            cpu.EU.Registers.AX = 0x8000;  // 80+80=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x0000, cpu.EU.Registers.AX, "ADD (2) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (2) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (2) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
+
+            cpu.EU.Registers.AX = 0x4000;  // 4000+4000=8000.  Carry=0, Parity=0, Zero=0, Sign=1, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x8000, cpu.EU.Registers.AX, "ADD (3) result failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "ADD (3) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (3) parity flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (3) zero flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.SignFlag, "ADD (3) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (3) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
+
+        }
     }
 }
