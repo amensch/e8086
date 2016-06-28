@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="BusUnitTests.cs" />
     <Compile Include="DisassemblerUnitTests.cs" />
+    <Compile Include="EUTests_ADC.cs" />
     <Compile Include="EUTests_ADD.cs" />
     <Compile Include="EUTests_MOV.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

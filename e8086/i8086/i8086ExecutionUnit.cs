@@ -86,6 +86,13 @@ namespace KDS.e8086
             _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
 
+            _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
+            _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
+
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
@@ -122,9 +129,12 @@ namespace KDS.e8086
 
         private void ExecuteADD_General()
         {
-            // Op Codes: 00-03
+            // Op Codes: 00-03, 10-13
             // operand1 = operand1 + operand2
             // Flags: O S Z A P C
+
+            // op codes 10-13 are ADC
+            bool with_carry = (_currentOP & 0x10) == 0x10;
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
@@ -133,14 +143,17 @@ namespace KDS.e8086
             int word_size = Util.GetWordSize(_currentOP);
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int result = ADD_Destination(source, direction, word_size, mod, reg, rm);
+            int result = ADD_Destination(source, direction, word_size, mod, reg, rm, with_carry);
         }
 
         private void ExecuteADD_Immediate()
         {
-            // Op Codes: 04-05
+            // Op Codes: 04-05, 14-15
             // operand1 = operand1 + operand2
             // Flags: O S Z A P C
+
+            // op codes 14-15 are ADC
+            bool with_carry = (_currentOP & 0x10) == 0x10;
 
             int direction = 0;
             int word_size = Util.GetWordSize(_currentOP);
@@ -152,8 +165,10 @@ namespace KDS.e8086
                 source = GetImmediate16();
 
             // Set flags so the result gets stored in the proper accumulator (AL or AX)
-            int result = ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+            int result = ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
         }
+
+
 
         #region "MOV instructions"
         private void ExecuteMOV_General()
@@ -553,12 +568,19 @@ namespace KDS.e8086
         #endregion
 
         // returns the result
-        private int ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        private int ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
         {
             AssertMOD(mod);
             int result = 0;
             int offset;
             int dest = 0;
+            int carry = 0;
+
+            // Include carry flag if necessary
+            if (with_carry && _creg.CarryFlag)
+            {
+                carry = 1;
+            }
 
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
@@ -566,13 +588,13 @@ namespace KDS.e8086
                 if (word_size == 0)
                 {
                     dest = GetRegField8(reg);
-                    result = source + dest;
+                    result = source + dest + carry;
                     SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetRegField16(reg);
-                    result = source + dest;
+                    result = source + dest + carry;
                     SaveRegField16(reg, (UInt16)result);
                 }
             }
@@ -584,7 +606,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable1(rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest + source;
+                            result = source + dest + carry;
                             _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -593,7 +615,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable2(mod, rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest + source;
+                            result = source + dest + carry;
                             _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -602,19 +624,20 @@ namespace KDS.e8086
                             if (word_size == 0) 
                             {
                                 dest = GetRegField8(rm);
-                                result = source + dest;
+                                result = source + dest + carry;
                                 SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
                                 dest = GetRegField16(rm);
-                                result = source + dest;
+                                result = source + dest + carry;
                                 SaveRegField16(rm, (UInt16)result);
                             }
                             break;
                         }
                 }
             }
+
 
             // Flags: O S Z A P C
             _creg.CalcOverflowFlag(word_size, source, dest);
@@ -625,7 +648,6 @@ namespace KDS.e8086
             _creg.CalcCarryFlag(word_size, result);
             return result;
         }
-
 
         #region "Get and Set registers"
         // Get 8 bit REG result (or R/M mod=11)
