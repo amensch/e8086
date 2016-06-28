@@ -80,6 +80,9 @@ namespace KDS.e8086
         private void InitOpCodeTable()
         {
             _opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x02] = new OpCodeRecord(ExecuteADD_General);
+            _opTable[0x03] = new OpCodeRecord(ExecuteADD_General);
 
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
@@ -529,23 +532,26 @@ namespace KDS.e8086
         #endregion
 
         // returns the result
-        private int ADD_Destination(int data, int direction, int word_size, byte mod, byte reg, byte rm)
+        private int ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
         {
             AssertMOD(mod);
             int result = 0;
             int offset;
+            int dest = 0;
 
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
             {
                 if (word_size == 0)
                 {
-                    result = data + GetRegField8(reg);
+                    dest = GetRegField8(reg);
+                    result = source + dest;
                     SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
-                    result = data + GetRegField16(reg);
+                    dest = GetRegField16(reg);
+                    result = source + dest;
                     SaveRegField16(reg, (UInt16)result);
                 }
             }
@@ -556,7 +562,8 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            result = _bus.GetData(word_size, offset) + data;
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest + source;
                             _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -564,7 +571,8 @@ namespace KDS.e8086
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            result = _bus.GetData(word_size, offset) + data;
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest + source;
                             _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -572,18 +580,28 @@ namespace KDS.e8086
                         {
                             if (word_size == 0) 
                             {
-                                result = data + GetRegField8(rm);
+                                dest = GetRegField8(rm);
+                                result = source + dest;
                                 SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                result = data + GetRegField16(rm);
+                                dest = GetRegField16(rm);
+                                result = source + dest;
                                 SaveRegField16(rm, (UInt16)result);
                             }
                             break;
                         }
                 }
             }
+
+            // Flags: O S Z A P C
+            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+            _creg.CalcCarryFlag(word_size, result);
             return result;
         }
 

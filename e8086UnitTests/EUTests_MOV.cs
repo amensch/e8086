@@ -10,9 +10,10 @@ namespace e8086UnitTests
     /// Summary description for ExecutionUnitTests
     /// </summary>
     [TestClass]
-    public class ExecutionUnitTests
+    public class EUTests_MOV
     {
-        public ExecutionUnitTests()
+
+        public EUTests_MOV()
         {
             //
             // TODO: Add constructor logic here
@@ -244,22 +245,6 @@ namespace e8086UnitTests
             cpu.NextInstruction();
 
             Assert.AreEqual(0x3902, cpu.EU.Bus.GetData16(cpu.EU.Registers.SI), "Instruction c7 failed (2)");
-        }
-
-        [TestMethod]
-        public void Test00()
-        {
-            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0x4f, 0x10 } /* ADD [bx+10],CL */);
-
-            cpu.EU.Registers.BX = 0x1500;
-            cpu.EU.Bus.SaveData8(0x1510, 0x8a);
-
-            cpu.EU.Registers.CL = 0x28;
-
-            // 0x8a + 0x28 = 0xb2
-            cpu.NextInstruction();
-
-            Assert.AreEqual(0xb2, cpu.EU.Bus.GetData8(cpu.EU.Registers.BX + 0x10), "Instruction 0x00 failed");
         }
     }
 }

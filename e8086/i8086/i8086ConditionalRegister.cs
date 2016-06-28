@@ -8,16 +8,20 @@ namespace KDS.e8086
 {
     public class i8086ConditionalRegister
     {
-        private const UInt16 OVERFLOW_FLAG = 0x800;
-        private const UInt16 DIR_FLAG = 0x0400;
-        private const UInt16 INT_ENABLE = 0x0200;
-        private const UInt16 TRAP_FLAG = 0x0100;
-        private const UInt16 SIGN_FLAG = 0x0080;        // 0=positive, 1=negative
-        private const UInt16 ZERO_FLAG = 0x0040;        // 0=non-zero, 1=zero
-        private const UInt16 AUX_CARRY_FLAG = 0x0010;   
-        private const UInt16 PARITY_FLAG = 0x0004;      // 0=odd, 1=even
-        private const UInt16 CARRY_FLAG = 0x0001;       // 0=no carry, 1=carry
 
+        public enum Flags : UInt16
+        {
+            CARRY_FLAG = 0x0001,       // 0=no carry, 1=carry
+            PARITY_FLAG = 0x0004,      // 0=odd, 1=even
+            AUX_CARRY_FLAG = 0x0010,
+            ZERO_FLAG = 0x0040,        // 0=non-zero, 1=zero
+            SIGN_FLAG = 0x0080,        // 0=positive, 1=negative
+            TRAP_FLAG = 0x0100,
+            INT_ENABLE = 0x0200,
+            DIR_FLAG = 0x0400,
+            OVERFLOW_FLAG = 0x800
+        };
+        
         public UInt16 Register
         {
             get;
@@ -33,129 +37,147 @@ namespace KDS.e8086
         {
             get
             {
-                return GetBit(CARRY_FLAG);
+                return GetBit(Flags.CARRY_FLAG);
             }
             set
             {
-                SetBit(CARRY_FLAG, value);
+                SetBit(Flags.CARRY_FLAG, value);
             }
         }
         public bool SignFlag
         {
             get
             {
-                return GetBit(SIGN_FLAG);
+                return GetBit(Flags.SIGN_FLAG);
             }
             set
             {
-                SetBit(SIGN_FLAG, value);
+                SetBit(Flags.SIGN_FLAG, value);
             }
         }
         public bool ZeroFlag
         {
             get
             {
-                return GetBit(ZERO_FLAG);
+                return GetBit(Flags.ZERO_FLAG);
             }
             set
             {
-                SetBit(ZERO_FLAG, value);
+                SetBit(Flags.ZERO_FLAG, value);
             }
         }
         public bool AuxCarryFlag
         {
             get
             {
-                return GetBit(AUX_CARRY_FLAG);
+                return GetBit(Flags.AUX_CARRY_FLAG);
             }
             set
             {
-                SetBit(AUX_CARRY_FLAG, value);
+                SetBit(Flags.AUX_CARRY_FLAG, value);
             }
         }
         public bool ParityFlag
         {
             get
             {
-                return GetBit(PARITY_FLAG);
+                return GetBit(Flags.PARITY_FLAG);
             }
             set
             {
-                SetBit(PARITY_FLAG, value);
+                SetBit(Flags.PARITY_FLAG, value);
             }
         }
         public bool TrapFlag
         {
             get
             {
-                return GetBit(TRAP_FLAG);
+                return GetBit(Flags.TRAP_FLAG);
             }
             set
             {
-                SetBit(TRAP_FLAG, value);
+                SetBit(Flags.TRAP_FLAG, value);
             }
         }
         public bool InterruptEnable
         {
             get
             {
-                return GetBit(INT_ENABLE);
+                return GetBit(Flags.INT_ENABLE);
             }
             set
             {
-                SetBit(INT_ENABLE, value);
+                SetBit(Flags.INT_ENABLE, value);
             }
         }
         public bool DirectionFlag
         {
             get
             {
-                return GetBit(DIR_FLAG);
+                return GetBit(Flags.DIR_FLAG);
             }
             set
             {
-                SetBit(DIR_FLAG, value);
+                SetBit(Flags.DIR_FLAG, value);
             }
         }
         public bool OverflowFlag
         {
             get
             {
-                return GetBit(OVERFLOW_FLAG);
+                return GetBit(Flags.OVERFLOW_FLAG);
             }
             set
             {
-                SetBit(OVERFLOW_FLAG, value);
+                SetBit(Flags.OVERFLOW_FLAG, value);
             }
         }
 
 
-        public void CalcCarryFlag(UInt16 result)
+        public void CalcCarryFlag(int word_size, int result)
         {
-            CarryFlag = (result > 0xff);
+            if (word_size == 0)
+                CarryFlag = (result > 0xff);
+            else
+                CarryFlag = (result > 0xffff);
         }
 
-        public void CalcZeroFlag(UInt16 result)
+        public void CalcOverflowFlag( int word_size, int src, int dest)
         {
-            ZeroFlag = ((result & 0xff) == 0);
+            int result = src + dest;
+            if (word_size == 0)
+                OverflowFlag = ((result ^ src) & (result ^ dest) & 0x80) == 0x80;
+            else
+                OverflowFlag = ((result ^ src) & (result ^ dest) & 0x8000) == 0x8000;
         }
 
-        public void CalcSignFlag(UInt16 result)
+        public void CalcAuxCarryFlag( int src, int dst )
         {
-            SignFlag = ((result & 0x80) == 0x80);
+            int result = src + dst;
+            AuxCarryFlag = ((src ^ dst ^ result) & 0x10) == 0x10;
         }
 
-        public void CalcParityFlag(UInt16 result)
+        public void CalcZeroFlag(int word_size, int result)
+        {
+            if (word_size == 0)
+                ZeroFlag = ((result & 0xff) == 0);
+            else
+                ZeroFlag = ((result & 0xffff) == 0);
+        }
+
+        public void CalcSignFlag(int word_size, int result)
+        {
+            if( word_size == 0)
+                SignFlag = ((result & 0x80) == 0x80);
+            else
+                SignFlag = ((result & 0x8000) == 0x8000);
+        }
+
+        public void CalcParityFlag(int result)
         {
             // parity = 0 is odd
             // parity = 1 is even
-            CalcParityFlag((byte)(result & 0xff));
-        }
-
-        public void CalcParityFlag(byte result)
-        {
-            // parity = 0 is odd
-            // parity = 1 is even
+            // Always uses lower 8 bits of the result even in 16 bit operations
             byte num = (byte)(result & 0xff);
             byte total = 0;
             for (total = 0; num > 0; total++)
@@ -165,27 +187,17 @@ namespace KDS.e8086
             ParityFlag = (total % 2) == 0;
         }
 
-        public void CalcAuxCarryFlag(byte a, byte b)
+        private bool GetBit(Flags bit)
         {
-            AuxCarryFlag = (byte)((a & 0x0f) + (b & 0x0f)) > 0x0f;
+            return ((Register & (UInt16)bit) == (UInt16)bit);
         }
 
-        public void CalcAuxCarryFlag(byte a, byte b, byte c)
-        {
-            AuxCarryFlag = (byte)((a & 0x0f) + (b & 0x0f) + (c & 0x0f)) > 0x0f;
-        }
-
-        private bool GetBit(UInt16 bit)
-        {
-            return ((Register & bit) == bit);
-        }
-
-        private void SetBit(UInt16 bit, bool set)
+        private void SetBit(Flags bit, bool set)
         {
             if (set)
-                Register = (UInt16)(Register | bit);
+                Register = (UInt16)(Register | (UInt16)bit);
             else
-                Register = (UInt16)(Register & ~bit);
+                Register = (UInt16)(Register & ~(UInt16)bit);
         }
     }
 }
