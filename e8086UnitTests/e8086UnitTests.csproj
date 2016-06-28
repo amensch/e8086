@@ -57,6 +57,8 @@
     <Compile Include="EUTests_ADC.cs" />
     <Compile Include="EUTests_ADD.cs" />
     <Compile Include="EUTests_MOV.cs" />
+    <Compile Include="EUTests_SBB.cs" />
+    <Compile Include="EUTests_SUB.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

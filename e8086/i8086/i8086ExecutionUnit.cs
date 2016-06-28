@@ -50,16 +50,11 @@ namespace KDS.e8086
         // Bus Interface Unit
         private i8086BusInterfaceUnit _bus;
 
+        // Internal components are exposed for debugging and testing purposes
         public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
         {
             _bus = bus;
             InitOpCodeTable();
-        }
-
-        public void NextInstruction()
-        {
-            _currentOP = _bus.NextIP();
-            _opTable[_currentOP].opAction();
         }
 
         public i8086Registers Registers
@@ -77,6 +72,12 @@ namespace KDS.e8086
             get { return _bus; }
         }
 
+        public void NextInstruction()
+        {
+            _currentOP = _bus.NextIP();
+            _opTable[_currentOP].opAction();
+        }
+
         private void InitOpCodeTable()
         {
             _opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
@@ -92,6 +93,20 @@ namespace KDS.e8086
             _opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
+
+            _opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x1a] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x1b] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            _opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
+
+            _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x2b] = new OpCodeRecord(ExecuteSUB_General);
+            _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
 
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
@@ -126,6 +141,8 @@ namespace KDS.e8086
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
         }
+
+        #region ADD and ADC instructions
 
         private void ExecuteADD_General()
         {
@@ -168,9 +185,51 @@ namespace KDS.e8086
             int result = ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
         }
 
+        #endregion
 
+        #region SUB and SBB instructions
 
-        #region "MOV instructions"
+        private void ExecuteSUB_General()
+        {
+            // Op Codes: SUB 28-2B, SBB 18-1B
+            // operand1 = operand1 - operand2
+            // Flags: O S Z A P C
+
+            bool with_carry = (_currentOP & 0x10) == 0x10;
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            int result = SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry);
+        }
+
+        private void ExecuteSUB_Immediate()
+        {
+            // Op Codes: SUB 2C-2D, SBB 1C-1D
+            // operand1 = operand1 - operand2
+            // Flags: O S Z A P C
+            bool with_carry = (_currentOP & 0x10) == 0x10;
+
+            int direction = 0;
+            int word_size = Util.GetWordSize(_currentOP);
+            int source;
+
+            if (word_size == 0)
+                source = _bus.NextIP();
+            else
+                source = GetImmediate16();
+
+            // Set flags so the result gets stored in the proper accumulator (AL or AX)
+            int result = SUB_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
+        }
+
+        #endregion
+
+        #region MOV instructions
         private void ExecuteMOV_General()
         {
             byte mod = 0, reg = 0, rm = 0;
@@ -404,7 +463,7 @@ namespace KDS.e8086
         }
         #endregion
 
-        #region "Generic Retrieve and Store functions"
+        #region Generic Retrieve and Store functions
         // Generic function to retrieve source data based on the op code and addr byte
         private int GetSourceData(int direction, int word_size, byte mod, byte reg, byte rm)
         {
@@ -567,6 +626,8 @@ namespace KDS.e8086
         }
         #endregion
 
+        #region Operation Functions
+
         // returns the result
         private int ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
         {
@@ -649,7 +710,91 @@ namespace KDS.e8086
             return result;
         }
 
-        #region "Get and Set registers"
+        // returns the result
+        private int SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
+        {
+            AssertMOD(mod);
+            int result = 0;
+            int offset;
+            int dest = 0;
+            int carry = 0;
+
+            // Include carry flag if necessary
+            if (with_carry && _creg.CarryFlag)
+            {
+                carry = 1;
+            }
+
+            // if direction is 1 (R/M is source) action is the same regardless of mod
+            if (direction == 1)
+            {
+                if (word_size == 0)
+                {
+                    dest = GetRegField8(reg);
+                    result = dest - source - carry;
+                    SaveRegField8(reg, (byte)result);
+                }
+                else
+                {
+                    dest = GetRegField16(reg);
+                    result = dest - source - carry;
+                    SaveRegField16(reg, (UInt16)result);
+                }
+            }
+            else
+            {
+                switch (mod)
+                {
+                    case 0x00:
+                        {
+                            offset = GetRMTable1(rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest - source - carry;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x01:
+                    case 0x02:  // difference is processed in the GetRMTable2 function
+                        {
+                            offset = GetRMTable2(mod, rm);
+                            dest = _bus.GetData(word_size, offset);
+                            result = dest - source - carry;
+                            _bus.SaveData(word_size, offset, result);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            if (word_size == 0)
+                            {
+                                dest = GetRegField8(rm);
+                                result = dest - source - carry;
+                                SaveRegField8(rm, (byte)result);
+                            }
+                            else // if ((direction == 0) && (word_size == 1))
+                            {
+                                dest = GetRegField16(rm);
+                                result = dest - source - carry;
+                                SaveRegField16(rm, (UInt16)result);
+                            }
+                            break;
+                        }
+                }
+            }
+
+
+            // Flags: O S Z A P C
+            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+            _creg.CalcCarryFlag(word_size, result);
+            return result;
+        }
+
+        #endregion
+
+        #region Get and Set registers
         // Get 8 bit REG result (or R/M mod=11)
         private byte GetRegField8(byte reg)
         {
@@ -913,7 +1058,7 @@ namespace KDS.e8086
         }
         #endregion
 
-        #region "R/M Tables"
+        #region R/M Tables
         // R/M Table 1 (mod=00)
         // returns the offset as a result of the operand
         private int GetRMTable1(byte rm)
@@ -1045,7 +1190,9 @@ namespace KDS.e8086
             return (UInt16)(result + disp);
 
         }
-        #endregion  
+        #endregion
+
+        #region Helper and Utility functions
 
         // Gets the immediate 16 bit value
         private UInt16 GetImmediate16()
@@ -1097,5 +1244,7 @@ namespace KDS.e8086
                 throw new ArgumentOutOfRangeException("rm", rm, string.Format("Invalid rm value in opcode={0:X2}", _currentOP));
             }
         }
+
+        #endregion  
     }
 }
