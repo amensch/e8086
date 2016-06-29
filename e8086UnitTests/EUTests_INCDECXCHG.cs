@@ -89,6 +89,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test86()
         {
+
             // Test Flags
             i8086CPU cpu = GetCPU(new byte[] { 0x86, 0xd1 });  // XCHG CL,DL
 
@@ -106,9 +107,34 @@ namespace e8086UnitTests
 
             cpu.NextInstruction();
 
-            //TODO: IMMEDIATE ADDRESS IS READ TWICE
             Assert.AreEqual(0x57, cpu.EU.Bus.GetData8(0x0115), "XCHG (2) [0115] failed");
             Assert.AreEqual(0xf3, cpu.EU.Registers.DH, "XCHG (2) DH failed");
+
+        }
+
+        [TestMethod]
+        public void Test87()
+        {
+
+            // Test Flags
+            i8086CPU cpu = GetCPU(new byte[] { 0x87, 0xd1 });  // XCHG CX,DX
+
+            cpu.EU.Registers.CX = 0x1057;
+            cpu.EU.Registers.DX = 0x23f3;
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0x1057, cpu.EU.Registers.DX, "XCHG (1) DX failed");
+            Assert.AreEqual(0x23f3, cpu.EU.Registers.CX, "XCHG (1) CX failed");
+
+            cpu = GetCPU(new byte[] { 0x87, 0x36, 0x15, 0x01 }); /* XCHG [0115],SI */
+
+            cpu.EU.Registers.SI = 0x1057;
+            cpu.EU.Bus.SaveData16(0x0115, 0x23f3);
+
+            cpu.NextInstruction();
+
+            Assert.AreEqual(0x1057, cpu.EU.Bus.GetData16(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0x23f3, cpu.EU.Registers.SI, "XCHG (2) SI failed");
 
         }
     }

@@ -35,6 +35,11 @@ namespace KDS.e8086
 
          */
 
+        // Statistics
+        private long _instrCount = 0;
+        private long _RMTableLookupCount = 0;
+        private UInt16 _RMTableLastLookup = 0;
+
         // Preserve the current OP code
         private byte _currentOP;
 
@@ -74,6 +79,7 @@ namespace KDS.e8086
 
         public void NextInstruction()
         {
+            _instrCount++;
             _currentOP = _bus.NextIP();
             _opTable[_currentOP].opAction();
         }
@@ -87,7 +93,7 @@ namespace KDS.e8086
             _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
 
-            // 06-07
+            // 06-07  push/pop es
 
             _opTable[0x08] = new OpCodeRecord(ExecuteLogical_General);      // OR 
             _opTable[0x09] = new OpCodeRecord(ExecuteLogical_General);
@@ -96,7 +102,7 @@ namespace KDS.e8086
             _opTable[0x0c] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
 
-            // 0E
+            // 0E push cs
 
             // 0F - NOT USED
 
@@ -107,7 +113,7 @@ namespace KDS.e8086
             _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
 
-            // 16-17
+            // 16-17 push/pop ss
 
             _opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
@@ -116,7 +122,7 @@ namespace KDS.e8086
             _opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
 
-            // 1E-1F
+            // 1E-1F push/pop ds
 
             _opTable[0x20] = new OpCodeRecord(ExecuteLogical_General);     // AND
             _opTable[0x21] = new OpCodeRecord(ExecuteLogical_General);
@@ -125,7 +131,7 @@ namespace KDS.e8086
             _opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
 
-            // 26-27
+            // 26-27 es:/daa
 
             _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
@@ -173,7 +179,14 @@ namespace KDS.e8086
 
             // 50-5F
             // 60-6F NOT USED
-            // 70-85
+            // 70-7f
+
+            _opTable[0x80] = new OpCodeRecord(Execute_Op80_Op83);
+            _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
+            _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
+            _opTable[0x83] = new OpCodeRecord(Execute_Op80_Op83);
+
+            // 84-85
 
             _opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
             _opTable[0x87] = new OpCodeRecord(ExecuteXCHG_General);
@@ -236,6 +249,115 @@ namespace KDS.e8086
             // D7-F0
             // F1 NOT USED
             // F2-FF
+        }
+
+        private void Execute_Op80_Op83()
+        {
+            // These op codes are grouped instructions with reg field defining the operator.
+            // 0x80 are 8 bit operations 
+            // 0x81 are 16 bit operations
+            // 0x82 is functionally the same as 0x80
+            // 0x83 uses sign extention for the 8 bit immediate data
+
+            int word_size = 0;
+            if( _currentOP == 0x81 || _currentOP == 0x83 )
+            {
+                word_size = 1;
+            }
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            AssertMOD(mod);
+            AssertREG(reg);
+            AssertRM(rm);
+
+
+            // If displacement offset is needed, those bytes will appear before the immediate data so we need to retrieve that first.
+            // The offset isn't needed within here but we need to retrieve it first.
+            int dest = 0;
+            if (mod == 0x00)
+            {
+                dest = GetRMTable1(rm);
+            }
+            else if ((mod == 0x01) || (mod == 0x02))
+            {
+                dest = GetRMTable2(mod, rm);
+            }
+
+            // Get immediate data
+            int source = 0;
+
+            if (_currentOP == 0x83)
+            {
+                source = SignExtend(_bus.NextIP());
+            }
+            else if ( word_size == 0 )
+            {
+                source = _bus.NextIP();
+
+            }
+            else
+            {
+                source = GetImmediate16();
+            }
+
+            // check for invalid instructions
+            // the 8086 manual states the following are invalid for op codes 0x82 and 0x83:
+            //      reg=001
+            //      reg=100
+            //      reg=110
+            if( ( _currentOP == 0x82 || _currentOP == 0x83) &&
+                ( reg == 0x01 || reg == 0x04 || reg == 0x06 ) )
+            {
+                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", _currentOP));
+            }
+
+            // reg field defines the operation
+            switch (reg)
+            {
+                case 0x00: // ADD R/M, IMM
+                    {
+                        ADD_Destination(source, 0, word_size, mod, reg, rm, false);
+                        break;
+                    }
+                case 0x01: // OR R/M, IMM
+                    {
+                        OR_Destination(source, 0, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x02: // ADC R/M, IMM
+                    {
+                        ADD_Destination(source, 0, word_size, mod, reg, rm, true);
+                        break;
+                    }
+                case 0x03: // SBB R/M, IMM
+                    {
+                        SUB_Destination(source, 0, word_size, mod, reg, rm, true, false);
+                        break;
+                    }
+                case 0x04: // AND R/M, IMM
+                    {
+                        AND_Destination(source, 0, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x05: // SUB R/M, IMM
+                    {
+                        SUB_Destination(source, 0, word_size, mod, reg, rm, false, false);
+                        break;
+                    }
+                case 0x06: // XOR R/M, IMM
+                    {
+                        XOR_Destination(source, 0, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x07: // CMP R/M, IMM
+                    {
+                        SUB_Destination(source, 0, word_size, mod, reg, rm, false, true);
+                        break;
+                    }
+            }
+
         }
 
         #region ADD and ADC instructions
@@ -1589,7 +1711,19 @@ namespace KDS.e8086
                 case 0x06:
                     {
                         // direct address
-                        result = GetImmediate16();
+                        // There is only one RM table lookup per instruction but this may be invoked more than once
+                        // for certain instructions.  For this reason we preserve the offset in case it is needed again.
+                        if (_RMTableLookupCount == _instrCount)
+                        {
+                            result = _RMTableLastLookup;
+                        }
+                        else
+                        {
+                            result = GetImmediate16();
+                            _RMTableLastLookup = result;
+                            _RMTableLookupCount = _instrCount;
+                            
+                        }
                         break;
                     }
                 case 0x07:
@@ -1659,16 +1793,36 @@ namespace KDS.e8086
             }
             switch(mod)
             {
+                // There is only one RM table lookup per instruction but this may be invoked more than once
+                // for certain instructions.  For this reason we preserve the offset in case it is needed again.
                 case 0x01:
                     {
                         // 8 bit displacement
-                        disp = _bus.NextIP();
+                        if (_RMTableLookupCount == _instrCount)
+                        {
+                            disp = _RMTableLastLookup;
+                        }
+                        else
+                        {
+                            disp = _bus.NextIP();
+                            _RMTableLastLookup = disp;
+                            _RMTableLookupCount = _instrCount;
+                        }
                         break;
                     }
                 case 0x02:
                     {
                         // 16 bit displacement
-                        disp = GetImmediate16();
+                        if (_RMTableLookupCount == _instrCount)
+                        {
+                            disp = _RMTableLastLookup;
+                        }
+                        else
+                        {
+                            disp = GetImmediate16();
+                            _RMTableLastLookup = disp;
+                            _RMTableLookupCount = _instrCount;
+                        }
                         break;
                     }
                 default:
@@ -1732,6 +1886,15 @@ namespace KDS.e8086
             {
                 throw new ArgumentOutOfRangeException("rm", rm, string.Format("Invalid rm value in opcode={0:X2}", _currentOP));
             }
+        }
+
+        // Sign extend 8 bits to 16 bits
+        private UInt16 SignExtend(byte num)
+        {
+            if (num > 0x80)
+                return num;
+            else
+                return Util.GetValue16(0xff, num);
         }
 
         #endregion  

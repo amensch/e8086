@@ -322,5 +322,44 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
 
         }
+
+        [TestMethod]
+        public void Test80()
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0x80, 0xc1, 0x80 });
+            cpu.EU.Registers.CL = 0x80;  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x00, cpu.EU.Registers.CL, "ADD (1) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (1) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (1) parity flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (1) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (1) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (1) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (1) overflow flag failed");
+
+
+            cpu = GetCPU(new byte[] { 0x80, 0x06, 0x15, 0x01, 0x80 }); /* SBB [0115],80h */
+            cpu.EU.Bus.SaveData8(0x0115, 0x80);  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.NextInstruction();
+            Assert.AreEqual(0x00, cpu.EU.Bus.GetData8(0x0115), "ADD (2) result failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (2) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (2) auxcarry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
+
+            cpu = GetCPU(new byte[] { 0x81, 0x06, 0x15, 0x01, 0x80, 0x2e }); /* SBB [0115],2e80h */
+            cpu.EU.Bus.SaveData16(0x0115, 0x1234);  // 1234+2e80=40b4.  Carry=0, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
+            cpu.NextInstruction();
+            Assert.AreEqual(0x40b4, cpu.EU.Bus.GetData16(0x0115), "ADD (2) result failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
+            Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "ADD (2) sign flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "ADD (2) auxcarry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
+        }
+
     }
 }
