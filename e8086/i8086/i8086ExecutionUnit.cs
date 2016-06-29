@@ -82,7 +82,29 @@ namespace KDS.e8086
         {
             _instrCount++;
             _currentOP = _bus.NextIP();
-            _opTable[_currentOP].opAction();
+
+            // if segment override process that right here
+            if (_currentOP == 0x26)
+            {
+                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            }
+            else if (_currentOP == 0x2e)
+            {
+                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseCS;
+            }
+            else if (_currentOP == 0x36)
+            {
+                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseSS;
+            }
+            else if (_currentOP == 0x3e)
+            {
+                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseDS;
+            }
+            else
+            {
+                _opTable[_currentOP].opAction();
+                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
+            }
         }
 
         private void InitOpCodeTable()
@@ -125,8 +147,9 @@ namespace KDS.e8086
             _opTable[0x23] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
+            //_opTable[0x26]  segment override is processed in the NextInstruction() method
 
-            // 26-27 es:/daa
+            // 27 daa
 
             _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
@@ -134,8 +157,9 @@ namespace KDS.e8086
             _opTable[0x2b] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x2e]  segment override is processed in the NextInstruction() method
 
-            // 2E-2F
+            // 2F
 
             _opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
             _opTable[0x31] = new OpCodeRecord(ExecuteLogical_General);
@@ -143,8 +167,9 @@ namespace KDS.e8086
             _opTable[0x33] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x34] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
+            //_opTable[0x36]  segment override is processed in the NextInstruction() method
 
-            // 36-37
+            // 37
 
             _opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
             _opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
@@ -152,8 +177,9 @@ namespace KDS.e8086
             _opTable[0x3b] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x3e]  segment override is processed in the NextInstruction() method
 
-            // 3E-3F
+            // 3F
 
             _opTable[0x40] = new OpCodeRecord(ExecuteINC);
             _opTable[0x41] = new OpCodeRecord(ExecuteINC);

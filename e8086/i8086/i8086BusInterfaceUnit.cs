@@ -16,7 +16,18 @@ namespace KDS.e8086
         public UInt16 SS { get; set; }  // stack segment
         public UInt16 ES { get; set; }  // extra segmemt
         public UInt16 IP { get; set; }  // instruction pointer
-        public bool UsingBasePointer { get; set; } // when using base pointer, use SS instead of DS as segment
+
+        public enum SegmentOverrideState
+        {
+            UseCS,
+            UseDS,
+            UseSS,
+            UseES,
+            NoOverride
+        };
+
+        public SegmentOverrideState SegmentOverride { get; set; }
+        public bool UsingBasePointer { get; set; }
 
         private byte[] _ram;
 
@@ -27,6 +38,7 @@ namespace KDS.e8086
             SS = 0x0000;
             ES = 0x0000;
             IP = 0x0000;
+            SegmentOverride = SegmentOverrideState.NoOverride;
             UsingBasePointer = false;
 
             _ram = new byte[MAX_MEMORY];  // 1,048,576 bytes (maximum addressable by the 8086)
@@ -150,11 +162,19 @@ namespace KDS.e8086
 
         private UInt16 GetDataSegment()
         {
-            if (UsingBasePointer)
+            if (SegmentOverride == SegmentOverrideState.NoOverride)
             {
-                UsingBasePointer = false;
-                return SS;
+                if (UsingBasePointer)
+                    return SS;
+                else
+                    return DS;
             }
+            else if (SegmentOverride == SegmentOverrideState.UseCS)
+                return CS;
+            else if (SegmentOverride == SegmentOverrideState.UseES)
+                return ES;
+            else if (SegmentOverride == SegmentOverrideState.UseSS)
+                return SS;
             else
                 return DS;
         }
