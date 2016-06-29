@@ -195,9 +195,7 @@ namespace KDS.e8086
             _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
-
-            // 8D
-
+            _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
             _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
 
             // 8F
@@ -358,6 +356,22 @@ namespace KDS.e8086
                     }
             }
 
+        }
+        
+        private void Execute_LEA()
+        {
+            // (0x8d) LEA MODREGR/M REG-16, MEM-16, (DISP-LO), (DISP-HI)
+            // no flags
+            // loads the offset of the source (rather than its value) and stores it in the destination
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            int direction = Util.GetDirection(_currentOP);
+            int word_size = Util.GetWordSize(_currentOP);
+
+            int offset = GetSourceData(direction, word_size, mod, reg, rm);
+            int source = _bus.GetData(word_size, offset);
+            SaveToDestination(source, direction, word_size, mod, reg, rm);
         }
 
         #region ADD and ADC instructions
