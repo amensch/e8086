@@ -93,38 +93,32 @@ namespace KDS.e8086
             _opTable[0x03] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
-
-            // 06-07  push/pop es
-
+            _opTable[0x06] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x07] = new OpCodeRecord(Execute_POP);
             _opTable[0x08] = new OpCodeRecord(ExecuteLogical_General);      // OR 
             _opTable[0x09] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0a] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0b] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0c] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
-
-            // 0E push cs
-
-            // 0F - NOT USED
-
+            _opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
+            // _opTable[0x0f] = new OpCodeRecord(Execute_POP);  POP CS is not a valid instruction
             _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
             _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
-
-            // 16-17 push/pop ss
-
+            _opTable[0x16] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x17] = new OpCodeRecord(Execute_POP);
             _opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x1a] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x1b] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
-
-            // 1E-1F push/pop ds
-
+            _opTable[0x1e] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x1f] = new OpCodeRecord(Execute_POP);  
             _opTable[0x20] = new OpCodeRecord(ExecuteLogical_General);     // AND
             _opTable[0x21] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x22] = new OpCodeRecord(ExecuteLogical_General);
@@ -177,8 +171,23 @@ namespace KDS.e8086
             _opTable[0x4d] = new OpCodeRecord(ExecuteDEC);
             _opTable[0x4e] = new OpCodeRecord(ExecuteDEC);
             _opTable[0x4f] = new OpCodeRecord(ExecuteDEC);
+            _opTable[0x50] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x51] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x52] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x53] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x54] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x55] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x56] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x57] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x58] = new OpCodeRecord(Execute_POP);
+            _opTable[0x59] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5a] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5b] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5c] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5d] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5e] = new OpCodeRecord(Execute_POP);
+            _opTable[0x5f] = new OpCodeRecord(Execute_POP);
 
-            // 50-5F
             // 60-6F NOT USED
             // 70-7f
 
@@ -197,9 +206,7 @@ namespace KDS.e8086
             _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
             _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
             _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
-
-            // 8F
-
+            _opTable[0x8f] = new OpCodeRecord(Execute_POP);
             _opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x92] = new OpCodeRecord(ExecuteXCHG_AX);
@@ -209,7 +216,12 @@ namespace KDS.e8086
             _opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
 
-            // 98-9F
+            // 98-9B
+
+            _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
+            _opTable[0x9d] = new OpCodeRecord(Execute_POP);
+
+            // 9E-9F
 
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -372,6 +384,57 @@ namespace KDS.e8086
             int offset = GetSourceData(direction, word_size, mod, reg, rm);
             int source = _bus.GetData(word_size, offset);
             SaveToDestination(source, direction, word_size, mod, reg, rm);
+        }
+
+        private void Execute_PUSH()
+        {
+            if (_currentOP == 0x9c) // PUSHF (no address byte)
+            {
+                _bus.PushStack(_reg.SP, _creg.Register);
+            }
+            else
+            {
+                byte mod = 0, reg = 0, rm = 0;
+                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+                // for segment register ops, use the reg field
+                if (_currentOP < 0x50)
+                {
+                    _bus.PushStack(_reg.SP, GetSegRegField(reg));
+                }
+                // else use rm field to determine the register
+                else
+                {
+                    _bus.PushStack(_reg.SP, GetRegField16(rm));
+                }
+            }
+        }
+
+        private void Execute_POP()
+        {
+            if (_currentOP == 0x9d) // POPF (no address byte)
+            {
+                _creg.Register = _bus.PopStack(_reg.SP);
+            }
+            else
+            {
+                byte mod = 0, reg = 0, rm = 0;
+                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+                // for segment register ops, use the reg field
+                if (_currentOP < 0x50)
+                {
+                    SaveSegRegField(rm, _bus.PopStack(_reg.SP));
+                }
+                else if (_currentOP == 0x8f) // POP R/M-16
+                {
+                    SaveToDestination(_bus.PopStack(_reg.SP), 0, 1, mod, reg, rm);
+                }
+                else
+                {
+                    SaveRegField16(rm, _bus.PopStack(_reg.SP));
+                }
+            }
         }
 
         #region ADD and ADC instructions

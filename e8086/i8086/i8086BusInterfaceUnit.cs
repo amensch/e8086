@@ -128,6 +128,26 @@ namespace KDS.e8086
             Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
         }
 
+        public UInt16 PopStack(int offset)
+        {
+            int addr = (SS << 4) + offset;
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
+            }
+            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
+        public void PushStack(int offset, UInt16 value)
+        {
+            int addr = (SS << 4) + offset;
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
+            }
+            Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
+        }
+
         private UInt16 GetDataSegment()
         {
             if (UsingBasePointer)
