@@ -104,6 +104,7 @@ namespace KDS.e8086
             {
                 _opTable[_currentOP].opAction();
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
+                _bus.UsingBasePointer = false;
             }
         }
 
@@ -148,9 +149,7 @@ namespace KDS.e8086
             _opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x26]  segment override is processed in the NextInstruction() method
-
-            // 27 daa
-
+            //_opTable[0x27] daa
             _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
@@ -158,9 +157,7 @@ namespace KDS.e8086
             _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x2e]  segment override is processed in the NextInstruction() method
-
-            // 2F
-
+            //_opTable[0x2f] das
             _opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
             _opTable[0x31] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x32] = new OpCodeRecord(ExecuteLogical_General);
@@ -168,9 +165,7 @@ namespace KDS.e8086
             _opTable[0x34] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x36]  segment override is processed in the NextInstruction() method
-
-            // 37
-
+            //_opTable[0x37] aaa
             _opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
             _opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
@@ -178,9 +173,7 @@ namespace KDS.e8086
             _opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3e]  segment override is processed in the NextInstruction() method
-
-            // 3F
-
+            //_opTable[0x3f] aas
             _opTable[0x40] = new OpCodeRecord(ExecuteINC);
             _opTable[0x41] = new OpCodeRecord(ExecuteINC);
             _opTable[0x42] = new OpCodeRecord(ExecuteINC);
@@ -213,10 +206,8 @@ namespace KDS.e8086
             _opTable[0x5d] = new OpCodeRecord(Execute_POP);
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
-
             // 60-6F NOT USED
-            // 70-7f
-
+            // 70-7f jump instructions
             _opTable[0x80] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
@@ -241,21 +232,30 @@ namespace KDS.e8086
             _opTable[0x95] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
-
-            // 98-9B
-
+            //_opTable[0x98] cbw
+            //_opTable[0x99] cwd
+            //_opTable[0x9a] call far_proc  (CALL ADDR DISP-LO DISP-HI SEG-LO SEG-HI)
+            //_opTable[0x9b] wait
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-
-            // 9E-9F
-
+            //_opTable[0x9e] sahf
+            //_opTable[0x9f] lahf
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
-
-            // A4-AF
-
+            //_opTable[0xa4] movs (1 byte) dest-str8, src-str8
+            //_opTable[0xa5] movs (1 byte) dest-str16, src-str16
+            //_opTable[0xa6] cmps (1 byte) dest-str8, src-str8
+            //_opTable[0xa7] cmps (1 byte) dest-str16, src-str16
+            //_opTable[0xa8] test al,imm-8
+            //_opTable[0xa9] test al,imm-16
+            //_opTable[0xaa] stos dest-str8
+            //_opTable[0xab] stos dest-str16
+            //_opTable[0xac] lods src-str8
+            //_opTable[0xad] lods src-str16
+            //_opTable[0xae] scas dest-str8
+            //_opTable[0xaf] scas dest-str16
             _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb2] = new OpCodeRecord(ExecuteMOV_Imm8);
@@ -272,17 +272,18 @@ namespace KDS.e8086
             _opTable[0xbd] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
-
             // C0-C1 NOT USED
-            // C2-C5
-
+            //_opTable[0xc2] ret imm-16
+            //_opTable[0xc3] ret
+            //_opTable[0xc4] les reg-16, mem-16
+            //_opTable[0xc5] lds reg-16, mem-16
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
-
             // C8-C9 NOT USED
             // CA-D5
             // D6 NOT USED
-            // D7-F0
+            _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
+            // D8-F0
             // F1 NOT USED
             // F2-FF
         }
@@ -396,6 +397,27 @@ namespace KDS.e8086
 
         }
         
+        private void Execute_XLAT()
+        {
+            // one byte instruction (0xd7)
+            // Store into AL the value located at a 256 byte lookup table
+            // BX is the beginning of the table and AL is the offset
+            _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
+        }
+
+        private void Execute_LDS()
+        {
+            // Transfer a 32 bit pointer variable from the source operand (which must be memory)
+            // to the destination operand and DS.
+            // The offset word of the pointer is transferred to the destination operand.
+            // The segment word of the pointer is transferred to register DS.
+
+            /*
+                0xc4 LES reg-16, mem-16
+                0xc5 LDS reg-16, mem-16
+            */
+        }
+
         private void Execute_LEA()
         {
             // (0x8d) LEA MODREGR/M REG-16, MEM-16, (DISP-LO), (DISP-HI)
