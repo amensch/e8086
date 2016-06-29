@@ -55,12 +55,13 @@ namespace KDS.e8086
         // Bus Interface Unit
         private i8086BusInterfaceUnit _bus;
 
-        // Internal components are exposed for debugging and testing purposes
         public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
         {
             _bus = bus;
             InitOpCodeTable();
         }
+
+        // Internal components are exposed for debugging and testing purposes
 
         public i8086Registers Registers
         {
@@ -185,9 +186,8 @@ namespace KDS.e8086
             _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x83] = new OpCodeRecord(Execute_Op80_Op83);
-
-            // 84-85
-
+            _opTable[0x84] = new OpCodeRecord(ExecuteLogical_General);  // TEST
+            _opTable[0x85] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             _opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
             _opTable[0x87] = new OpCodeRecord(ExecuteXCHG_General);
             _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
@@ -338,7 +338,7 @@ namespace KDS.e8086
                     }
                 case 0x04: // AND R/M, IMM
                     {
-                        AND_Destination(source, 0, word_size, mod, reg, rm);
+                        AND_Destination(source, 0, word_size, mod, reg, rm, false);
                         break;
                     }
                 case 0x05: // SUB R/M, IMM
@@ -456,6 +456,7 @@ namespace KDS.e8086
             //  OR: 08-0B
             // AND: 20-23
             // XOR: 30-33
+            // TEST: 84-85
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
@@ -476,12 +477,17 @@ namespace KDS.e8086
                     }
                 case 0x20: // AND
                     {
-                        result = AND_Destination(source, direction, word_size, mod, reg, rm);
+                        result = AND_Destination(source, direction, word_size, mod, reg, rm, false);
                         break;
                     }
                 case 0x30: // XOR
                     {
                         result = XOR_Destination(source, direction, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x80: // TEST
+                    {
+                        result = AND_Destination(source, direction, word_size, mod, reg, rm, true);
                         break;
                     }
             }
@@ -515,7 +521,7 @@ namespace KDS.e8086
                     }
                 case 0x20: // AND
                     {
-                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, false);
                         break;
                     }
                 case 0x30: // XOR
@@ -1182,7 +1188,7 @@ namespace KDS.e8086
         }
 
         // returns the result
-        private int AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        private int AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool test_only)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1196,13 +1202,13 @@ namespace KDS.e8086
                 {
                     dest = GetRegField8(reg);
                     result = dest & source;
-                    SaveRegField8(reg, (byte)result);
+                    if( !test_only ) SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetRegField16(reg);
                     result = dest & source;
-                    SaveRegField16(reg, (UInt16)result);
+                    if (!test_only) SaveRegField16(reg, (UInt16)result);
                 }
             }
             else
@@ -1214,7 +1220,7 @@ namespace KDS.e8086
                             offset = GetRMTable1(rm);
                             dest = _bus.GetData(word_size, offset);
                             result = dest & source;
-                            _bus.SaveData(word_size, offset, result);
+                            if (!test_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
@@ -1223,7 +1229,7 @@ namespace KDS.e8086
                             offset = GetRMTable2(mod, rm);
                             dest = _bus.GetData(word_size, offset);
                             result = dest & source;
-                            _bus.SaveData(word_size, offset, result);
+                            if (!test_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -1232,13 +1238,13 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField8(rm);
                                 result = dest & source;
-                                SaveRegField8(rm, (byte)result);
+                                if (!test_only) SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
                                 dest = GetRegField16(rm);
                                 result = dest & source;
-                                SaveRegField16(rm, (UInt16)result);
+                                if (!test_only) SaveRegField16(rm, (UInt16)result);
                             }
                             break;
                         }
