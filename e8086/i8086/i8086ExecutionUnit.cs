@@ -103,6 +103,8 @@ namespace KDS.e8086
             else
             {
                 _opTable[_currentOP].opAction();
+
+                // after executing the instruction reset the override and base pointer flags
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
                 _bus.UsingBasePointer = false;
             }
@@ -207,7 +209,22 @@ namespace KDS.e8086
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
             // 60-6F NOT USED
-            // 70-7f jump instructions
+            _opTable[0x70] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x71] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x72] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x73] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x74] = new OpCodeRecord(Execute_JUMP);  
+            _opTable[0x75] = new OpCodeRecord(Execute_JUMP);  
+            _opTable[0x76] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x77] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x78] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x79] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7a] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7b] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7c] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7d] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7e] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x7f] = new OpCodeRecord(Execute_JUMP);
             _opTable[0x80] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
@@ -275,12 +292,18 @@ namespace KDS.e8086
             // C0-C1 NOT USED
             //_opTable[0xc2] ret imm-16
             //_opTable[0xc3] ret
-            //_opTable[0xc4] les reg-16, mem-16
-            //_opTable[0xc5] lds reg-16, mem-16
+            _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
+            _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
             // C8-C9 NOT USED
-            // CA-D5
+            // _opTable[0xca] RET imm-16
+            // _opTable[0xcb] RET
+            // _opTable[0xcc] INT 3
+            // _opTable[0xcd] INT imm-8
+            // _opTable[0xce] INTO
+            // _opTable[0xcf] IRET
+            // D0-D5
             // D6 NOT USED
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
             // D8-F0
@@ -405,7 +428,9 @@ namespace KDS.e8086
             _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
         }
 
-        private void Execute_LDS()
+        #region Address object instructions
+
+        private void Execute_LDS_LES()
         {
             // Transfer a 32 bit pointer variable from the source operand (which must be memory)
             // to the destination operand and DS.
@@ -415,7 +440,40 @@ namespace KDS.e8086
             /*
                 0xc4 LES reg-16, mem-16
                 0xc5 LDS reg-16, mem-16
+                     OP MODREGR/M (DISP-LO) (DISP-HI)
             */
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int offset = 0;
+
+            AssertMOD(mod);
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        offset = _bus.GetData16(GetRMTable1(rm));
+                        break;
+                    }
+                case 0x01:
+                case 0x02:   // difference is processed in the GetRMTable2 function
+                    {
+                        offset = _bus.GetData16(GetRMTable2(mod, rm));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", _currentOP));
+                    }
+            }
+
+            SaveRegField16(reg, _bus.GetData16(offset));
+
+            if (_currentOP == 0xc4)
+                _bus.ES = _bus.GetData16(offset + 2);
+            else
+                _bus.DS = _bus.GetData16(offset + 2);
         }
 
         private void Execute_LEA()
@@ -433,6 +491,8 @@ namespace KDS.e8086
             int source = _bus.GetData(word_size, offset);
             SaveToDestination(source, direction, word_size, mod, reg, rm);
         }
+
+        #endregion
 
         private void Execute_PUSH()
         {
@@ -484,6 +544,106 @@ namespace KDS.e8086
                 }
             }
         }
+
+        #region CALL/RET/JMP transfers
+
+        private void Execute_JUMP()
+        {
+            // JMP does not save anything to the stack and no return is expected.
+            // Intrasegment JMP changes IP by adding the relative displacement from the instruction.
+
+            // JMP IP-INC8  8 bit signed increment to the instruction pointer
+            bool jumping = false;
+            switch (_currentOP)
+            {
+                case 0x70:
+                    {
+                        jumping = _creg.OverflowFlag;
+                        break;
+                    }
+                case 0x71:
+                    {
+                        jumping = !_creg.OverflowFlag;
+                        break;
+                    }
+                case 0x72:
+                    {
+                        jumping = _creg.CarryFlag;
+                        break;
+                    }
+                case 0x73:
+                    {
+                        jumping = !_creg.CarryFlag;
+                        break;
+                    }
+                case 0x74:
+                    {
+                        jumping = _creg.ZeroFlag;
+                        break;
+                    }
+                case 0x75:
+                    {
+                        jumping = !_creg.ZeroFlag;
+                        break;
+                    }
+                case 0x76:
+                    {
+                        jumping = (_creg.CarryFlag | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x77:
+                    {
+                        jumping = !(_creg.CarryFlag | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x78:
+                    {
+                        jumping = _creg.SignFlag;
+                        break;
+                    }
+                case 0x79:
+                    {
+                        jumping = !_creg.SignFlag;
+                        break;
+                    }
+                case 0x7a:
+                    {
+                        jumping = _creg.ParityFlag;
+                        break;
+                    }
+                case 0x7b:
+                    {
+                        jumping = !_creg.ParityFlag;
+                        break;
+                    }
+                case 0x7c:
+                    {
+                        jumping = (_creg.SignFlag ^ _creg.OverflowFlag);
+                        break;
+                    }
+                case 0x7d:
+                    {
+                        jumping = !(_creg.SignFlag ^ _creg.OverflowFlag);
+                        break;
+                    }
+                case 0x7e:
+                    {
+                        jumping = ((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x7f:
+                    {
+                        jumping = !((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        break;
+                    }
+            }
+            if (jumping)
+            {
+                _bus.IP += _bus.NextIP();
+            }
+        }
+
+        #endregion
 
         #region ADD and ADC instructions
 
