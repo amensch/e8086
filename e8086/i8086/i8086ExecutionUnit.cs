@@ -255,8 +255,8 @@ namespace KDS.e8086
             //_opTable[0x9b] wait
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-            //_opTable[0x9e] sahf
-            //_opTable[0x9f] lahf
+            _opTable[0x9e] = new OpCodeRecord(Execute_LAHF);
+            _opTable[0x9f] = new OpCodeRecord(Execute_SAHF);
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -441,7 +441,7 @@ namespace KDS.e8086
                 _reg.AH = 0x00;
             }
         }
-        public void Execute_CWD()
+        private void Execute_CWD()
         {
             if( (_reg.AX & 0x8000) == 0x8000 )
             {
@@ -451,6 +451,15 @@ namespace KDS.e8086
             {
                 _reg.DX = 0;
             }
+        }
+        private void Execute_LAHF()
+        {
+            _reg.AH = (byte)(_creg.Register & 0x00ff);
+        }
+        private void Execute_SAHF()
+        {
+            _creg.Register = (UInt16)(_creg.Register & 0xff00);
+            _creg.Register = (UInt16)(_creg.Register | _reg.AH);
         }
 
         #region BCD adjustment instructions
