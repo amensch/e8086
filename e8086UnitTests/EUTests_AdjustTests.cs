@@ -120,5 +120,26 @@ namespace e8086UnitTests
             Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "AAM zero flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "AAM parity flag failed");
         }
+
+        [TestMethod]
+        public void Test_CBW()
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0x98 });
+
+            cpu.EU.Registers.AX = 0x00fb;
+            cpu.NextInstruction();
+            Assert.AreEqual(0xfffb, cpu.EU.Registers.AX, "CBW result failed");
+        }
+
+        [TestMethod]
+        public void Test_CWD()
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0x99 });
+
+            cpu.EU.Registers.AX = 0xfffb;
+            cpu.NextInstruction();
+            Assert.AreEqual(0xfffb, cpu.EU.Registers.AX, "CWD result failed");
+            Assert.AreEqual(0Xffff, cpu.EU.Registers.DX, "CWD result failed");
+        }
     }
 }

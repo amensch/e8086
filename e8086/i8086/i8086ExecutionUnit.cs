@@ -249,8 +249,8 @@ namespace KDS.e8086
             _opTable[0x95] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
-            //_opTable[0x98] cbw
-            //_opTable[0x99] cwd
+            _opTable[0x98] = new OpCodeRecord(Execute_CBW);
+            _opTable[0x99] = new OpCodeRecord(Execute_CWD);
             //_opTable[0x9a] call far_proc  (CALL ADDR DISP-LO DISP-HI SEG-LO SEG-HI)
             //_opTable[0x9b] wait
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
@@ -428,6 +428,29 @@ namespace KDS.e8086
             // Store into AL the value located at a 256 byte lookup table
             // BX is the beginning of the table and AL is the offset
             _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
+        }
+
+        private void Execute_CBW()
+        {
+            if( (_reg.AL & 0x80) == 0x80 )
+            {
+                _reg.AH = 0xff;
+            }
+            else
+            {
+                _reg.AH = 0x00;
+            }
+        }
+        public void Execute_CWD()
+        {
+            if( (_reg.AX & 0x8000) == 0x8000 )
+            {
+                _reg.DX = 0xffff;
+            }
+            else
+            {
+                _reg.DX = 0;
+            }
         }
 
         #region BCD adjustment instructions
