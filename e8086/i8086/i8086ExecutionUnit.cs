@@ -263,8 +263,8 @@ namespace KDS.e8086
             _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa4] = new OpCodeRecord(Execute_MoveString);
             _opTable[0xa5] = new OpCodeRecord(Execute_MoveString);
-            //_opTable[0xa6] cmps (1 byte) dest-str8, src-str8
-            //_opTable[0xa7] cmps (1 byte) dest-str16, src-str16
+            _opTable[0xa6] = new OpCodeRecord(Execute_CompareString);
+            _opTable[0xa7] = new OpCodeRecord(Execute_CompareString);
             //_opTable[0xa8] test al,imm-8
             //_opTable[0xa9] test al,imm-16
             //_opTable[0xaa] stos dest-str8
@@ -493,6 +493,55 @@ namespace KDS.e8086
                     _reg.DI += 2;
                 }
             }
+        }
+
+        private void Execute_CompareString()
+        {
+            int word_size = Util.GetWordSize(_currentOP);
+            int result = 0;
+            int source = 0;
+            int dest = 0;
+
+            // NOTE: the concept of "source" and "dest" for subtraction here is flipped.
+
+            if (word_size == 0)
+            {
+                dest = _bus.GetSourceString8(_reg.SI);
+                source = _bus.GetDestString8(_reg.DI);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.SI--;
+                    _reg.DI--;
+                }
+                else
+                {
+                    _reg.SI++;
+                    _reg.DI++;
+                }
+            }
+            else
+            {
+                dest = _bus.GetSourceString16(_reg.SI);
+                source = _bus.GetDestString16(_reg.DI);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.SI -= 2;
+                    _reg.DI -= 2;
+                }
+                else
+                {
+                    _reg.SI += 2;
+                    _reg.DI += 2;
+                }
+            }
+
+            result = dest - source;
+            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+            _creg.CalcCarryFlag(word_size, result);
         }
 
         #region BCD adjustment instructions

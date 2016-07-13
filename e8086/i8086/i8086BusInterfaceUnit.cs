@@ -167,6 +167,28 @@ namespace KDS.e8086
             Util.SplitValue16(src_data, ref _ram[dst_addr + 1], ref _ram[dst_addr]);
         }
 
+        public byte GetSourceString8(int offset)
+        {
+            return _ram[(DS << 4) + offset];
+        }
+
+        public UInt16 GetSourceString16(int offset)
+        {
+            int addr = (DS << 4) + offset;
+            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
+        public byte GetDestString8(int offset)
+        {
+            return _ram[(ES << 4) + offset];
+        }
+
+        public UInt16 GetDestString16(int offset)
+        {
+            int addr = (ES << 4) + offset;
+            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
         public UInt16 PopStack(int offset)
         {
             int addr = (SS << 4) + offset;
