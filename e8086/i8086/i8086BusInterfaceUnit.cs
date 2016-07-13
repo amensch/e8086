@@ -151,6 +151,22 @@ namespace KDS.e8086
             Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
         }
 
+        // move string instruction
+        public void MoveString8(int src_offset, int dst_offset)
+        {
+            int src_addr = (DS << 4) + src_offset;
+            int dst_addr = (ES << 4) + dst_offset;
+            _ram[dst_addr] = _ram[src_addr];
+        }
+
+        public void MoveString16(int src_offset, int dst_offset)
+        {
+            int src_addr = (DS << 4) + src_offset;
+            int dst_addr = (ES << 4) + dst_offset;
+            UInt16 src_data = Util.GetValue16(_ram[src_addr + 1], _ram[src_addr]);
+            Util.SplitValue16(src_data, ref _ram[dst_addr + 1], ref _ram[dst_addr]);
+        }
+
         public UInt16 PopStack(int offset)
         {
             int addr = (SS << 4) + offset;

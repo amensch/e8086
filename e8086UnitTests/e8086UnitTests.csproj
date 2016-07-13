@@ -59,6 +59,7 @@
     <Compile Include="EUTests_INCDECXCHG.cs" />
     <Compile Include="EUTests_MOV.cs" />
     <Compile Include="EUTests_SBB.cs" />
+    <Compile Include="EUTests_StringTests.cs" />
     <Compile Include="EUTests_SUB.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EUTests_AdjustTests.cs" />

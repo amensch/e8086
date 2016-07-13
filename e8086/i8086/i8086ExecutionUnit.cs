@@ -261,8 +261,8 @@ namespace KDS.e8086
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
-            //_opTable[0xa4] movs (1 byte) dest-str8, src-str8
-            //_opTable[0xa5] movs (1 byte) dest-str16, src-str16
+            _opTable[0xa4] = new OpCodeRecord(Execute_MoveString);
+            _opTable[0xa5] = new OpCodeRecord(Execute_MoveString);
             //_opTable[0xa6] cmps (1 byte) dest-str8, src-str8
             //_opTable[0xa7] cmps (1 byte) dest-str16, src-str16
             //_opTable[0xa8] test al,imm-8
@@ -460,6 +460,39 @@ namespace KDS.e8086
         {
             _creg.Register = (UInt16)(_creg.Register & 0xff00);
             _creg.Register = (UInt16)(_creg.Register | _reg.AH);
+        }
+
+        private void Execute_MoveString()
+        {
+            int word_size = Util.GetWordSize(_currentOP);
+            if( word_size == 0)
+            {
+                _bus.MoveString8(_reg.SI, _reg.DI);
+                if(_creg.DirectionFlag)
+                {
+                    _reg.SI--;
+                    _reg.DI--;
+                }
+                else
+                {
+                    _reg.SI++;
+                    _reg.DI++;
+                }
+            }
+            else
+            {
+                _bus.MoveString16(_reg.SI, _reg.DI);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.SI -= 2;
+                    _reg.DI -= 2;
+                }
+                else
+                {
+                    _reg.SI += 2;
+                    _reg.DI += 2;
+                }
+            }
         }
 
         #region BCD adjustment instructions
