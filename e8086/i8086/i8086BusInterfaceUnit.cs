@@ -81,7 +81,7 @@ namespace KDS.e8086
         }
 
         // returns the next six bytes pointed to by the program counter
-        // this is for on the fly disassembly and debugging
+        // the intended use is for on the fly disassembly
         public byte[] GetNext6Bytes()
         {
             int pc = Util.ConvertLogicalToPhysical(CS, IP);
@@ -90,6 +90,8 @@ namespace KDS.e8086
             Array.Copy(_ram, pc, next, 0, 6);
             return next;
         }
+
+        #region Get and Save data with segment calculation
 
         public int GetData(int word_size, int offset)
         {
@@ -151,6 +153,9 @@ namespace KDS.e8086
             Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
         }
 
+        #endregion
+
+        #region Retrieve and Copy Strings
         // move string instruction
         public void MoveString8(int src_offset, int dst_offset)
         {
@@ -189,6 +194,9 @@ namespace KDS.e8086
             return Util.GetValue16(_ram[addr + 1], _ram[addr]);
         }
 
+        #endregion
+
+        #region Push and Pop
         public UInt16 PopStack(int offset)
         {
             int addr = (SS << 4) + offset;
@@ -208,6 +216,8 @@ namespace KDS.e8086
             }
             Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
         }
+
+        #endregion
 
         private UInt16 GetDataSegment()
         {
