@@ -151,7 +151,7 @@ namespace KDS.e8086
             _opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x26]  segment override is processed in the NextInstruction() method
-            //_opTable[0x27] daa
+            _opTable[0x27] = new OpCodeRecord(Execute_DecimalAdjustADD);
             _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
@@ -159,7 +159,7 @@ namespace KDS.e8086
             _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x2e]  segment override is processed in the NextInstruction() method
-            //_opTable[0x2f] das
+            _opTable[0x2f] = new OpCodeRecord(Execute_DecimalAdjustSUB);
             _opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
             _opTable[0x31] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x32] = new OpCodeRecord(ExecuteLogical_General);
@@ -167,7 +167,7 @@ namespace KDS.e8086
             _opTable[0x34] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x36]  segment override is processed in the NextInstruction() method
-            //_opTable[0x37] aaa
+            _opTable[0x37] = new OpCodeRecord(Execute_AsciiAdjustADD);
             _opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
             _opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
             _opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
@@ -175,7 +175,7 @@ namespace KDS.e8086
             _opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
             _opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3e]  segment override is processed in the NextInstruction() method
-            //_opTable[0x3f] aas
+            _opTable[0x3f] = new OpCodeRecord(Execute_AsciiAdjustSUB);
             _opTable[0x40] = new OpCodeRecord(ExecuteINC);
             _opTable[0x41] = new OpCodeRecord(ExecuteINC);
             _opTable[0x42] = new OpCodeRecord(ExecuteINC);
@@ -304,6 +304,8 @@ namespace KDS.e8086
             // _opTable[0xce] INTO
             // _opTable[0xcf] IRET
             // D0-D5
+            _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
+            _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // D6 NOT USED
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
             // D8-F0
@@ -428,6 +430,125 @@ namespace KDS.e8086
             _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
         }
 
+        #region BCD adjustment instructions
+        private void Execute_DecimalAdjustADD()
+        {
+            byte old_al = _reg.AL;
+            bool old_cf = _creg.CarryFlag;
+
+            if( ( _reg.AL & 0x0f ) > 9 || _creg.AuxCarryFlag )
+            {
+                _creg.CalcCarryFlag(0, _reg.AL+6);
+                _creg.CarryFlag = old_cf | _creg.CarryFlag;
+                _creg.AuxCarryFlag = true;
+
+                _reg.AL += 6;
+            }
+            else
+            {
+                _creg.AuxCarryFlag = false;
+            }
+
+            if ((old_al > 0x99) | old_cf)
+            {
+                _reg.AL += 0x60;
+                _creg.CarryFlag = true;
+            }
+            else
+            {
+                _creg.CarryFlag = false;
+            }
+
+            _creg.CalcSignFlag(0, _reg.AL);
+            _creg.CalcZeroFlag(0, _reg.AL);
+            _creg.CalcParityFlag(_reg.AL);
+        }
+        private void Execute_DecimalAdjustSUB()
+        {
+            byte old_al = _reg.AL;
+            bool old_cf = _creg.CarryFlag;
+
+            if ((_reg.AL & 0x0f) > 9 || _creg.AuxCarryFlag)
+            {
+                _creg.CalcCarryFlag(0, _reg.AL - 6);
+                _creg.CarryFlag = old_cf | _creg.CarryFlag;
+                _creg.AuxCarryFlag = true;
+
+                _reg.AL -= 6;
+            }
+            else
+            {
+                _creg.AuxCarryFlag = false;
+            }
+
+            if ((old_al > 0x99) | old_cf)
+            {
+                _reg.AL -= 0x60;
+                _creg.CarryFlag = true;
+            }
+            else
+            {
+                _creg.CarryFlag = false;
+            }
+
+            _creg.CalcSignFlag(0, _reg.AL);
+            _creg.CalcZeroFlag(0, _reg.AL);
+            _creg.CalcParityFlag(_reg.AL);
+        }
+        private void Execute_AsciiAdjustADD()
+        {
+            if ((_reg.AL > 9) | _creg.AuxCarryFlag)
+            {
+                _reg.AL += 6;
+                _reg.AH += 1;
+                _creg.AuxCarryFlag = true;
+                _creg.CarryFlag = true;
+            }
+            else
+            {
+                _creg.AuxCarryFlag = false;
+                _creg.CarryFlag = false;
+            }
+
+            // clear high nibble of AL
+            _reg.AL = (byte)(_reg.AL & 0x0f);
+        }
+        private void Execute_AsciiAdjustSUB()
+        {
+            if ((_reg.AL > 9) | _creg.AuxCarryFlag)
+            {
+                _reg.AL -= 6;
+                _reg.AH -= 1;
+                _creg.AuxCarryFlag = true;
+                _creg.CarryFlag = true;
+            }
+            else
+            {
+                _creg.AuxCarryFlag = false;
+                _creg.CarryFlag = false;
+            }
+
+            // clear high nibble of AL
+            _reg.AL = (byte)(_reg.AL & 0x0f);
+        }
+        private void Execute_AsciiAdjustMUL()
+        {
+            _reg.AH = (byte)(_reg.AL / 10);
+            _reg.AL = (byte)(_reg.AL % 10);
+            _creg.CalcParityFlag(_reg.AX);
+            _creg.CalcSignFlag(1, _reg.AX);
+            _creg.CalcZeroFlag(1, _reg.AX);
+        }
+        private void Execute_AsciiAdjustDIV()
+        {
+            _reg.AL += (byte)(_reg.AH * 10);
+            _reg.AH = 0;
+            _creg.CalcParityFlag(_reg.AX);
+            _creg.CalcSignFlag(1, _reg.AX);
+            _creg.CalcZeroFlag(1, _reg.AX);
+        }
+        #endregion
+
         #region Address object instructions
 
         private void Execute_LDS_LES()
@@ -494,6 +615,7 @@ namespace KDS.e8086
 
         #endregion
 
+        #region PUSH and POP
         private void Execute_PUSH()
         {
             if (_currentOP == 0x9c) // PUSHF (no address byte)
@@ -544,6 +666,7 @@ namespace KDS.e8086
                 }
             }
         }
+        #endregion
 
         #region CALL/RET/JMP transfers
 

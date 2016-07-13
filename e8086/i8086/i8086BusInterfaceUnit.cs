@@ -80,6 +80,17 @@ namespace KDS.e8086
             return mem;
         }
 
+        // returns the next six bytes pointed to by the program counter
+        // this is for on the fly disassembly and debugging
+        public byte[] GetNext6Bytes()
+        {
+            int pc = Util.ConvertLogicalToPhysical(CS, IP);
+            byte[] next = new byte[6];
+
+            Array.Copy(_ram, pc, next, 0, 6);
+            return next;
+        }
+
         public int GetData(int word_size, int offset)
         {
             if (word_size == 0)

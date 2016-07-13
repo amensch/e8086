@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace KDS.e8086
 {
@@ -23,6 +24,12 @@ namespace KDS.e8086
         public void NextInstruction()
         {
             _eu.NextInstruction();
+        }
+
+        public void NextInstruction(out string dasm)
+        {
+            Disassemble8086.DisassembleNext(_eu.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            NextInstruction();
         }
 
         public i8086ExecutionUnit EU
