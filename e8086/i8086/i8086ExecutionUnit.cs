@@ -271,8 +271,8 @@ namespace KDS.e8086
             _opTable[0xab] = new OpCodeRecord(Execute_StoreString);
             _opTable[0xac] = new OpCodeRecord(Execute_LoadString);
             _opTable[0xad] = new OpCodeRecord(Execute_LoadString);
-            //_opTable[0xae] scas dest-str8
-            //_opTable[0xaf] scas dest-str16
+            _opTable[0xae] = new OpCodeRecord(Execute_ScanString);
+            _opTable[0xaf] = new OpCodeRecord(Execute_ScanString);
             _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
             _opTable[0xb2] = new OpCodeRecord(ExecuteMOV_Imm8);
@@ -304,6 +304,10 @@ namespace KDS.e8086
             // _opTable[0xce] INTO
             // _opTable[0xcf] IRET
             // D0-D5
+            _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
+            _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
+            _opTable[0xd2] = new OpCodeRecord(Execute_RotateAndShift);
+            _opTable[0xd3] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // D6 NOT USED
@@ -421,7 +425,83 @@ namespace KDS.e8086
             }
 
         }
-        
+
+        private void Execute_RotateAndShift()
+        {
+            /*
+                D0:  <op> reg/mem-8, 1
+                D1:  <op> reg/mem-16, 1
+                D2:  <op> reg/mem-8, CL
+                D3:  <op> reg/mem-16, CL
+
+                REG 000: ROL - rotate left
+                REG 001: ROR - rotate right 
+                REG 002: RCL - rotate through carry left  (CF is low order bit)
+                REG 003: RCR - rotate through carry right (CF is low order bit)
+                REG 004: SAL/SHL - shift left (zero padded) (OF is cleared if sign bit is unchanged)
+                REG 005: SHR - shift right (zero padded) (OF is cleared if sign bit is unchanged)
+                REG 006: NOT USED
+                REG 007: SAR - shift arithmetic right
+
+                Shifts affect PF, SF, ZF.  CF is the last bit shifted out.
+                    OF is defined only for a single bit shift.
+
+                Rotate affects CF and OF only.
+
+            */
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int word_size = Util.GetWordSize(_currentOP);
+            int operand2 = 1;
+            if (_currentOP == 0xd2 || _currentOP == 0xd3)
+                operand2 = _reg.CL;
+
+            switch(reg)
+            {
+                case 0x00:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, false, false);
+                        break;
+                    }
+                case 0x01:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, false, false);
+                        break;
+                    }
+                case 0x02:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, true, false);
+                        break;
+                    }
+                case 0x03:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, true, false, false);
+                        break;
+                    }
+                case 0x04:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, false, true);
+                        break;
+                    }
+                case 0x05:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, false, true);
+                        break;
+                    }
+                case 0x07:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, true, true);
+                        break;
+                    }
+            }
+
+
+
+
+        }
+
         private void Execute_XLAT()
         {
             // one byte instruction (0xd7)
@@ -529,6 +609,48 @@ namespace KDS.e8086
                 else
                 {
                     _reg.SI += 2;
+                    _reg.DI += 2;
+                }
+            }
+
+            result = dest - source;
+            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcSignFlag(word_size, result);
+            _creg.CalcZeroFlag(word_size, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+            _creg.CalcCarryFlag(word_size, result);
+        }
+        private void Execute_ScanString()
+        {
+            int word_size = Util.GetWordSize(_currentOP);
+            int result = 0;
+            int source = 0;
+            int dest = 0;
+
+            if (word_size == 0)
+            {
+                dest = _bus.GetDestString8(_reg.DI);
+                source = _reg.AL;
+                if (_creg.DirectionFlag)
+                {
+                    _reg.DI--;
+                }
+                else
+                {
+                    _reg.DI++;
+                }
+            }
+            else
+            {
+                dest = _bus.GetDestString16(_reg.DI);
+                source = _reg.AX;
+                if (_creg.DirectionFlag)
+                {
+                    _reg.DI -= 2;
+                }
+                else
+                {
                     _reg.DI += 2;
                 }
             }
@@ -954,7 +1076,8 @@ namespace KDS.e8086
             int word_size = Util.GetWordSize(_currentOP);
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int result = ADD_Destination(source, direction, word_size, mod, reg, rm, with_carry);
+
+            ADD_Destination(source, direction, word_size, mod, reg, rm, with_carry);
         }
 
         private void ExecuteADD_Immediate()
@@ -976,7 +1099,7 @@ namespace KDS.e8086
                 source = GetImmediate16();
 
             // Set flags so the result gets stored in the proper accumulator (AL or AX)
-            int result = ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
+            ADD_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry);
         }
 
         #endregion
@@ -1000,7 +1123,7 @@ namespace KDS.e8086
             int word_size = Util.GetWordSize(_currentOP);
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int result = SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry, comp_only);
+            SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry, comp_only);
         }
 
         private void ExecuteSUB_Immediate()
@@ -1021,7 +1144,7 @@ namespace KDS.e8086
                 source = GetImmediate16();
 
             // Set flags so the result gets stored in the proper accumulator (AL or AX)
-            int result = SUB_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry, comp_only);
+            SUB_Destination(source, direction, word_size, 0x03, 0x00, 0x00, with_carry, comp_only);
         }
 
         #endregion
@@ -1041,29 +1164,28 @@ namespace KDS.e8086
             int word_size = Util.GetWordSize(_currentOP);
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int result;
 
             // test op code to determine the operator
             switch( (byte)(_currentOP >> 4))
             {
                 case 0x00: // OR
                     {
-                        result = OR_Destination(source, direction, word_size, mod, reg, rm);
+                        OR_Destination(source, direction, word_size, mod, reg, rm);
                         break;
                     }
                 case 0x20: // AND
                     {
-                        result = AND_Destination(source, direction, word_size, mod, reg, rm, false);
+                        AND_Destination(source, direction, word_size, mod, reg, rm, false);
                         break;
                     }
                 case 0x30: // XOR
                     {
-                        result = XOR_Destination(source, direction, word_size, mod, reg, rm);
+                        XOR_Destination(source, direction, word_size, mod, reg, rm);
                         break;
                     }
                 case 0x80: // TEST
                     {
-                        result = AND_Destination(source, direction, word_size, mod, reg, rm, true);
+                        AND_Destination(source, direction, word_size, mod, reg, rm, true);
                         break;
                     }
             }
@@ -1086,29 +1208,27 @@ namespace KDS.e8086
             else
                 source = GetImmediate16();
 
-            int result;
-
             // test op code to determine the operator
             switch ((byte)(_currentOP >> 4))
             {
                 case 0x00: // OR
                     {
-                        result = OR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        OR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
                         break;
                     }
                 case 0x20: // AND
                     {
-                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, false);
+                        AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, false);
                         break;
                     }
                 case 0x30: // XOR
                     {
-                        result = XOR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        XOR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
                         break;
                     }
                 case 0xa0: // TEST
                     {
-                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, true);
+                        AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, true);
                         break;
                     }
             }
@@ -1606,8 +1726,7 @@ namespace KDS.e8086
 
         #region Operation Functions
 
-        // returns the result
-        private int ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
+        private void ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1685,11 +1804,9 @@ namespace KDS.e8086
             _creg.CalcAuxCarryFlag(source, dest);
             _creg.CalcParityFlag(result);
             _creg.CalcCarryFlag(word_size, result);
-            return result;
         }
 
-        // returns the result
-        private int SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry, bool comp_only)
+        private void SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry, bool comp_only)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1766,11 +1883,9 @@ namespace KDS.e8086
             _creg.CalcAuxCarryFlag(source, dest);
             _creg.CalcParityFlag(result);
             _creg.CalcCarryFlag(word_size, result);
-            return result;
         }
 
-        // returns the result
-        private int AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool test_only)
+        private void AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool test_only)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1840,11 +1955,9 @@ namespace KDS.e8086
             _creg.CalcSignFlag(word_size, result);
             _creg.CalcZeroFlag(word_size, result);
             _creg.CalcParityFlag(result);
-            return result;
         }
 
-        // returns the result
-        private int OR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        private void OR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1914,11 +2027,9 @@ namespace KDS.e8086
             _creg.CalcSignFlag(word_size, result);
             _creg.CalcZeroFlag(word_size, result);
             _creg.CalcParityFlag(result);
-            return result;
         }
 
-        // returns the result
-        private int XOR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
+        private void XOR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
         {
             AssertMOD(mod);
             int result = 0;
@@ -1988,7 +2099,293 @@ namespace KDS.e8086
             _creg.CalcSignFlag(word_size, result);
             _creg.CalcZeroFlag(word_size, result);
             _creg.CalcParityFlag(result);
-            return result;
+        }
+
+        private void RotateLeft(int word_size, int source, byte mod, byte rm, bool through_carry, bool shift_only)
+        {
+            if (word_size == 0)
+                RotateLeft8(source, mod, rm, through_carry, shift_only);
+            else
+                RotateLeft16(source, mod, rm, through_carry, shift_only);
+        }
+
+        private void RotateRight(int word_size, int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
+        {
+            if (word_size == 0)
+                RotateRight8(source, mod, rm, through_carry, shift_only, arithmetic_shift);
+            else
+                RotateRight16(source, mod, rm, through_carry, shift_only, arithmetic_shift);
+        }
+
+        private void RotateLeft8(int source, byte mod, byte rm, bool through_carry, bool shift_only)
+        {
+            AssertMOD(mod);
+            int original = 0;
+            int result = 0;
+            bool old_CF;
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        original = _bus.GetData8(GetRMTable1(rm));
+                        break;
+                    }
+                case 0x01:
+                case 0x02:  // difference is processed in the GetRMTable2 function
+                    {
+                        original = _bus.GetData8(GetRMTable2(mod, rm));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        original = GetRegField8(rm);
+                        break;
+                    }
+            }
+
+            // preserve the original value
+            result = original;
+
+            // perform the rotation or shift
+            for (int ii = 1; ii <= source; ii++)
+            {
+                // if through carry, then original CF value becomes low bit
+                old_CF = _creg.CarryFlag;
+
+                // carry bit equal to high bit
+                _creg.CarryFlag = ((result & 0x80) == 0x80);
+
+                // shift left
+                result = (byte)((result << 1) & 0xff);
+
+                if (!shift_only)
+                {
+                    // if through carry, the original CF value becomes low bit
+                    // otherwise the original high bit (which is now the CF) becomes low bit
+                    if (through_carry)
+                    {
+                        if (old_CF)
+                            result = (byte)(result | 0x01);
+                    }
+                    else
+                    {
+                        if (_creg.CarryFlag)
+                            result = (byte)(result | 0x01);
+                    }
+                }
+            }
+
+            // overflow flag
+            _creg.CalcOverflowFlag(0, original, result);
+
+        }
+
+        private void RotateLeft16(int source, byte mod, byte rm, bool through_carry, bool shift_only)
+        {
+            AssertMOD(mod);
+            int original = 0;
+            int result = 0;
+            bool old_CF;
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        original = _bus.GetData16(GetRMTable1(rm));
+                        break;
+                    }
+                case 0x01:
+                case 0x02:  // difference is processed in the GetRMTable2 function
+                    {
+                        original = _bus.GetData16(GetRMTable2(mod, rm));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        original = GetRegField16(rm);
+                        break;
+                    }
+            }
+
+            // preserve the original value
+            result = original;
+
+            // perform the rotation
+            for (int ii = 1; ii <= source; ii++)
+            {
+                // if through carry, then original CF value becomes low bit
+                old_CF = _creg.CarryFlag;
+
+                // carry bit equal to high bit
+                _creg.CarryFlag = ((result & 0x8000) == 0x8000);
+
+                // shift left
+                result = (UInt16)(result << 1);
+
+                if (!shift_only)
+                {
+                    // if through carry, the original CF value becomes low bit
+                    // otherwise the original high bit (which is now the CF) becomes low bit
+                    if (through_carry)
+                    {
+                        if (old_CF)
+                            result = (UInt16)(result | 0x0001);
+                    }
+                    else
+                    {
+                        if (_creg.CarryFlag)
+                            result = (UInt16)(result | 0x0001);
+                    }
+                }
+            }
+
+            // overflow flag
+            _creg.CalcOverflowFlag(1, original, result);
+
+        }
+
+        private void RotateRight8(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
+        {
+            AssertMOD(mod);
+            int original = 0;
+            int result = 0;
+            bool old_CF;
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        original = _bus.GetData8(GetRMTable1(rm));
+                        break;
+                    }
+                case 0x01:
+                case 0x02:  // difference is processed in the GetRMTable2 function
+                    {
+                        original = _bus.GetData8(GetRMTable2(mod, rm));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        original = GetRegField8(rm);
+                        break;
+                    }
+            }
+
+            // preserve the original value
+            result = original;
+
+            // perform the rotation
+            for (int ii = 1; ii <= source; ii++)
+            {
+                // if through carry, then original CF value becomes low bit
+                old_CF = _creg.CarryFlag;
+
+                // carry bit equal to low bit
+                _creg.CarryFlag = ((result & 0x01) == 0x01);
+
+                // shift right
+                result = (byte)(result >> 1);
+
+                if (!shift_only)
+                {
+                    // if through carry, the original CF value becomes high bit
+                    // otherwise the original low bit (which is now the CF) becomes high bit
+                    if (through_carry)
+                    {
+                        if (old_CF)
+                            result = (byte)(result | 0x80);
+                    }
+                    else
+                    {
+                        if (_creg.CarryFlag)
+                            result = (byte)(result | 0x80);
+                    }
+                }
+
+                // if arithmetic shift then the sign bit retains its original value
+                // set SF, ZF, PF
+                if( arithmetic_shift )
+                {
+                    result = (byte)(result | (byte)(original & 0x80));
+                    _creg.CalcSignFlag(0, result);
+                    _creg.CalcZeroFlag(0, result);
+                    _creg.CalcParityFlag(result);
+                }
+            }
+
+            // overflow flag
+            _creg.CalcOverflowFlag(0, original, result);
+
+        }
+
+        private void RotateRight16(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
+        {
+            AssertMOD(mod);
+            int original = 0;
+            int result = 0;
+            bool old_CF;
+            switch (mod)
+            {
+                case 0x00:
+                    {
+                        original = _bus.GetData16(GetRMTable1(rm));
+                        break;
+                    }
+                case 0x01:
+                case 0x02:  // difference is processed in the GetRMTable2 function
+                    {
+                        original = _bus.GetData16(GetRMTable2(mod, rm));
+                        break;
+                    }
+                case 0x03:
+                    {
+                        original = GetRegField16(rm);
+                        break;
+                    }
+            }
+
+            // preserve the original value
+            result = original;
+
+            // perform the rotation
+            for (int ii = 1; ii <= source; ii++)
+            {
+                // if through carry, then original CF value becomes low bit
+                old_CF = _creg.CarryFlag;
+
+                // carry bit equal to low bit
+                _creg.CarryFlag = ((result & 0x0001) == 0x0001);
+
+                // shift right
+                result = (UInt16)(result >> 1);
+
+                if (!shift_only)
+                {
+                    // if through carry, the original CF value becomes high bit
+                    // otherwise the original low bit (which is now the CF) becomes high bit
+                    if (through_carry)
+                    {
+                        if (old_CF)
+                            result = (UInt16)(result | 0x8000);
+                    }
+                    else
+                    {
+                        if (_creg.CarryFlag)
+                            result = (UInt16)(result | 0x8000);
+                    }
+                }
+
+                // if arithmetic shift then the sign bit retains its original value
+                if (arithmetic_shift)
+                {
+                    result = (byte)(result | (byte)(original & 0x80));
+                    _creg.CalcSignFlag(1, result);
+                    _creg.CalcZeroFlag(1, result);
+                    _creg.CalcParityFlag(result);
+                }
+            }
+
+            // overflow flag
+            _creg.CalcOverflowFlag(1, original, result);
+
         }
 
         #endregion
