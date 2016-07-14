@@ -487,7 +487,7 @@ namespace KDS.e8086
                     }
                 case 0x05:
                     {
-                        RotateRight(word_size, operand2, mod, rm, false, false, true);
+                        RotateRight(word_size, operand2, mod, rm, false, true, false);
                         break;
                     }
                 case 0x07:
@@ -2123,17 +2123,20 @@ namespace KDS.e8086
             int original = 0;
             int result = 0;
             bool old_CF;
+            int offset = 0;
             switch (mod)
             {
                 case 0x00:
                     {
-                        original = _bus.GetData8(GetRMTable1(rm));
+                        offset = GetRMTable1(rm);
+                        original = _bus.GetData8(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
-                        original = _bus.GetData8(GetRMTable2(mod, rm));
+                        offset = GetRMTable2(mod, rm);
+                        original = _bus.GetData8(offset);
                         break;
                     }
                 case 0x03:
@@ -2175,6 +2178,9 @@ namespace KDS.e8086
                 }
             }
 
+            // save the result
+            SaveToDestination(result, 0, 0, mod, 0, rm);
+
             // overflow flag
             _creg.CalcOverflowFlag(0, original, result);
 
@@ -2185,18 +2191,21 @@ namespace KDS.e8086
             AssertMOD(mod);
             int original = 0;
             int result = 0;
+            int offset = 0;
             bool old_CF;
             switch (mod)
             {
                 case 0x00:
                     {
-                        original = _bus.GetData16(GetRMTable1(rm));
+                        offset = GetRMTable1(rm);
+                        original = _bus.GetData16(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
-                        original = _bus.GetData16(GetRMTable2(mod, rm));
+                        offset = GetRMTable2(mod, rm);
+                        original = _bus.GetData16(offset);
                         break;
                     }
                 case 0x03:
@@ -2238,6 +2247,9 @@ namespace KDS.e8086
                 }
             }
 
+            // save result
+            SaveToDestination(result, 0, 1, mod, 0, rm);
+
             // overflow flag
             _creg.CalcOverflowFlag(1, original, result);
 
@@ -2248,18 +2260,21 @@ namespace KDS.e8086
             AssertMOD(mod);
             int original = 0;
             int result = 0;
+            int offset = 0;
             bool old_CF;
             switch (mod)
             {
                 case 0x00:
                     {
-                        original = _bus.GetData8(GetRMTable1(rm));
+                        offset = GetRMTable1(rm);
+                        original = _bus.GetData8(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
-                        original = _bus.GetData8(GetRMTable2(mod, rm));
+                        offset = GetRMTable2(mod, rm);
+                        original = _bus.GetData8(offset) ;
                         break;
                     }
                 case 0x03:
@@ -2311,6 +2326,9 @@ namespace KDS.e8086
                 }
             }
 
+            // save the result
+            SaveToDestination(result, 0, 0, mod, 0, rm);
+
             // overflow flag
             _creg.CalcOverflowFlag(0, original, result);
 
@@ -2321,18 +2339,21 @@ namespace KDS.e8086
             AssertMOD(mod);
             int original = 0;
             int result = 0;
+            int offset = 0;
             bool old_CF;
             switch (mod)
             {
                 case 0x00:
                     {
-                        original = _bus.GetData16(GetRMTable1(rm));
+                        offset = GetRMTable1(rm);
+                        original = _bus.GetData16(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
-                        original = _bus.GetData16(GetRMTable2(mod, rm));
+                        offset = GetRMTable2(mod, rm);
+                        original = _bus.GetData16(offset);
                         break;
                     }
                 case 0x03:
@@ -2382,6 +2403,9 @@ namespace KDS.e8086
                     _creg.CalcParityFlag(result);
                 }
             }
+
+            // save the result
+            SaveToDestination(result, 0, 1, mod, 0, rm);
 
             // overflow flag
             _creg.CalcOverflowFlag(1, original, result);
