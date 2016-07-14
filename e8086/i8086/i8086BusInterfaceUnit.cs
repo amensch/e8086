@@ -157,16 +157,18 @@ namespace KDS.e8086
 
         #region Retrieve and Copy Strings
         // move string instruction
+        // the source string segment can be overridden
+        // the dest string segment is always ES
         public void MoveString8(int src_offset, int dst_offset)
         {
-            int src_addr = (DS << 4) + src_offset;
+            int src_addr = (GetDataSegment() << 4) + src_offset;
             int dst_addr = (ES << 4) + dst_offset;
             _ram[dst_addr] = _ram[src_addr];
         }
 
         public void MoveString16(int src_offset, int dst_offset)
         {
-            int src_addr = (DS << 4) + src_offset;
+            int src_addr = (GetDataSegment() << 4) + src_offset;
             int dst_addr = (ES << 4) + dst_offset;
             UInt16 src_data = Util.GetValue16(_ram[src_addr + 1], _ram[src_addr]);
             Util.SplitValue16(src_data, ref _ram[dst_addr + 1], ref _ram[dst_addr]);
@@ -174,12 +176,12 @@ namespace KDS.e8086
 
         public byte GetSourceString8(int offset)
         {
-            return _ram[(DS << 4) + offset];
+            return _ram[(GetDataSegment() << 4) + offset];
         }
 
         public UInt16 GetSourceString16(int offset)
         {
-            int addr = (DS << 4) + offset;
+            int addr = (GetDataSegment() << 4) + offset;
             return Util.GetValue16(_ram[addr + 1], _ram[addr]);
         }
 

@@ -265,8 +265,8 @@ namespace KDS.e8086
             _opTable[0xa5] = new OpCodeRecord(Execute_MoveString);
             _opTable[0xa6] = new OpCodeRecord(Execute_CompareString);
             _opTable[0xa7] = new OpCodeRecord(Execute_CompareString);
-            //_opTable[0xa8] test al,imm-8
-            //_opTable[0xa9] test al,imm-16
+            _opTable[0xa8] = new OpCodeRecord(ExecuteLogical_Immediate);
+            _opTable[0xa9] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0xaa] stos dest-str8
             //_opTable[0xab] stos dest-str16
             //_opTable[0xac] lods src-str8
@@ -1020,6 +1020,7 @@ namespace KDS.e8086
             //  OR: 0C-0D
             // AND: 24-25
             // XOR: 34-35
+            // TEST: A8-A9
 
             int direction = 0;
             int word_size = Util.GetWordSize(_currentOP);
@@ -1049,6 +1050,11 @@ namespace KDS.e8086
                 case 0x30: // XOR
                     {
                         result = XOR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
+                        break;
+                    }
+                case 0xa0: // TEST
+                    {
+                        result = AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, true);
                         break;
                     }
             }
