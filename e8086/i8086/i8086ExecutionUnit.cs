@@ -267,10 +267,10 @@ namespace KDS.e8086
             _opTable[0xa7] = new OpCodeRecord(Execute_CompareString);
             _opTable[0xa8] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0xa9] = new OpCodeRecord(ExecuteLogical_Immediate);
-            //_opTable[0xaa] stos dest-str8
-            //_opTable[0xab] stos dest-str16
-            //_opTable[0xac] lods src-str8
-            //_opTable[0xad] lods src-str16
+            _opTable[0xaa] = new OpCodeRecord(Execute_StoreString);
+            _opTable[0xab] = new OpCodeRecord(Execute_StoreString);
+            _opTable[0xac] = new OpCodeRecord(Execute_LoadString);
+            _opTable[0xad] = new OpCodeRecord(Execute_LoadString);
             //_opTable[0xae] scas dest-str8
             //_opTable[0xaf] scas dest-str16
             _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
@@ -452,6 +452,7 @@ namespace KDS.e8086
                 _reg.DX = 0;
             }
         }
+
         private void Execute_LAHF()
         {
             _reg.AH = (byte)(_creg.Register & 0x00ff);
@@ -494,19 +495,17 @@ namespace KDS.e8086
                 }
             }
         }
-
         private void Execute_CompareString()
         {
             int word_size = Util.GetWordSize(_currentOP);
             int result = 0;
             int source = 0;
-            int dest = 0;
+            int dest = _bus.GetData(word_size, _reg.SI); 
 
             // NOTE: the concept of "source" and "dest" for subtraction here is flipped.
 
             if (word_size == 0)
             {
-                dest = _bus.GetSourceString8(_reg.SI);
                 source = _bus.GetDestString8(_reg.DI);
                 if (_creg.DirectionFlag)
                 {
@@ -521,7 +520,6 @@ namespace KDS.e8086
             }
             else
             {
-                dest = _bus.GetSourceString16(_reg.SI);
                 source = _bus.GetDestString16(_reg.DI);
                 if (_creg.DirectionFlag)
                 {
@@ -542,6 +540,62 @@ namespace KDS.e8086
             _creg.CalcAuxCarryFlag(source, dest);
             _creg.CalcParityFlag(result);
             _creg.CalcCarryFlag(word_size, result);
+        }
+        private void Execute_StoreString()
+        {
+            int word_size = Util.GetWordSize(_currentOP);
+            if (word_size == 0)
+            {
+                _bus.StoreString8(_reg.DI, _reg.AL);   
+                if (_creg.DirectionFlag)
+                {
+                    _reg.DI--;
+                }
+                else
+                {
+                    _reg.DI++;
+                }
+            }
+            else
+            {
+                _bus.StoreString16(_reg.DI, _reg.AX);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.DI -= 2;
+                }
+                else
+                {
+                    _reg.DI += 2;
+                }
+            }
+        }
+        private void Execute_LoadString()
+        {
+            int word_size = Util.GetWordSize(_currentOP);
+            if (word_size == 0)
+            {
+                _reg.AL = _bus.GetData8(_reg.SI);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.SI--;
+                }
+                else
+                {
+                    _reg.SI++;
+                }
+            }
+            else
+            {
+                _reg.AX = _bus.GetData16(_reg.SI);
+                if (_creg.DirectionFlag)
+                {
+                    _reg.SI -= 2;
+                }
+                else
+                {
+                    _reg.SI += 2;
+                }
+            }
         }
 
         #region BCD adjustment instructions

@@ -70,7 +70,7 @@ namespace KDS.e8086
         {
             int pc = Util.ConvertLogicalToPhysical(CS, IP);
 
-            if( pc >= MAX_MEMORY )
+            if (pc >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} IP={1:X4}", CS, IP));
             }
@@ -161,28 +161,13 @@ namespace KDS.e8086
         // the dest string segment is always ES
         public void MoveString8(int src_offset, int dst_offset)
         {
-            int src_addr = (GetDataSegment() << 4) + src_offset;
-            int dst_addr = (ES << 4) + dst_offset;
-            _ram[dst_addr] = _ram[src_addr];
+            _ram[(ES << 4) + dst_offset] = GetData8(src_offset);
         }
 
         public void MoveString16(int src_offset, int dst_offset)
         {
-            int src_addr = (GetDataSegment() << 4) + src_offset;
             int dst_addr = (ES << 4) + dst_offset;
-            UInt16 src_data = Util.GetValue16(_ram[src_addr + 1], _ram[src_addr]);
-            Util.SplitValue16(src_data, ref _ram[dst_addr + 1], ref _ram[dst_addr]);
-        }
-
-        public byte GetSourceString8(int offset)
-        {
-            return _ram[(GetDataSegment() << 4) + offset];
-        }
-
-        public UInt16 GetSourceString16(int offset)
-        {
-            int addr = (GetDataSegment() << 4) + offset;
-            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+            Util.SplitValue16(GetData16(src_offset), ref _ram[dst_addr + 1], ref _ram[dst_addr]);
         }
 
         public byte GetDestString8(int offset)
@@ -194,6 +179,16 @@ namespace KDS.e8086
         {
             int addr = (ES << 4) + offset;
             return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+        }
+
+        public void StoreString8(int offset, byte data)
+        {
+            _ram[(ES << 4) + offset] = data;
+        }
+
+        public void StoreString16(int offset, UInt16 data)
+        {
+            int addr = (ES << 4) + offset;
         }
 
         #endregion
