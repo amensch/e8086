@@ -101,5 +101,49 @@ namespace e8086UnitTests
             Assert.AreEqual(0xa8a7, cpu.EU.Bus.GetData16(0x206), "MOVSW 4 result failed");
             Assert.AreEqual(0xaaa9, cpu.EU.Bus.GetData16(0x208), "MOVSW 5 result failed");
         }
+
+        [TestMethod]
+        public void Test_LODS()
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0xac, 0xad });
+
+            cpu.EU.Registers.SI = 0x200;
+            cpu.EU.Registers.AX = 0x0e00;
+            cpu.EU.Bus.SaveData8(cpu.EU.Registers.SI, 0xc7);
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0xc7, cpu.EU.Registers.AL, "LODSB 1 result failed");
+            Assert.AreEqual(0x201, cpu.EU.Registers.SI, "LODSB 2 result failed");
+
+            cpu.EU.Registers.SI = 0x300;
+            cpu.EU.Registers.AX = 0xffff;
+            cpu.EU.Bus.SaveData16(cpu.EU.Registers.SI, 0xa965);
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0xa965, cpu.EU.Registers.AX, "LODSW 2 result failed");
+            Assert.AreEqual(0x302, cpu.EU.Registers.SI, "LODSW 2 result failed");
+              
+        }
+
+        [TestMethod]
+        public void Test_SODS()
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0xaa, 0xab });
+
+            cpu.EU.Registers.DI = 0x200;
+            cpu.EU.Registers.AL = 0xf8;
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0xf8, cpu.EU.Bus.GetDestString8(0x200), "STOSB result failed");
+            Assert.AreEqual(0x201, cpu.EU.Registers.DI, "STOSB DI failed");
+
+            cpu.EU.Registers.DI = 0x300;
+            cpu.EU.Registers.AX = 0x12fe;
+
+            cpu.NextInstruction();
+            Assert.AreEqual(0x12fe, cpu.EU.Bus.GetDestString16(0x300), "STOSW result failed");
+            Assert.AreEqual(0x302, cpu.EU.Registers.DI, "STOSW DI failed");
+
+        }
     }
 }

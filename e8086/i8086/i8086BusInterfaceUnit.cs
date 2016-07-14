@@ -189,6 +189,7 @@ namespace KDS.e8086
         public void StoreString16(int offset, UInt16 data)
         {
             int addr = (ES << 4) + offset;
+            Util.SplitValue16(data, ref _ram[addr + 1], ref _ram[addr]);
         }
 
         #endregion
