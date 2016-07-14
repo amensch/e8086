@@ -56,6 +56,7 @@
     <Compile Include="DisassemblerUnitTests.cs" />
     <Compile Include="EUTests_ADC.cs" />
     <Compile Include="EUTests_ADD.cs" />
+    <Compile Include="EUTests_Group3.cs" />
     <Compile Include="EUTests_INCDECXCHG.cs" />
     <Compile Include="EUTests_MOV.cs" />
     <Compile Include="EUTests_RotateAndShift.cs" />

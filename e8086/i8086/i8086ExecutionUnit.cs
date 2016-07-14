@@ -209,22 +209,22 @@ namespace KDS.e8086
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
             // 60-6F NOT USED
-            _opTable[0x70] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x71] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x72] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x73] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x74] = new OpCodeRecord(Execute_JUMP);  
-            _opTable[0x75] = new OpCodeRecord(Execute_JUMP);  
-            _opTable[0x76] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x77] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x78] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x79] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7a] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7b] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7c] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7d] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7e] = new OpCodeRecord(Execute_JUMP);
-            _opTable[0x7f] = new OpCodeRecord(Execute_JUMP);
+            _opTable[0x70] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x71] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x72] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x73] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x74] = new OpCodeRecord(Execute_CondJump);  
+            _opTable[0x75] = new OpCodeRecord(Execute_CondJump);  
+            _opTable[0x76] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x77] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x78] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x79] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7a] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7b] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7c] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7d] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7e] = new OpCodeRecord(Execute_CondJump);
+            _opTable[0x7f] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x80] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
             _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
@@ -255,8 +255,8 @@ namespace KDS.e8086
             //_opTable[0x9b] wait
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-            _opTable[0x9e] = new OpCodeRecord(Execute_LAHF);
-            _opTable[0x9f] = new OpCodeRecord(Execute_SAHF);
+            _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); }); // LAHF - Load AH from flags
+            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });    // SAHF - Store SH to flags
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -303,7 +303,6 @@ namespace KDS.e8086
             // _opTable[0xcd] INT imm-8
             // _opTable[0xce] INTO
             // _opTable[0xcf] IRET
-            // D0-D5
             _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd2] = new OpCodeRecord(Execute_RotateAndShift);
@@ -312,9 +311,35 @@ namespace KDS.e8086
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // D6 NOT USED
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
-            // D8-F0
+            // D8-DF ESC OPCODE,SOURCE
+            // E0 LOOPNE
+            // E1 LOOPE
+            // E2 LOOP
+            _opTable[0xe3] = new OpCodeRecord(Execute_JumpCXZ);
+            // E4-E5 IN
+            // E6-E7 OUT
+            _opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
+            _opTable[0xe9] = new OpCodeRecord(Execute_JumpNear);
+            _opTable[0xea] = new OpCodeRecord(Execute_JumpFar);
+            _opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
+            // EC-ED IN
+            // EE-EF OUT
+            // F0 LOCK
             // F1 NOT USED
-            // F2-FF
+            // F2 REPNE
+            // F3 REP/E/Z
+            _opTable[0xf4] = new OpCodeRecord(() => { _bus.IP--; }); // F4 HLT
+            _opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
+            _opTable[0xf6] = new OpCodeRecord(Execute_Group3);
+            _opTable[0xf7] = new OpCodeRecord(Execute_Group3);
+            _opTable[0xf8] = new OpCodeRecord(() => { _creg.CarryFlag = false; });  // F8 CLC - clear carry flag
+            _opTable[0xf9] = new OpCodeRecord(() => { _creg.CarryFlag = true; });  // F9 STC - set carry flag
+            _opTable[0xfa] = new OpCodeRecord(() => { _creg.InterruptEnable = false; });  // FA CLI - clear interrupt flag
+            _opTable[0xfb] = new OpCodeRecord(() => { _creg.InterruptEnable = true; });  // FB STI - set interrupt flag
+            _opTable[0xfc] = new OpCodeRecord(() => { _creg.DirectionFlag = false; });  // FC CLD - clear direction flag
+            _opTable[0xfd] = new OpCodeRecord(() => { _creg.DirectionFlag = true; });  // FD STD - set direction flag
+            // FE GROUP
+            // FF GROUP
         }
 
         private void Execute_Op80_Op83()
@@ -426,6 +451,185 @@ namespace KDS.e8086
 
         }
 
+        private void Execute_Group3()
+        {
+            /*
+                REG 000: TEST R/M-8, IMM-8
+                REG 001: NOT USED
+                REG 002: NOT R/M-8
+                REG 003: NEG R/M-8
+                REG 004: MUL R/M-8
+                REG 005: IMUL R/M-8
+                REG 006: DIV R/M-8
+                REG 007: IDIV R/M-8
+            */
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int word_size = Util.GetWordSize(_currentOP);
+            int direction = Util.GetDirection(_currentOP);
+
+            int source = GetSourceData(direction, word_size, mod, reg, rm);
+            int dest = 0;
+            int result = 0;
+
+            switch(reg)
+            {
+                case 0x00: // TEST
+                    {
+                        if (word_size == 0)
+                            dest = _bus.NextIP();
+                        else
+                            dest = GetImmediate16();
+
+                        result = source & dest;
+                        // Flags: O S Z A P C
+                        //        0 x x ? x 0
+                        _creg.OverflowFlag = false;
+                        _creg.CarryFlag = false;
+                        _creg.CalcSignFlag(word_size, result);
+                        _creg.CalcZeroFlag(word_size, result);
+                        _creg.CalcParityFlag(result);
+                        break;
+                    }
+                case 0x01: // NOT USED
+                    {
+                        break;
+                    }
+                case 0x02: // NOT (no flags)
+                    {
+                        SaveToDestination(~source, 0, word_size, mod, reg, rm);
+                        break;
+                    }
+                case 0x03: // NEG (CF, ZF, SF, OF, PF, AF)
+                    {
+                        result = (~source) + 1;
+                        SaveToDestination( result, 0, word_size, mod, reg, rm);
+
+                        _creg.CalcOverflowFlag(word_size, 0, result);
+                        _creg.CalcSignFlag(word_size, result);
+                        _creg.CalcZeroFlag(word_size, result);
+                        _creg.CalcAuxCarryFlag(source, dest);
+                        _creg.CalcParityFlag(result);
+                        _creg.CalcCarryFlag(word_size, result);
+                        break;
+                    }
+                case 0x04: // MUL
+                    {
+                        if( word_size == 0)
+                        {
+                            result = source * _reg.AL;
+                            _reg.AX = (UInt16)result;
+
+                            _creg.CarryFlag = (_reg.AH != 0);
+                            _creg.OverflowFlag = _creg.CarryFlag;
+                        }
+                        else
+                        {
+                            result = source * _reg.AX;
+                            _reg.DX = (UInt16)(result >> 16);
+                            _reg.AX = (UInt16)(result);
+
+                            _creg.CarryFlag = (_reg.DX != 0);
+                            _creg.OverflowFlag = _creg.CarryFlag;
+                        }
+                        break;
+                    }
+                case 0x05: // IMUL
+                    {
+                        if (word_size == 0)
+                        { 
+                            _reg.AX = (UInt16)(SignExtend((byte)source) * SignExtend(_reg.AL));
+
+                            _creg.CarryFlag = (_reg.AH != 0);
+                            _creg.OverflowFlag = _creg.CarryFlag;
+                        }
+                        else
+                        {
+                            result = (int)(SignExtend((byte)source) * SignExtend32(_reg.AX));
+                            _reg.DX = (UInt16)(result >> 16);
+                            _reg.AX = (UInt16)(result);
+
+                            _creg.CarryFlag = (_reg.DX != 0);
+                            _creg.OverflowFlag = _creg.CarryFlag;
+                        }
+                        break;
+                    }
+                case 0x06: // DIV
+                    {
+                        if (word_size == 0)
+                        {
+                            result = (byte)(_reg.AX / source);
+                            _reg.AH = (byte)(_reg.AX % source);
+                            _reg.AL = (byte)(result);
+                        }
+                        else
+                        {
+                            dest = (_reg.DX << 16) | _reg.AX;
+                            _reg.AX = (UInt16)(dest / source);
+                            _reg.DX = (UInt16)(dest % source);
+                        }
+                        break;
+                    }
+                case 0x07: // IDIV
+                    {
+                        if (word_size == 0)
+                        {
+                            UInt16 s1 = _reg.AX;
+                            UInt16 s2 = (UInt16)source;
+
+                            bool sign = ((s1 ^ s2) & 0x8000) != 0;
+                            if (s1 >= 0x8000)
+                                s1 = (UInt16)((~s1 + 1) & 0xffff);
+                            if (s2 >= 0x8000)
+                                s2 = (UInt16)((~s2 + 1) & 0xffff);
+
+                            UInt16 d1 = (UInt16)(s1 / s2);
+                            UInt16 d2 = (UInt16)(s1 % s2);
+
+                            if( sign )
+                            {
+                                d1 = (UInt16)((~d1 + 1) & 0xff);
+                                d2 = (UInt16)((~d2 + 1) & 0xff);
+                            }
+
+                            _reg.AL = (byte)d1;
+                            _reg.AH = (byte)d2;
+                        }
+                        else
+                        {
+                            UInt32 s1 = (UInt32)((_reg.DX << 16) | _reg.AX);
+                            UInt32 s2 = (UInt32)source;
+
+                            if( (s2 & 0x8000) == 0x8000 )
+                            {
+                                s2 = (s2 | 0xffff0000);
+                            }
+
+                            bool sign = ((s1 ^ s2) & 0x80000000) != 0;
+                            if (s1 >= 0x80000000)
+                                s1 = (UInt32)((~s1 + 1) & 0xffffffff);
+                            if (s2 >= 0x80000000)
+                                s2 = (UInt32)((~s2 + 1) & 0xffffffff);
+
+                            UInt32 d1 = (UInt32)(s1 / s2);
+                            UInt32 d2 = (UInt32)(s1 % s2);
+
+                            if (sign)
+                            {
+                                d1 = (UInt32)((~d1 + 1) & 0xffff);
+                                d2 = (UInt32)((~d2 + 1) & 0xffff);
+                            }
+
+                            _reg.AX = (UInt16)d1;
+                            _reg.DX = (UInt16)d2;
+                        }
+                        break;
+                    }
+            }
+        }
+
         private void Execute_RotateAndShift()
         {
             /*
@@ -533,16 +737,133 @@ namespace KDS.e8086
             }
         }
 
-        private void Execute_LAHF()
+        #region Jump/Call Instructions
+
+        private void Execute_CallNear()
         {
-            _reg.AH = (byte)(_creg.Register & 0x00ff);
-        }
-        private void Execute_SAHF()
-        {
-            _creg.Register = (UInt16)(_creg.Register & 0xff00);
-            _creg.Register = (UInt16)(_creg.Register | _reg.AH);
+            _bus.PushStack(_reg.SP, _bus.IP);
+            Execute_JumpNear();
         }
 
+        private void Execute_CondJump()
+        {
+            // JMP does not save anything to the stack and no return is expected.
+            // Intrasegment JMP changes IP by adding the relative displacement from the instruction.
+
+            // JMP IP-INC8  8 bit signed increment to the instruction pointer
+            bool jumping = false;
+            switch (_currentOP)
+            {
+                case 0x70:
+                    {
+                        jumping = _creg.OverflowFlag;
+                        break;
+                    }
+                case 0x71:
+                    {
+                        jumping = !_creg.OverflowFlag;
+                        break;
+                    }
+                case 0x72:
+                    {
+                        jumping = _creg.CarryFlag;
+                        break;
+                    }
+                case 0x73:
+                    {
+                        jumping = !_creg.CarryFlag;
+                        break;
+                    }
+                case 0x74:
+                    {
+                        jumping = _creg.ZeroFlag;
+                        break;
+                    }
+                case 0x75:
+                    {
+                        jumping = !_creg.ZeroFlag;
+                        break;
+                    }
+                case 0x76:
+                    {
+                        jumping = (_creg.CarryFlag | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x77:
+                    {
+                        jumping = !(_creg.CarryFlag | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x78:
+                    {
+                        jumping = _creg.SignFlag;
+                        break;
+                    }
+                case 0x79:
+                    {
+                        jumping = !_creg.SignFlag;
+                        break;
+                    }
+                case 0x7a:
+                    {
+                        jumping = _creg.ParityFlag;
+                        break;
+                    }
+                case 0x7b:
+                    {
+                        jumping = !_creg.ParityFlag;
+                        break;
+                    }
+                case 0x7c:
+                    {
+                        jumping = (_creg.SignFlag ^ _creg.OverflowFlag);
+                        break;
+                    }
+                case 0x7d:
+                    {
+                        jumping = !(_creg.SignFlag ^ _creg.OverflowFlag);
+                        break;
+                    }
+                case 0x7e:
+                    {
+                        jumping = ((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        break;
+                    }
+                case 0x7f:
+                    {
+                        jumping = !((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        break;
+                    }
+            }
+            if (jumping)
+                Execute_JumpShort();
+            else
+                _bus.NextIP();  
+        }
+        private void Execute_JumpCXZ()
+        {
+            if (_reg.CX == 0)
+                Execute_JumpShort();
+            else
+                _bus.NextIP();
+        }
+        private void Execute_JumpShort()
+        {
+            _bus.IP += _bus.NextIP();
+        }
+        private void Execute_JumpNear()
+        {
+            _bus.IP += GetImmediate16();
+        }
+        private void Execute_JumpFar()
+        {
+            _bus.IP = GetImmediate16();
+            _bus.CS = GetImmediate16();
+        }
+
+        #endregion  
+
+        #region String Instructions
         private void Execute_MoveString()
         {
             int word_size = Util.GetWordSize(_currentOP);
@@ -719,6 +1040,7 @@ namespace KDS.e8086
                 }
             }
         }
+        #endregion
 
         #region BCD adjustment instructions
         private void Execute_DecimalAdjustADD()
@@ -956,106 +1278,6 @@ namespace KDS.e8086
                 }
             }
         }
-        #endregion
-
-        #region CALL/RET/JMP transfers
-
-        private void Execute_JUMP()
-        {
-            // JMP does not save anything to the stack and no return is expected.
-            // Intrasegment JMP changes IP by adding the relative displacement from the instruction.
-
-            // JMP IP-INC8  8 bit signed increment to the instruction pointer
-            bool jumping = false;
-            switch (_currentOP)
-            {
-                case 0x70:
-                    {
-                        jumping = _creg.OverflowFlag;
-                        break;
-                    }
-                case 0x71:
-                    {
-                        jumping = !_creg.OverflowFlag;
-                        break;
-                    }
-                case 0x72:
-                    {
-                        jumping = _creg.CarryFlag;
-                        break;
-                    }
-                case 0x73:
-                    {
-                        jumping = !_creg.CarryFlag;
-                        break;
-                    }
-                case 0x74:
-                    {
-                        jumping = _creg.ZeroFlag;
-                        break;
-                    }
-                case 0x75:
-                    {
-                        jumping = !_creg.ZeroFlag;
-                        break;
-                    }
-                case 0x76:
-                    {
-                        jumping = (_creg.CarryFlag | _creg.ZeroFlag);
-                        break;
-                    }
-                case 0x77:
-                    {
-                        jumping = !(_creg.CarryFlag | _creg.ZeroFlag);
-                        break;
-                    }
-                case 0x78:
-                    {
-                        jumping = _creg.SignFlag;
-                        break;
-                    }
-                case 0x79:
-                    {
-                        jumping = !_creg.SignFlag;
-                        break;
-                    }
-                case 0x7a:
-                    {
-                        jumping = _creg.ParityFlag;
-                        break;
-                    }
-                case 0x7b:
-                    {
-                        jumping = !_creg.ParityFlag;
-                        break;
-                    }
-                case 0x7c:
-                    {
-                        jumping = (_creg.SignFlag ^ _creg.OverflowFlag);
-                        break;
-                    }
-                case 0x7d:
-                    {
-                        jumping = !(_creg.SignFlag ^ _creg.OverflowFlag);
-                        break;
-                    }
-                case 0x7e:
-                    {
-                        jumping = ((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
-                        break;
-                    }
-                case 0x7f:
-                    {
-                        jumping = !((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
-                        break;
-                    }
-            }
-            if (jumping)
-            {
-                _bus.IP += _bus.NextIP();
-            }
-        }
-
         #endregion
 
         #region ADD and ADC instructions
@@ -2900,10 +3122,19 @@ namespace KDS.e8086
         // Sign extend 8 bits to 16 bits
         private UInt16 SignExtend(byte num)
         {
-            if (num > 0x80)
+            if (num < 0x80)
                 return num;
             else
                 return Util.GetValue16(0xff, num);
+        }
+
+        // Sign extend 16 bits to 32 bits
+        private UInt32 SignExtend32(UInt16 num)
+        {
+            if (num < 0x8000)
+                return num;
+            else
+                return num | 0xffffff00;
         }
 
         #endregion  
