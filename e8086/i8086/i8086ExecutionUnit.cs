@@ -588,7 +588,6 @@ namespace KDS.e8086
                             UInt16 s1 = _reg.AX;
                             UInt16 s2 = (UInt16)source;
 
-                            // check if the result will be positive or negative
                             bool sign = ((s1 ^ s2) & 0x8000) == 0x8000;
 
                             if (s1 >= 0x8000)

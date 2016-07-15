@@ -131,31 +131,6 @@ namespace e8086UnitTests
             // AX = -19, DX = -136
             Assert.AreEqual(0xffed, cpu.EU.Registers.AX, "IDIV 3 AX result failed");
             Assert.AreEqual(0xff78, cpu.EU.Registers.DX, "IDIV 3 DX result failed");
-
-            //cpu = GetCPU(new byte[] { 0xf7, 0xfb }); /* IDIV BX */
-            //cpu.EU.Registers.DX = 0;
-            //cpu.EU.Registers.AX = 5;
-            //cpu.EU.Registers.BX = 0xfffe;
-            //cpu.NextInstructionDebug();
-
-            //Assert.AreEqual(0xfffe, cpu.EU.Registers.AX, "IDIV 3 AX result failed");
-            //Assert.AreEqual(0x0001, cpu.EU.Registers.DX, "IDIV 3 DX result failed");
-
-            //cpu = GetCPU(new byte[] {
-            //                            0xb9, 0xa2, 0x80,   /* MOV CX, 80a2 */
-            //                            0xb8, 0x38, 0xdd,   /* MOV AX, dd38 */
-            //                            0xba, 0x49, 0x00,   /* MOV DX, 49 */
-            //                            0xf7, 0xf9,         /* IDIV CX */
-            //                            0x01, 0xd0          /* ADD AX,DX */
-            //});
-
-            //cpu.NextInstructionDebug();
-            //cpu.NextInstructionDebug();
-            //cpu.NextInstructionDebug();
-            //cpu.NextInstructionDebug();
-            //cpu.NextInstructionDebug();
-
-            //Assert.AreEqual(0x3a4c, cpu.EU.Registers.AX, "IDIV 4 AX result failed");
         }
     }
 }
