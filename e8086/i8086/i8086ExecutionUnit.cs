@@ -542,7 +542,11 @@ namespace KDS.e8086
                         { 
                             _reg.AX = (UInt16)(SignExtend((byte)source) * SignExtend(_reg.AL));
 
-                            _creg.CarryFlag = (_reg.AH != 0);
+                            if ((_reg.AL & 0x80) == 0x80)
+                                _creg.CarryFlag = (_reg.AH != 0xff);
+                            else
+                                _creg.CarryFlag = (_reg.AH != 0x00);
+
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
                         else
@@ -551,7 +555,11 @@ namespace KDS.e8086
                             _reg.DX = (UInt16)(result >> 16);
                             _reg.AX = (UInt16)(result);
 
-                            _creg.CarryFlag = (_reg.DX != 0);
+                            if ((_reg.AX & 0x8000) == 0x8000)
+                                _creg.CarryFlag = (_reg.DX != 0xffff);
+                            else
+                                _creg.CarryFlag = (_reg.DX != 0x0000);
+
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
                         break;
@@ -576,22 +584,25 @@ namespace KDS.e8086
                     {
                         if (word_size == 0)
                         {
+
                             UInt16 s1 = _reg.AX;
                             UInt16 s2 = (UInt16)source;
 
-                            bool sign = ((s1 ^ s2) & 0x8000) != 0;
+                            // check if the result will be positive or negative
+                            bool sign = ((s1 ^ s2) & 0x8000) == 0x8000;
+
                             if (s1 >= 0x8000)
-                                s1 = (UInt16)((~s1 + 1) & 0xffff);
+                                s1 = (UInt16)(~s1 + 1);
                             if (s2 >= 0x8000)
-                                s2 = (UInt16)((~s2 + 1) & 0xffff);
+                                s2 = (UInt16)(~s2 + 1);
 
                             UInt16 d1 = (UInt16)(s1 / s2);
                             UInt16 d2 = (UInt16)(s1 % s2);
 
-                            if( sign )
+                            if (sign)
                             {
-                                d1 = (UInt16)((~d1 + 1) & 0xff);
-                                d2 = (UInt16)((~d2 + 1) & 0xff);
+                                d1 = (UInt16)(~d1 + 1);
+                                d2 = (UInt16)(~d2 + 1);
                             }
 
                             _reg.AL = (byte)d1;
@@ -599,22 +610,20 @@ namespace KDS.e8086
                         }
                         else
                         {
-                            UInt32 s1 = (UInt32)((_reg.DX << 16) | _reg.AX);
-                            UInt32 s2 = (UInt32)source;
 
-                            if( (s2 & 0x8000) == 0x8000 )
-                            {
-                                s2 = (s2 | 0xffff0000);
-                            }
+                            UInt32 dxax = (UInt32)((_reg.DX << 16) | _reg.AX);
+                            UInt32 divisor = SignExtend32((UInt16)source);
 
-                            bool sign = ((s1 ^ s2) & 0x80000000) != 0;
-                            if (s1 >= 0x80000000)
-                                s1 = (UInt32)((~s1 + 1) & 0xffffffff);
-                            if (s2 >= 0x80000000)
-                                s2 = (UInt32)((~s2 + 1) & 0xffffffff);
+                            bool sign = ((dxax ^ divisor) & 0x80000000) == 0x80000000;
 
-                            UInt32 d1 = (UInt32)(s1 / s2);
-                            UInt32 d2 = (UInt32)(s1 % s2);
+                            if (dxax >= 0x80000000)
+                                dxax = (UInt32)(~dxax + 1);
+
+                            if (divisor >= 0x80000000)
+                                divisor = (UInt32)(~divisor + 1);
+
+                            UInt32 d1 = (UInt32)(dxax / divisor);
+                            UInt32 d2 = (UInt32)(dxax % divisor);
 
                             if (sign)
                             {

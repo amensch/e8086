@@ -32,6 +32,14 @@ namespace KDS.e8086
             NextInstruction();
         }
 
+        public void NextInstructionDebug()
+        {
+            string dasm;
+            Disassemble8086.DisassembleNext(_eu.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            Debug.WriteLine(_eu.Bus.CS.ToString("X4") + ":" + _eu.Bus.IP.ToString("X4") + " " + dasm);
+            NextInstruction();
+        }
+
         public i8086ExecutionUnit EU
         {
             get { return _eu; }
