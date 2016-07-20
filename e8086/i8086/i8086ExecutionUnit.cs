@@ -128,6 +128,7 @@ namespace KDS.e8086
             _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
             // _opTable[0x0f] = new OpCodeRecord(Execute_POP);  POP CS is not a valid instruction
+            _opTable[0x0f] = new OpCodeRecord(() => { });
             _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
@@ -208,7 +209,22 @@ namespace KDS.e8086
             _opTable[0x5d] = new OpCodeRecord(Execute_POP);
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
-            // 60-6F NOT USED
+            _opTable[0x60] = new OpCodeRecord(() => { });
+            _opTable[0x61] = new OpCodeRecord(() => { });
+            _opTable[0x62] = new OpCodeRecord(() => { });
+            _opTable[0x63] = new OpCodeRecord(() => { });
+            _opTable[0x64] = new OpCodeRecord(() => { });
+            _opTable[0x65] = new OpCodeRecord(() => { });
+            _opTable[0x66] = new OpCodeRecord(() => { });
+            _opTable[0x67] = new OpCodeRecord(() => { });
+            _opTable[0x68] = new OpCodeRecord(() => { });
+            _opTable[0x69] = new OpCodeRecord(() => { });
+            _opTable[0x6a] = new OpCodeRecord(() => { });
+            _opTable[0x6b] = new OpCodeRecord(() => { });
+            _opTable[0x6c] = new OpCodeRecord(() => { });
+            _opTable[0x6d] = new OpCodeRecord(() => { });
+            _opTable[0x6e] = new OpCodeRecord(() => { });
+            _opTable[0x6f] = new OpCodeRecord(() => { });
             _opTable[0x70] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x71] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x72] = new OpCodeRecord(Execute_CondJump);
@@ -225,10 +241,10 @@ namespace KDS.e8086
             _opTable[0x7d] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x7e] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x7f] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x80] = new OpCodeRecord(Execute_Op80_Op83);
-            _opTable[0x81] = new OpCodeRecord(Execute_Op80_Op83);
-            _opTable[0x82] = new OpCodeRecord(Execute_Op80_Op83);
-            _opTable[0x83] = new OpCodeRecord(Execute_Op80_Op83);
+            _opTable[0x80] = new OpCodeRecord(Execute_Group1);
+            _opTable[0x81] = new OpCodeRecord(Execute_Group1);
+            _opTable[0x82] = new OpCodeRecord(Execute_Group1);
+            _opTable[0x83] = new OpCodeRecord(Execute_Group1);
             _opTable[0x84] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             _opTable[0x85] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             _opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
@@ -251,12 +267,14 @@ namespace KDS.e8086
             _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x98] = new OpCodeRecord(Execute_CBW);
             _opTable[0x99] = new OpCodeRecord(Execute_CWD);
-            //_opTable[0x9a] call far_proc  (CALL ADDR DISP-LO DISP-HI SEG-LO SEG-HI)
-            //_opTable[0x9b] wait
+            _opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
+            _opTable[0x9b] = new OpCodeRecord(() => { }); // for now NOP
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-            _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); }); // LAHF - Load AH from flags
-            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });    // SAHF - Store SH to flags
+            // LAHF - Load AH from flags
+            _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
+            // SAHF - Store SH to flags
+            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });    
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -289,14 +307,16 @@ namespace KDS.e8086
             _opTable[0xbd] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
-            // C0-C1 NOT USED
+            _opTable[0xc0] = new OpCodeRecord(() => { });
+            _opTable[0xc1] = new OpCodeRecord(() => { });
             //_opTable[0xc2] ret imm-16
             //_opTable[0xc3] ret
             _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
-            // C8-C9 NOT USED
+            _opTable[0xc8] = new OpCodeRecord(() => { });
+            _opTable[0xc9] = new OpCodeRecord(() => { });
             // _opTable[0xca] RET imm-16
             // _opTable[0xcb] RET
             // _opTable[0xcc] INT 3
@@ -309,7 +329,7 @@ namespace KDS.e8086
             _opTable[0xd3] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
-            // D6 NOT USED
+            _opTable[0xd6] = new OpCodeRecord(() => { });
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
             // D8-DF ESC OPCODE,SOURCE
             // E0 LOOPNE
@@ -325,7 +345,7 @@ namespace KDS.e8086
             // EC-ED IN
             // EE-EF OUT
             // F0 LOCK
-            // F1 NOT USED
+            _opTable[0xf1] = new OpCodeRecord(() => { });
             // F2 REPNE
             // F3 REP/E/Z
             _opTable[0xf4] = new OpCodeRecord(() => { _bus.IP--; }); // F4 HLT
@@ -338,11 +358,43 @@ namespace KDS.e8086
             _opTable[0xfb] = new OpCodeRecord(() => { _creg.InterruptEnable = true; });  // FB STI - set interrupt flag
             _opTable[0xfc] = new OpCodeRecord(() => { _creg.DirectionFlag = false; });  // FC CLD - clear direction flag
             _opTable[0xfd] = new OpCodeRecord(() => { _creg.DirectionFlag = true; });  // FD STD - set direction flag
-            // FE GROUP
-            // FF GROUP
+            _opTable[0xfe] = new OpCodeRecord(Execute_Group4);
+            _opTable[0xff] = new OpCodeRecord(Execute_Group5);
         }
 
-        private void Execute_Op80_Op83()
+        private void Execute_XLAT()
+        {
+            // one byte instruction (0xd7)
+            // Store into AL the value located at a 256 byte lookup table
+            // BX is the beginning of the table and AL is the offset
+            _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
+        }
+
+        private void Execute_CBW()
+        {
+            if( (_reg.AL & 0x80) == 0x80 )
+            {
+                _reg.AH = 0xff;
+            }
+            else
+            {
+                _reg.AH = 0x00;
+            }
+        }
+        private void Execute_CWD()
+        {
+            if( (_reg.AX & 0x8000) == 0x8000 )
+            {
+                _reg.DX = 0xffff;
+            }
+            else
+            {
+                _reg.DX = 0;
+            }
+        }
+
+        #region Grouped Instructions
+        private void Execute_Group1()
         {
             // These op codes are grouped instructions with reg field defining the operator.
             // 0x80 are 8 bit operations 
@@ -351,7 +403,7 @@ namespace KDS.e8086
             // 0x83 uses sign extention for the 8 bit immediate data
 
             int word_size = 0;
-            if( _currentOP == 0x81 || _currentOP == 0x83 )
+            if (_currentOP == 0x81 || _currentOP == 0x83)
             {
                 word_size = 1;
             }
@@ -383,7 +435,7 @@ namespace KDS.e8086
             {
                 source = SignExtend(_bus.NextIP());
             }
-            else if ( word_size == 0 )
+            else if (word_size == 0)
             {
                 source = _bus.NextIP();
 
@@ -398,8 +450,8 @@ namespace KDS.e8086
             //      reg=001
             //      reg=100
             //      reg=110
-            if( ( _currentOP == 0x82 || _currentOP == 0x83) &&
-                ( reg == 0x01 || reg == 0x04 || reg == 0x06 ) )
+            if ((_currentOP == 0x82 || _currentOP == 0x83) &&
+                (reg == 0x01 || reg == 0x04 || reg == 0x06))
             {
                 throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", _currentOP));
             }
@@ -451,6 +503,79 @@ namespace KDS.e8086
 
         }
 
+        // This is group 2
+        private void Execute_RotateAndShift()
+        {
+            /*
+                D0:  <op> reg/mem-8, 1
+                D1:  <op> reg/mem-16, 1
+                D2:  <op> reg/mem-8, CL
+                D3:  <op> reg/mem-16, CL
+
+                REG 000: ROL - rotate left
+                REG 001: ROR - rotate right 
+                REG 002: RCL - rotate through carry left  (CF is low order bit)
+                REG 003: RCR - rotate through carry right (CF is low order bit)
+                REG 004: SAL/SHL - shift left (zero padded) (OF is cleared if sign bit is unchanged)
+                REG 005: SHR - shift right (zero padded) (OF is cleared if sign bit is unchanged)
+                REG 006: NOT USED
+                REG 007: SAR - shift arithmetic right
+
+                Shifts affect PF, SF, ZF.  CF is the last bit shifted out.
+                    OF is defined only for a single bit shift.
+
+                Rotate affects CF and OF only.
+
+            */
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int word_size = Util.GetWordSize(_currentOP);
+            int operand2 = 1;
+            if (_currentOP == 0xd2 || _currentOP == 0xd3)
+                operand2 = _reg.CL;
+
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, false, false);
+                        break;
+                    }
+                case 0x01:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, false, false);
+                        break;
+                    }
+                case 0x02:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, true, false);
+                        break;
+                    }
+                case 0x03:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, true, false, false);
+                        break;
+                    }
+                case 0x04:
+                    {
+                        RotateLeft(word_size, operand2, mod, rm, false, true);
+                        break;
+                    }
+                case 0x05:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, true, false);
+                        break;
+                    }
+                case 0x07:
+                    {
+                        RotateRight(word_size, operand2, mod, rm, false, true, true);
+                        break;
+                    }
+            }
+        }
+
         private void Execute_Group3()
         {
             /*
@@ -474,7 +599,7 @@ namespace KDS.e8086
             int dest = 0;
             int result = 0;
 
-            switch(reg)
+            switch (reg)
             {
                 case 0x00: // TEST
                     {
@@ -505,7 +630,7 @@ namespace KDS.e8086
                 case 0x03: // NEG (CF, ZF, SF, OF, PF, AF)
                     {
                         result = (~source) + 1;
-                        SaveToDestination( result, 0, word_size, mod, reg, rm);
+                        SaveToDestination(result, 0, word_size, mod, reg, rm);
 
                         _creg.CalcOverflowFlag(word_size, 0, result);
                         _creg.CalcSignFlag(word_size, result);
@@ -517,7 +642,7 @@ namespace KDS.e8086
                     }
                 case 0x04: // MUL
                     {
-                        if( word_size == 0)
+                        if (word_size == 0)
                         {
                             result = source * _reg.AL;
                             _reg.AX = (UInt16)result;
@@ -539,7 +664,7 @@ namespace KDS.e8086
                 case 0x05: // IMUL
                     {
                         if (word_size == 0)
-                        { 
+                        {
                             _reg.AX = (UInt16)(SignExtend((byte)source) * SignExtend(_reg.AL));
 
                             if ((_reg.AL & 0x80) == 0x80)
@@ -638,112 +763,97 @@ namespace KDS.e8086
             }
         }
 
-        private void Execute_RotateAndShift()
+        private void Execute_Group4()
         {
-            /*
-                D0:  <op> reg/mem-8, 1
-                D1:  <op> reg/mem-16, 1
-                D2:  <op> reg/mem-8, CL
-                D3:  <op> reg/mem-16, CL
-
-                REG 000: ROL - rotate left
-                REG 001: ROR - rotate right 
-                REG 002: RCL - rotate through carry left  (CF is low order bit)
-                REG 003: RCR - rotate through carry right (CF is low order bit)
-                REG 004: SAL/SHL - shift left (zero padded) (OF is cleared if sign bit is unchanged)
-                REG 005: SHR - shift right (zero padded) (OF is cleared if sign bit is unchanged)
-                REG 006: NOT USED
-                REG 007: SAR - shift arithmetic right
-
-                Shifts affect PF, SF, ZF.  CF is the last bit shifted out.
-                    OF is defined only for a single bit shift.
-
-                Rotate affects CF and OF only.
-
-            */
+            // REG 000: INC reg/mem-8
+            // REG 001: DEC reg/mem-8
+            // all others are undefined
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = Util.GetWordSize(_currentOP);
-            int operand2 = 1;
-            if (_currentOP == 0xd2 || _currentOP == 0xd3)
-                operand2 = _reg.CL;
+
+            if( reg == 0x00 )
+            {
+                Execute_Increment(word_size);
+            }
+            else if( reg == 0x01 )
+            {
+                Execute_Decrement(word_size);
+            }
+            else
+                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value {0} in opcode={1:X2}", reg, _currentOP));
+        }
+
+        private void Execute_Group5()
+        {
+            // REG 000: INC mem-16
+            // REG 001: DEC mem-16
+            // REG 002: CALL reg/mem-16
+            // REG 003: CALL mem-16
+            // REG 004: JMP reg/mem-16
+            // REG 005: JMP mem-16
+            // REG 006: PUSH mem-16
+            // REG 007: undefined
+
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int word_size = Util.GetWordSize(_currentOP);
+            int oper = GetDestinationData(0, word_size, mod, reg, rm);
 
             switch(reg)
             {
                 case 0x00:
                     {
-                        RotateLeft(word_size, operand2, mod, rm, false, false);
+                        Execute_Increment(word_size);
                         break;
                     }
                 case 0x01:
                     {
-                        RotateRight(word_size, operand2, mod, rm, false, false, false);
+                        Execute_Decrement(word_size);
                         break;
                     }
                 case 0x02:
                     {
-                        RotateLeft(word_size, operand2, mod, rm, true, false);
+                        // CALL reg/mem-16 (intrasegment)
+                        _bus.PushStack(_reg.SP, _bus.IP);
+                        _bus.IP = (UInt16) oper;
                         break;
                     }
                 case 0x03:
                     {
-                        RotateRight(word_size, operand2, mod, rm, true, false, false);
+                        // CALL mem-16 (intersegment)
+                        _bus.PushStack(_reg.SP, _bus.IP);
+                        _bus.PushStack(_reg.SP, _bus.CS);
+                        _bus.IP = _bus.GetData16(oper);
+                        _bus.CS = _bus.GetData16(oper + 2);
                         break;
                     }
                 case 0x04:
                     {
-                        RotateLeft(word_size, operand2, mod, rm, false, true);
+                        // JMP reg/mem=16 (intrasegment)
+                        _bus.IP = (UInt16) oper;
                         break;
                     }
                 case 0x05:
                     {
-                        RotateRight(word_size, operand2, mod, rm, false, true, false);
+                        // JMP mem-16 (intersegment)
+                        _bus.IP = _bus.GetData16(oper);
+                        _bus.CS = _bus.GetData16(oper + 2);
                         break;
                     }
-                case 0x07:
+                case 0x06:
                     {
-                        RotateRight(word_size, operand2, mod, rm, false, true, true);
+                        // push mem-16
+                        _bus.PushStack(_reg.SP, (UInt16) oper);
                         break;
                     }
             }
-
-
-
-
         }
 
-        private void Execute_XLAT()
-        {
-            // one byte instruction (0xd7)
-            // Store into AL the value located at a 256 byte lookup table
-            // BX is the beginning of the table and AL is the offset
-            _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
-        }
-
-        private void Execute_CBW()
-        {
-            if( (_reg.AL & 0x80) == 0x80 )
-            {
-                _reg.AH = 0xff;
-            }
-            else
-            {
-                _reg.AH = 0x00;
-            }
-        }
-        private void Execute_CWD()
-        {
-            if( (_reg.AX & 0x8000) == 0x8000 )
-            {
-                _reg.DX = 0xffff;
-            }
-            else
-            {
-                _reg.DX = 0;
-            }
-        }
+        #endregion
 
         #region Jump/Call Instructions
 
@@ -751,6 +861,13 @@ namespace KDS.e8086
         {
             _bus.PushStack(_reg.SP, _bus.IP);
             Execute_JumpNear();
+        }
+
+        private void Execute_CallFar()
+        {
+            _bus.PushStack(_reg.SP, _bus.CS);
+            _bus.PushStack(_reg.SP, _bus.IP);
+            Execute_JumpFar();
         }
 
         private void Execute_CondJump()
@@ -1955,6 +2072,48 @@ namespace KDS.e8086
         #endregion
 
         #region Operation Functions
+
+        private void Execute_Increment(int word_size)
+        {
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int source = 1;
+            int dest = GetDestinationData(0, word_size, mod, reg, rm);
+            int result = dest + 1;
+
+            SaveToDestination(result, 0, word_size, mod, reg, rm);
+
+            // Flags: O S Z A P
+            // Flags are set as if ADD or SUB instruction was used with operand2 = 1
+            // Carry flag is not affected by increment
+            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcSignFlag(1, result);
+            _creg.CalcZeroFlag(1, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+        }
+
+        private void Execute_Decrement(int word_size)
+        {
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            int source = 1;
+            int dest = GetDestinationData(0, word_size, mod, reg, rm);
+            int result = dest + 1;
+
+            SaveToDestination(result, 0, word_size, mod, reg, rm);
+
+            // Flags: O S Z A P
+            // Flags are set as if ADD or SUB instruction was used with operand2 = 1
+            // Carry flag is not affected by increment
+            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcSignFlag(1, result);
+            _creg.CalcZeroFlag(1, result);
+            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcParityFlag(result);
+        }
 
         private void ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
         {
