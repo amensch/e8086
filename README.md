@@ -7,6 +7,9 @@ This is my on going project of implementing an 8086 emulator.  My goals beginnin
 3. Be able to boot some version of DOS.  
 4. Design goal is for easy extension into 286/386 and other instruction sets.
 5. Use TDD to drive the project.
+
+**22-Jul-2016**
+All instructions except interrupts are implemented. Using console app to debug and successfully run a test program.
 	
 **15-Jan-2016**
 The disassembler is fully working.  Beginning on the CPU.
