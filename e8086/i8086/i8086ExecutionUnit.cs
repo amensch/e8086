@@ -55,6 +55,10 @@ namespace KDS.e8086
         // Bus Interface Unit
         private i8086BusInterfaceUnit _bus;
 
+        // Repeat flag
+        private bool _repeat = false;
+        private int _repeatType = 0;
+
         public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
         {
             _bus = bus;
@@ -309,20 +313,43 @@ namespace KDS.e8086
             _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xc0] = new OpCodeRecord(() => { });
             _opTable[0xc1] = new OpCodeRecord(() => { });
-            //_opTable[0xc2] ret imm-16
-            //_opTable[0xc3] ret
+            _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
+            {
+                UInt16 oper = GetImmediate16();
+                _bus.IP = _bus.PopStack(_reg.SP);
+                _reg.SP += oper;
+            });
+            _opTable[0xc3] = new OpCodeRecord(() => // ret
+            {
+                _bus.IP = _bus.PopStack(_reg.SP);
+            });
             _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
             _opTable[0xc8] = new OpCodeRecord(() => { });
             _opTable[0xc9] = new OpCodeRecord(() => { });
-            // _opTable[0xca] RET imm-16
-            // _opTable[0xcb] RET
+            _opTable[0xca] = new OpCodeRecord(() => // retf imm-16
+            {
+                UInt16 oper = GetImmediate16();
+                _bus.IP = _bus.PopStack(_reg.SP);
+                _bus.CS = _bus.PopStack(_reg.SP);
+                _reg.SP += oper;
+            });
+            _opTable[0xcb] = new OpCodeRecord(() => // retf
+            {
+                _bus.IP = _bus.PopStack(_reg.SP);
+                _bus.CS = _bus.PopStack(_reg.SP);
+            });
             // _opTable[0xcc] INT 3
             // _opTable[0xcd] INT imm-8
             // _opTable[0xce] INTO
-            // _opTable[0xcf] IRET
+            _opTable[0xcf] = new OpCodeRecord(() => // iret
+            {
+                _bus.IP = _bus.PopStack(_reg.SP);
+                _bus.CS = _bus.PopStack(_reg.SP);
+                _creg.Register = _bus.PopStack(_reg.SP);
+            });
             _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd2] = new OpCodeRecord(Execute_RotateAndShift);
@@ -331,10 +358,10 @@ namespace KDS.e8086
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             _opTable[0xd6] = new OpCodeRecord(() => { });
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
-            // D8-DF ESC OPCODE,SOURCE
-            // E0 LOOPNE
-            // E1 LOOPE
-            // E2 LOOP
+            // D8-DF ESC OPCODE,SOURCE (to math co-processor)
+            _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
+            _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
+            _opTable[0xe2] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe3] = new OpCodeRecord(Execute_JumpCXZ);
             // E4-E5 IN
             // E6-E7 OUT
@@ -344,10 +371,20 @@ namespace KDS.e8086
             _opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
             // EC-ED IN
             // EE-EF OUT
-            // F0 LOCK
+            _opTable[0xf0] = new OpCodeRecord(() => { }); // LOCK
             _opTable[0xf1] = new OpCodeRecord(() => { });
-            // F2 REPNE
+            // F2 REPNE/REPNZ
+            _opTable[0xf2] = new OpCodeRecord(() =>
+            {
+                _repeat = true;
+                _repeatType = 1;
+            });
             // F3 REP/E/Z
+            _opTable[0xf3] = new OpCodeRecord(() =>
+            {
+                _repeat = true;
+                _repeatType = 2;
+            });
             _opTable[0xf4] = new OpCodeRecord(() => { _bus.IP--; }); // F4 HLT
             _opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
             _opTable[0xf6] = new OpCodeRecord(Execute_Group3);
@@ -390,6 +427,21 @@ namespace KDS.e8086
             else
             {
                 _reg.DX = 0;
+            }
+        }
+
+        private void Execute_Loop()
+        {
+            UInt16 tmp = SignExtend(_bus.NextIP());
+            _reg.CX--;
+            if( _reg.CX != 0)
+            {
+                if ((_currentOP == 0xe0 && !_creg.ZeroFlag) ||  // LOOPNZ
+                    (_currentOP == 0xe1 && _creg.ZeroFlag) ||   // LOOPZ
+                    (_currentOP == 0xe2))                       // LOOP
+                {
+                    _bus.IP += tmp;
+                }
             }
         }
 
@@ -847,7 +899,7 @@ namespace KDS.e8086
                 case 0x06:
                     {
                         // push mem-16
-                        _bus.PushStack(_reg.SP, (UInt16) oper);
+                        _bus.PushStack(_reg.SP, (UInt16)oper);
                         break;
                     }
             }
@@ -991,81 +1043,103 @@ namespace KDS.e8086
         #region String Instructions
         private void Execute_MoveString()
         {
-            int word_size = Util.GetWordSize(_currentOP);
-            if( word_size == 0)
+            do
             {
-                _bus.MoveString8(_reg.SI, _reg.DI);
-                if(_creg.DirectionFlag)
+                int word_size = Util.GetWordSize(_currentOP);
+                if (word_size == 0)
                 {
-                    _reg.SI--;
-                    _reg.DI--;
+                    _bus.MoveString8(_reg.SI, _reg.DI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI--;
+                        _reg.DI--;
+                    }
+                    else
+                    {
+                        _reg.SI++;
+                        _reg.DI++;
+                    }
                 }
                 else
                 {
-                    _reg.SI++;
-                    _reg.DI++;
+                    _bus.MoveString16(_reg.SI, _reg.DI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI -= 2;
+                        _reg.DI -= 2;
+                    }
+                    else
+                    {
+                        _reg.SI += 2;
+                        _reg.DI += 2;
+                    }
                 }
-            }
-            else
-            {
-                _bus.MoveString16(_reg.SI, _reg.DI);
-                if (_creg.DirectionFlag)
-                {
-                    _reg.SI -= 2;
-                    _reg.DI -= 2;
-                }
-                else
-                {
-                    _reg.SI += 2;
-                    _reg.DI += 2;
-                }
-            }
+                if (_repeat) _reg.CX--;
+
+                if (_repeatType == 1 && !_creg.ZeroFlag)
+                    _repeat = false;
+                if (_repeatType == 2 && _creg.ZeroFlag)
+                    _repeat = false;
+
+            } while (_repeat && _reg.CX != 0);
+            _repeat = false;
         }
         private void Execute_CompareString()
         {
             int word_size = Util.GetWordSize(_currentOP);
             int result = 0;
             int source = 0;
-            int dest = _bus.GetData(word_size, _reg.SI); 
+            int dest = _bus.GetData(word_size, _reg.SI);
 
             // NOTE: the concept of "source" and "dest" for subtraction here is flipped.
 
-            if (word_size == 0)
+            do
             {
-                source = _bus.GetDestString8(_reg.DI);
-                if (_creg.DirectionFlag)
+                if (word_size == 0)
                 {
-                    _reg.SI--;
-                    _reg.DI--;
+                    source = _bus.GetDestString8(_reg.DI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI--;
+                        _reg.DI--;
+                    }
+                    else
+                    {
+                        _reg.SI++;
+                        _reg.DI++;
+                    }
                 }
                 else
                 {
-                    _reg.SI++;
-                    _reg.DI++;
+                    source = _bus.GetDestString16(_reg.DI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI -= 2;
+                        _reg.DI -= 2;
+                    }
+                    else
+                    {
+                        _reg.SI += 2;
+                        _reg.DI += 2;
+                    }
                 }
-            }
-            else
-            {
-                source = _bus.GetDestString16(_reg.DI);
-                if (_creg.DirectionFlag)
-                {
-                    _reg.SI -= 2;
-                    _reg.DI -= 2;
-                }
-                else
-                {
-                    _reg.SI += 2;
-                    _reg.DI += 2;
-                }
-            }
 
-            result = dest - source;
-            _creg.CalcOverflowFlag(word_size, source, dest);
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
-            _creg.CalcCarryFlag(word_size, result);
+                result = dest - source;
+                _creg.CalcOverflowFlag(word_size, source, dest);
+                _creg.CalcSignFlag(word_size, result);
+                _creg.CalcZeroFlag(word_size, result);
+                _creg.CalcAuxCarryFlag(source, dest);
+                _creg.CalcParityFlag(result);
+                _creg.CalcCarryFlag(word_size, result);
+                if (_repeat) _reg.CX--;
+
+                if (_repeatType == 1 && !_creg.ZeroFlag)
+                    _repeat = false;
+                if (_repeatType == 2 && _creg.ZeroFlag)
+                    _repeat = false;
+
+            } while (_repeat && _reg.CX != 0);
+            _repeat = false;
         }
         private void Execute_ScanString()
         {
@@ -1074,96 +1148,118 @@ namespace KDS.e8086
             int source = 0;
             int dest = 0;
 
-            if (word_size == 0)
+            do
             {
-                dest = _bus.GetDestString8(_reg.DI);
-                source = _reg.AL;
-                if (_creg.DirectionFlag)
+                if (word_size == 0)
                 {
-                    _reg.DI--;
+                    dest = _bus.GetDestString8(_reg.DI);
+                    source = _reg.AL;
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.DI--;
+                    }
+                    else
+                    {
+                        _reg.DI++;
+                    }
                 }
                 else
                 {
-                    _reg.DI++;
+                    dest = _bus.GetDestString16(_reg.DI);
+                    source = _reg.AX;
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.DI -= 2;
+                    }
+                    else
+                    {
+                        _reg.DI += 2;
+                    }
                 }
-            }
-            else
-            {
-                dest = _bus.GetDestString16(_reg.DI);
-                source = _reg.AX;
-                if (_creg.DirectionFlag)
-                {
-                    _reg.DI -= 2;
-                }
-                else
-                {
-                    _reg.DI += 2;
-                }
-            }
 
-            result = dest - source;
-            _creg.CalcOverflowFlag(word_size, source, dest);
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
-            _creg.CalcCarryFlag(word_size, result);
+                result = dest - source;
+                _creg.CalcOverflowFlag(word_size, source, dest);
+                _creg.CalcSignFlag(word_size, result);
+                _creg.CalcZeroFlag(word_size, result);
+                _creg.CalcAuxCarryFlag(source, dest);
+                _creg.CalcParityFlag(result);
+                _creg.CalcCarryFlag(word_size, result);
+
+                if (_repeat) _reg.CX--;
+
+                if (_repeatType == 1 && !_creg.ZeroFlag)
+                    _repeat = false;
+                if (_repeatType == 2 && _creg.ZeroFlag)
+                    _repeat = false;
+
+            } while (_repeat && _reg.CX != 0);
+            _repeat = false;
         }
         private void Execute_StoreString()
         {
             int word_size = Util.GetWordSize(_currentOP);
-            if (word_size == 0)
+            do
             {
-                _bus.StoreString8(_reg.DI, _reg.AL);   
-                if (_creg.DirectionFlag)
+                if (word_size == 0)
                 {
-                    _reg.DI--;
+                    _bus.StoreString8(_reg.DI, _reg.AL);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.DI--;
+                    }
+                    else
+                    {
+                        _reg.DI++;
+                    }
                 }
                 else
                 {
-                    _reg.DI++;
+                    _bus.StoreString16(_reg.DI, _reg.AX);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.DI -= 2;
+                    }
+                    else
+                    {
+                        _reg.DI += 2;
+                    }
                 }
-            }
-            else
-            {
-                _bus.StoreString16(_reg.DI, _reg.AX);
-                if (_creg.DirectionFlag)
-                {
-                    _reg.DI -= 2;
-                }
-                else
-                {
-                    _reg.DI += 2;
-                }
-            }
+                if (_repeat) _reg.CX--;
+            } while (_repeat && _reg.CX != 0);
+            _repeat = false;
         }
         private void Execute_LoadString()
         {
             int word_size = Util.GetWordSize(_currentOP);
-            if (word_size == 0)
+            do
             {
-                _reg.AL = _bus.GetData8(_reg.SI);
-                if (_creg.DirectionFlag)
+                if (word_size == 0)
                 {
-                    _reg.SI--;
+                    _reg.AL = _bus.GetData8(_reg.SI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI--;
+                    }
+                    else
+                    {
+                        _reg.SI++;
+                    }
                 }
                 else
                 {
-                    _reg.SI++;
+                    _reg.AX = _bus.GetData16(_reg.SI);
+                    if (_creg.DirectionFlag)
+                    {
+                        _reg.SI -= 2;
+                    }
+                    else
+                    {
+                        _reg.SI += 2;
+                    }
                 }
-            }
-            else
-            {
-                _reg.AX = _bus.GetData16(_reg.SI);
-                if (_creg.DirectionFlag)
-                {
-                    _reg.SI -= 2;
-                }
-                else
-                {
-                    _reg.SI += 2;
-                }
-            }
+                if (_repeat) _reg.CX--;
+            } while (_repeat && _reg.CX != 0);
+            _repeat = false;
         }
         #endregion
 
