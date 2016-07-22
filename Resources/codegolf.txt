@@ -1,0 +1,203 @@
+0000		cmp sp,0100
+0004		jz short 0007
+0006		hlt
+0007		mov sp,1000
+000A		mov al,2e
+000C		mov bx,0000
+000F		dec bx
+0010		cmp bx,ff
+0013		jnz short 0106
+0015		call 0169
+0018		inc bx
+0019		jnz short 0106
+001B		call 0169
+001E		xor cx,cx
+0020		or bx,cx
+0022		jnz short 0106
+0024		jb short 0106
+0026		call 0169
+0029		mov cx,8000
+002C		cmp cx,bx
+002E		jbe short 0106
+0030		call 0169
+0033		add bx,cx
+0035		jb short 0106
+0037		call 0169
+003A		add bx,bx
+003C		adc cx,00
+003F		jns short 0106
+0041		jb short 0106
+0043		push cx
+0044		and cx,01
+0047		jz short 0106
+0049		call 0169
+004C		pop cx
+004D		stc
+004E		mov bx,8000
+0051		sbb cx,bx
+0053		jnz short 0106
+0055		jb short 0106
+0057		call 0169
+005A		call 005d
+005D		pop bx
+005E		cmp bx,005d
+0062		jnz short 0106
+0064		cmp sp,1000
+0068		jnz short 0106
+006A		call 0169
+006D		mov bx,0072
+0070		push bx
+0071		ret
+0072		cmp sp,1000
+0076		jnz short 0106
+0078		call 0169
+007B		nop
+007C		nop
+007D		nop
+007E		jmp short 0081
+0080		hlt
+0081		call 017c
+0084		mov ax,01c5
+0087		call 0154
+008A		call 017c
+008D		mov al,30
+008F		call 0169
+0092		inc al
+0094		cmp al,7f
+0096		jnz short 018f
+0098		mov al,23
+009A		mov [01d3],0190
+00A0		mov cl,50
+00A2		call 0169
+00A5		dec cl
+00A7		jnz short 01a2
+00A9		cmp [01d3],01e0
+00AF		jnz short 00bb
+00B1		mov cl,50
+00B3		mov [01d3],0780
+00B9		jmp short 01a2
+00BB		mov [01d3],01e0
+00C1		mov cl,12
+00C3		call 0169
+00C6		call 0169
+00C9		add [01d3],4c
+00CE		call 0169
+00D1		call 0169
+00D4		dec cl
+00D6		jnz short 01c3
+00D8		mov [01d3],0234
+00DE		xor ax,ax
+00E0		mov dx,0001
+00E3		mov cx,0011
+00E6		add dx,ax
+00E8		call 018a
+00EB		push ax
+00EC		mov ax,0020
+00EF		call 0169
+00F2		pop ax
+00F3		xchg ax,dx
+00F4		dec cx
+00F5		jnz short 01e6
+00F7		mov [01d3],02d4
+00FD		mov cx,0000
+0100		mov ax,cx
+0102		call 0144
+0105		call 018a
+0108		mov ax,0020
+010B		call 0169
+010E		inc cx
+010F		cmp cx,14
+0112		jbe short 0200
+0114		mov [01d3],0374
+011A		mov bx,0002
+011D		or [bx+01d5],00
+0122		jnz short 013d
+0124		mov ax,bx
+0126		call 018a
+0129		mov ax,0020
+012C		call 0169
+012F		mov di,bx
+0131		or [di+01d5],01
+0136		add di,bx
+0138		cmp di,65
+013B		jbe short 0231
+013D		inc bx
+013E		cmp bx,64
+0141		jbe short 021d
+0143		hlt
+0144		mov bx,ax
+0146		xor dx,dx
+0148		or bx,bx
+014A		jz short 0151
+014C		add dx,ax
+014E		dec bx
+014F		jmp short 024a
+0151		mov ax,dx
+0153		ret
+0154		push bx
+0155		push dx
+0156		mov bx,ax
+0158		mov dl,[bx]
+015A		inc bx
+015B		xchg al,dl
+015D		call 0169
+0160		xchg al,dl
+0162		and dl,dl
+0164		jnz short 0258
+0166		pop dx
+0167		pop bx
+0168		ret
+0169		push bx
+016A		push di
+016B		mov bx,8000
+016E		mov di,[01d3]
+0172		mov [bx+di],al
+0174		inc di
+0175		mov [01d3],di
+0179		pop di
+017A		pop bx
+017B		ret
+017C		mov di,[01d3]
+0180		sub di,50
+0183		jns short 0280
+0185		sub [01d3],di
+0189		ret
+018A		push bx
+018B		push ax
+018C		mov bl,30
+018E		cmp ax,09
+0191		jbe short 01bd
+0193		cmp ax,63
+0196		jbe short 01ab
+0198		sub ax,64
+019B		inc bl
+019D		cmp ax,63
+01A0		ja short 0298
+01A2		xchg bl,al
+01A4		call 10169
+01A7		xchg bl,al
+01A9		mov bl,30
+01AB		cmp ax,09
+01AE		jbe short 01b6
+01B0		sub ax,0a
+01B3		inc bx
+01B4		jmp short 02ab
+01B6		xchg al,bl
+01B8		call 10169
+01BB		mov al,bl
+01BD		add al,30
+01BF		call 10169
+01C2		pop ax
+01C3		pop bx
+01C4		ret
+01C5		dec ax
+01C6		undefined op code 65
+01C7		undefined op code 6c
+01C8		undefined op code 6c
+01C9		undefined op code 6f
+01CA		sub al,20
+01CC		ja short 023d
+01CE		jb short 023c
+01D0		undefined op code 64
+01D1		and [bx+si],ax
+01D3		add [bx+si],al

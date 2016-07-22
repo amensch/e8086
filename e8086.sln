@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{
 	ProjectSection(SolutionItems) = preProject
 		Resources\8086 op code list.xlsx = Resources\8086 op code list.xlsx
 		Resources\8086-instformat.pdf = Resources\8086-instformat.pdf
+		Resources\8086_family_Users_Manual.pdf = Resources\8086_family_Users_Manual.pdf
+		Resources\codegolf oda dasm.txt = Resources\codegolf oda dasm.txt
+		Resources\codegolf.bin = Resources\codegolf.bin
+		Resources\codegolf.txt = Resources\codegolf.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUConsole", "CPUConsole\CPUConsole.csproj", "{3687E58E-5DB1-4D11-A754-47267A3A2D47}"
