@@ -59,9 +59,13 @@ namespace KDS.e8086
         private bool _repeat = false;
         private int _repeatType = 0;
 
+        // Property to indicate a halt has been encountered
+        public bool Halted { get; set; }
+
         public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
         {
             _bus = bus;
+            Halted = false;
             InitOpCodeTable();
         }
 
@@ -316,12 +320,12 @@ namespace KDS.e8086
             _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
             {
                 UInt16 oper = GetImmediate16();
-                _bus.IP = _bus.PopStack(_reg.SP);
+                _bus.IP = Pop();
                 _reg.SP += oper;
             });
             _opTable[0xc3] = new OpCodeRecord(() => // ret
             {
-                _bus.IP = _bus.PopStack(_reg.SP);
+                _bus.IP = Pop();
             });
             _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
@@ -332,23 +336,23 @@ namespace KDS.e8086
             _opTable[0xca] = new OpCodeRecord(() => // retf imm-16
             {
                 UInt16 oper = GetImmediate16();
-                _bus.IP = _bus.PopStack(_reg.SP);
-                _bus.CS = _bus.PopStack(_reg.SP);
+                _bus.IP = Pop();
+                _bus.CS = Pop();
                 _reg.SP += oper;
             });
             _opTable[0xcb] = new OpCodeRecord(() => // retf
             {
-                _bus.IP = _bus.PopStack(_reg.SP);
-                _bus.CS = _bus.PopStack(_reg.SP);
+                _bus.IP = Pop();
+                _bus.CS = Pop();
             });
             // _opTable[0xcc] INT 3
             // _opTable[0xcd] INT imm-8
             // _opTable[0xce] INTO
             _opTable[0xcf] = new OpCodeRecord(() => // iret
             {
-                _bus.IP = _bus.PopStack(_reg.SP);
-                _bus.CS = _bus.PopStack(_reg.SP);
-                _creg.Register = _bus.PopStack(_reg.SP);
+                _bus.IP = Pop();
+                _bus.CS = Pop();
+                _creg.Register = Pop();
             });
             _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
@@ -385,7 +389,11 @@ namespace KDS.e8086
                 _repeat = true;
                 _repeatType = 2;
             });
-            _opTable[0xf4] = new OpCodeRecord(() => { _bus.IP--; }); // F4 HLT
+            _opTable[0xf4] = new OpCodeRecord(() => // F4 HLT
+            {
+                _bus.IP--;
+                Halted = true;
+            }); 
             _opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
             _opTable[0xf6] = new OpCodeRecord(Execute_Group3);
             _opTable[0xf7] = new OpCodeRecord(Execute_Group3);
@@ -502,11 +510,11 @@ namespace KDS.e8086
             //      reg=001
             //      reg=100
             //      reg=110
-            if ((_currentOP == 0x82 || _currentOP == 0x83) &&
-                (reg == 0x01 || reg == 0x04 || reg == 0x06))
-            {
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", _currentOP));
-            }
+            //if ((_currentOP == 0x82 || _currentOP == 0x83) &&
+            //    (reg == 0x01 || reg == 0x04 || reg == 0x06))
+            //{
+            //    throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", _currentOP));
+            //}
 
             // reg field defines the operation
             switch (reg)
@@ -870,15 +878,15 @@ namespace KDS.e8086
                 case 0x02:
                     {
                         // CALL reg/mem-16 (intrasegment)
-                        _bus.PushStack(_reg.SP, _bus.IP);
+                        Push(_bus.IP);
                         _bus.IP = (UInt16) oper;
                         break;
                     }
                 case 0x03:
                     {
                         // CALL mem-16 (intersegment)
-                        _bus.PushStack(_reg.SP, _bus.IP);
-                        _bus.PushStack(_reg.SP, _bus.CS);
+                        Push(_bus.CS);
+                        Push(_bus.IP);
                         _bus.IP = _bus.GetData16(oper);
                         _bus.CS = _bus.GetData16(oper + 2);
                         break;
@@ -899,7 +907,7 @@ namespace KDS.e8086
                 case 0x06:
                     {
                         // push mem-16
-                        _bus.PushStack(_reg.SP, (UInt16)oper);
+                        Push((UInt16)oper);
                         break;
                     }
             }
@@ -911,15 +919,19 @@ namespace KDS.e8086
 
         private void Execute_CallNear()
         {
-            _bus.PushStack(_reg.SP, _bus.IP);
-            Execute_JumpNear();
+            UInt16 oper = GetImmediate16();
+            Push(_bus.IP);
+            _bus.IP += oper;
         }
 
         private void Execute_CallFar()
         {
-            _bus.PushStack(_reg.SP, _bus.CS);
-            _bus.PushStack(_reg.SP, _bus.IP);
-            Execute_JumpFar();
+            UInt16 nextIP = GetImmediate16();
+            UInt16 nextCS = GetImmediate16();
+            Push(_bus.CS);
+            Push(_bus.IP);
+            _bus.IP = nextIP;
+            _bus.CS = nextCS;
         }
 
         private void Execute_CondJump()
@@ -1026,16 +1038,21 @@ namespace KDS.e8086
         }
         private void Execute_JumpShort()
         {
-            _bus.IP += _bus.NextIP();
+            // add to IP "after" the instruction is complete
+            UInt16 oper = SignExtend(_bus.NextIP());
+            _bus.IP += oper;
         }
         private void Execute_JumpNear()
         {
-            _bus.IP += GetImmediate16();
+            UInt16 oper = GetImmediate16();
+            _bus.IP += oper;
         }
         private void Execute_JumpFar()
         {
-            _bus.IP = GetImmediate16();
-            _bus.CS = GetImmediate16();
+            UInt16 nextIP = GetImmediate16();
+            UInt16 nextCS = GetImmediate16();
+            _bus.IP = nextIP;
+            _bus.CS = nextCS;
         }
 
         #endregion  
@@ -1453,22 +1470,23 @@ namespace KDS.e8086
         {
             if (_currentOP == 0x9c) // PUSHF (no address byte)
             {
-                _bus.PushStack(_reg.SP, _creg.Register);
+                Push(_creg.Register);
             }
             else
             {
                 byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                // the RM portion of the op code determines the register to use
+                SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
                 // for segment register ops, use the reg field
                 if (_currentOP < 0x50)
                 {
-                    _bus.PushStack(_reg.SP, GetSegRegField(reg));
+                    Push(GetSegRegField(reg));
                 }
                 // else use rm field to determine the register
                 else
                 {
-                    _bus.PushStack(_reg.SP, GetRegField16(rm));
+                    Push(GetRegField16(rm));
                 }
             }
         }
@@ -1477,25 +1495,31 @@ namespace KDS.e8086
         {
             if (_currentOP == 0x9d) // POPF (no address byte)
             {
-                _creg.Register = _bus.PopStack(_reg.SP);
+                _creg.Register = Pop();
             }
             else
             {
                 byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
+               
+                if(_currentOP == 0x8f)
+                    SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                else
+                    SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
+
 
                 // for segment register ops, use the reg field
                 if (_currentOP < 0x50)
                 {
-                    SaveSegRegField(rm, _bus.PopStack(_reg.SP));
+                    SaveSegRegField(rm, Pop());
                 }
                 else if (_currentOP == 0x8f) // POP R/M-16
                 {
-                    SaveToDestination(_bus.PopStack(_reg.SP), 0, 1, mod, reg, rm);
+                    SaveToDestination(Pop(), 0, 1, mod, reg, rm);
                 }
                 else
                 {
-                    SaveRegField16(rm, _bus.PopStack(_reg.SP));
+                    SaveRegField16(rm, Pop());
                 }
             }
         }
@@ -2895,6 +2919,19 @@ namespace KDS.e8086
             // overflow flag
             _creg.CalcOverflowFlag(1, original, result);
 
+        }
+
+        private void Push(UInt16 value)
+        {
+            _reg.SP -= 2;
+            _bus.PushStack(_reg.SP, value);
+        }
+
+        private UInt16 Pop()
+        {
+            UInt16 result = _bus.PopStack(_reg.SP);
+            _reg.SP += 2;
+            return result;
         }
 
         #endregion

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using KDS.Utility;
+
 
 namespace KDS.e8086
 {
@@ -89,6 +91,24 @@ namespace KDS.e8086
 
             Array.Copy(_ram, pc, next, 0, 6);
             return next;
+        }
+
+        public byte[] GetNextIPBytes(int num)
+        {
+            int pc = Util.ConvertLogicalToPhysical(CS, IP);
+            byte[] next = new byte[num];
+
+            Array.Copy(_ram, pc, next, 0, num);
+            return next;
+        }
+        
+        public byte GetPhysicalRAM(int idx)
+        {
+            if (idx >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={1:X4}", DS, idx));
+            }
+            return _ram[idx];
         }
 
         #region Get and Save data with segment calculation
@@ -202,7 +222,8 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
-            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+
+            return Util.GetValue16(_ram[addr + 1], _ram[addr]); 
         }
 
         public void PushStack(int offset, UInt16 value)

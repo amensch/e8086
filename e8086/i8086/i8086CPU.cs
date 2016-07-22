@@ -21,6 +21,17 @@ namespace KDS.e8086
             _eu = new i8086ExecutionUnit(new i8086BusInterfaceUnit(0x0000, 0x0000, program));
         }
 
+        public long Run()
+        {
+            long count = 0;
+            do
+            {
+                NextInstruction();
+                count++;
+            } while (!_eu.Halted);
+            return count;
+        }
+
         public void NextInstruction()
         {
             _eu.NextInstruction();
