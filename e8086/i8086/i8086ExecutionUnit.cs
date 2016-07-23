@@ -36,6 +36,7 @@ namespace KDS.e8086
          */
 
         // Statistics
+        private Statistics _stats = new Statistics();
         private long _instrCount = 0;
         private long _RMTableLookupCount = 0;
         private UInt16 _RMTableLastLookup = 0;
@@ -86,10 +87,18 @@ namespace KDS.e8086
             get { return _bus; }
         }
 
+        public Statistics Stats
+        {
+            get { return _stats; }
+        }
+
         public void NextInstruction()
         {
             _instrCount++;
             _currentOP = _bus.NextIP();
+
+            // count statistics
+            _stats.AddOpCode(_currentOP);
 
             // if segment override process that right here
             if (_currentOP == 0x26)

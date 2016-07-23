@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using KDS.Loader;
 using KDS.e8086;
+using System.IO;
+using System.Diagnostics;
 
 namespace CPUConsole
 {
@@ -13,6 +15,8 @@ namespace CPUConsole
         static i8086CPU cpu = new i8086CPU();
         static bool exit = false;
         static long count = 0;
+        static Stopwatch sw = new Stopwatch();
+
 
         static void Main(string[] args)
         {
@@ -29,6 +33,14 @@ namespace CPUConsole
                 DisplayVRAM();
                 DisplayMenu();
             } while (!exit);
+
+            //StreamWriter sw = new StreamWriter("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf_stats.txt");
+            //sw.WriteLine(string.Format("Total Instructions Executed: {0}", cpu.EU.Stats.InstructionCount));
+            //sw.WriteLine();
+            //sw.WriteLine("Count per op code:");
+            //sw.Write(cpu.EU.Stats.GetOpReport());
+            //sw.Close();
+
         }
 
         static void DisplayDebug()
@@ -72,6 +84,7 @@ namespace CPUConsole
             if (cpu.EU.Halted)
             {
                 Console.WriteLine("Halted! Executed " + count.ToString() + " instructions");
+                Console.WriteLine("Execution Time: " + sw.ElapsedMilliseconds.ToString());
             }
 
         }
@@ -107,7 +120,9 @@ namespace CPUConsole
                 }
                 else if( ch == 'r' || ch == 'R')
                 {
+                    sw.Restart();
                     count = cpu.Run();
+                    sw.Stop();
                 }
                 else if( ch == 'b' || ch == 'B')
                 {

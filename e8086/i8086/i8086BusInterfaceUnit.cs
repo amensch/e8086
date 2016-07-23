@@ -13,6 +13,18 @@ namespace KDS.e8086
     {
         private const int MAX_MEMORY = 0x100000;
 
+        /*
+        From the 8086 manual
+        Type              Default  Alternate  Offset
+        --------------------------------------------
+        Program counter      CS       --        IP
+        Stack Op             SS       --        SP
+        Variable             DS     CS,ES,SS    eff addr
+        String src           DS     CS,ES,SS    SI
+        String dest          ES       --        DI
+        BP as Base           SS     CS,DS,ES    eff addr
+        */
+
         public UInt16 CS { get; set; }  // code segment
         public UInt16 DS { get; set; }  // data segment
         public UInt16 SS { get; set; }  // stack segment
@@ -67,7 +79,7 @@ namespace KDS.e8086
             program.CopyTo(_ram, addr);
         }
 
-        // fetch the byte pointed to by the program counter
+        // fetch the byte pointed to by the program counter and increment IP
         public byte NextIP()
         {
             int pc = Util.ConvertLogicalToPhysical(CS, IP);
@@ -83,16 +95,16 @@ namespace KDS.e8086
         }
 
         // returns the next six bytes pointed to by the program counter
+        // does not increment IP
         // the intended use is for on the fly disassembly
         public byte[] GetNext6Bytes()
         {
-            int pc = Util.ConvertLogicalToPhysical(CS, IP);
-            byte[] next = new byte[6];
-
-            Array.Copy(_ram, pc, next, 0, 6);
-            return next;
+            return GetNextIPBytes(6);
         }
 
+        // returns the next num bytes pointed to by the program counter
+        // does not increment IP
+        // the intended use is for on the fly disassembly
         public byte[] GetNextIPBytes(int num)
         {
             int pc = Util.ConvertLogicalToPhysical(CS, IP);
@@ -102,6 +114,8 @@ namespace KDS.e8086
             return next;
         }
         
+        // The EU does not access by physical address.  
+        // Intended use is for debugging and crude video ram access.
         public byte GetPhysicalRAM(int idx)
         {
             if (idx >= MAX_MEMORY)
@@ -140,7 +154,7 @@ namespace KDS.e8086
             return _ram[addr];
         }
 
-        // save the 8 bit value at the requested offset
+        // save the 8 bit value to the requested offset
         public void SaveData8(int offset, byte value)
         {
             int addr = (GetDataSegment() << 4) + offset;
@@ -162,7 +176,7 @@ namespace KDS.e8086
             return Util.GetValue16(_ram[addr + 1], _ram[addr]);
         }
 
-        // save the 16 bit value at the requested offset
+        // save the 16 bit value to the requested offset
         public void SaveData16(int offset, UInt16 value)
         {
             int addr = (GetDataSegment() << 4) + offset;
