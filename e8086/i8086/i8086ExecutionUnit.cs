@@ -836,11 +836,11 @@ namespace KDS.e8086
 
             if( reg == 0x00 )
             {
-                Execute_Increment(word_size);
+                Execute_Increment(word_size, mod, reg, rm);
             }
             else if( reg == 0x01 )
             {
-                Execute_Decrement(word_size);
+                Execute_Decrement(word_size, mod, reg, rm);
             }
             else
                 throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value {0} in opcode={1:X2}", reg, _currentOP));
@@ -867,12 +867,12 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        Execute_Increment(word_size);
+                        Execute_Increment(word_size, mod, reg, rm);
                         break;
                     }
                 case 0x01:
                     {
-                        Execute_Decrement(word_size);
+                        Execute_Decrement(word_size, mod, reg, rm);
                         break;
                     }
                 case 0x02:
@@ -1640,17 +1640,17 @@ namespace KDS.e8086
                         OR_Destination(source, direction, word_size, mod, reg, rm);
                         break;
                     }
-                case 0x20: // AND
+                case 0x02: // AND
                     {
                         AND_Destination(source, direction, word_size, mod, reg, rm, false);
                         break;
                     }
-                case 0x30: // XOR
+                case 0x03: // XOR
                     {
                         XOR_Destination(source, direction, word_size, mod, reg, rm);
                         break;
                     }
-                case 0x80: // TEST
+                case 0x08: // TEST
                     {
                         AND_Destination(source, direction, word_size, mod, reg, rm, true);
                         break;
@@ -1683,17 +1683,17 @@ namespace KDS.e8086
                         OR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
                         break;
                     }
-                case 0x20: // AND
+                case 0x02: // AND
                     {
                         AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, false);
                         break;
                     }
-                case 0x30: // XOR
+                case 0x03: // XOR
                     {
                         XOR_Destination(source, direction, word_size, 0x03, 0x00, 0x00);
                         break;
                     }
-                case 0xa0: // TEST
+                case 0x0a: // TEST
                     {
                         AND_Destination(source, direction, word_size, 0x03, 0x00, 0x00, true);
                         break;
@@ -2193,11 +2193,8 @@ namespace KDS.e8086
 
         #region Operation Functions
 
-        private void Execute_Increment(int word_size)
+        private void Execute_Increment(int word_size, byte mod, byte reg, byte rm)
         {
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
-
             int source = 1;
             int dest = GetDestinationData(0, word_size, mod, reg, rm);
             int result = dest + 1;
@@ -2214,14 +2211,11 @@ namespace KDS.e8086
             _creg.CalcParityFlag(result);
         }
 
-        private void Execute_Decrement(int word_size)
+        private void Execute_Decrement(int word_size, byte mod, byte reg, byte rm)
         {
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
-
             int source = 1;
             int dest = GetDestinationData(0, word_size, mod, reg, rm);
-            int result = dest + 1;
+            int result = dest - 1;
 
             SaveToDestination(result, 0, word_size, mod, reg, rm);
 

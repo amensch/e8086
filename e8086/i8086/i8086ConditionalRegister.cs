@@ -137,9 +137,11 @@ namespace KDS.e8086
         public void CalcCarryFlag(int word_size, int result)
         {
             if (word_size == 0)
-                CarryFlag = (result > 0xff);
+                CarryFlag = ((UInt16)result > 0xff);
             else
-                CarryFlag = (result > 0xffff);
+            {
+                CarryFlag = ((UInt32)result > 0xffff);
+            }
         }
 
         public void CalcOverflowFlag( int word_size, int src, int dest)

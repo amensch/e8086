@@ -26,7 +26,7 @@ namespace e8086UnitTests
                         });
 
             cpu.EU.Registers.AL = 0x00;
-            cpu.EU.Registers.BL = 0x00;  
+            cpu.EU.Registers.BL = 0x00;
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.AL, "SUB (1) result failed");
             Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "SUB (1) carry flag failed");
@@ -37,7 +37,7 @@ namespace e8086UnitTests
             Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "SUB (1) overflow flag failed");
 
             cpu.EU.Registers.CL = 0x80;
-            cpu.EU.Registers.DL = 0x80; 
+            cpu.EU.Registers.DL = 0x80;
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.CL, "SUB (2) result failed");
             Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "SUB (2) carry flag failed");
@@ -295,6 +295,30 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.SignFlag, "SUB (3) sign flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "SUB (3) auxcarry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (3) overflow flag failed");
+
+        }
+
+        [TestMethod]
+        public void Test83()
+        {
+            // Test Flags
+            i8086CPU cpu = GetCPU(new byte[] { 0x83, 0xf8, 0x63, /* CMP AX, 63 */
+                                                0x83, 0xf8, 0x63 /* CMP AX, 63 */
+                        });
+
+            cpu.EU.Registers.AX = 0x1000;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "CMP (1) carry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "CMP (1) zero flag failed");
+
+            cpu.EU.Registers.AX = 0x0058;
+            cpu.NextInstruction();
+
+            Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "CMP (2) carry flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "CMP (2) zero flag failed");
+
+
 
         }
     }
