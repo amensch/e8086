@@ -354,9 +354,9 @@ namespace KDS.e8086
                 _bus.IP = Pop();
                 _bus.CS = Pop();
             });
-            // _opTable[0xcc] INT 3
-            // _opTable[0xcd] INT imm-8
-            // _opTable[0xce] INTO
+            _opTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
+            _opTable[0xcd] = new OpCodeRecord(() => { Interrupt(_bus.NextIP()); });
+            _opTable[0xce] = new OpCodeRecord(() => { if (_creg.OverflowFlag) Interrupt(4); });
             _opTable[0xcf] = new OpCodeRecord(() => // iret
             {
                 _bus.IP = Pop();
@@ -2197,6 +2197,35 @@ namespace KDS.e8086
                         }
                 }
             }
+        }
+        #endregion
+
+        #region Interrupt Processing
+        private void Interrupt(int int_type)
+        {
+            UInt16 int_ptr;
+
+            // push flags
+            Push(_creg.Register);
+
+            // clear trap flag
+            _creg.TrapFlag = false;
+
+            // clear interrupt enable
+            _creg.InterruptEnable = false;
+
+            // push CS and IP
+            Push(_bus.CS);
+            Push(_bus.IP);
+
+            // address of pointer is calculated by multiplying interrupt type by 4
+            int_ptr = (UInt16)(int_type * 4);
+
+            // the second word of the interrupt pointer replaces CS
+            _bus.CS = _bus.GetData16(int_ptr + 2);
+
+            // replace IP by first word of interrupt pointer
+            _bus.CS = _bus.GetData16(int_ptr);
         }
         #endregion
 
