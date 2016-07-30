@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KDS.Utility;
 
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class i8086ExecutionUnit
     {
@@ -56,6 +56,10 @@ namespace KDS.e8086Disassembler
         // Bus Interface Unit
         private i8086BusInterfaceUnit _bus;
 
+        // I/O Ports
+        private Dictionary<UInt16, IInputDevice> _inputDevices;
+        private Dictionary<UInt16, IOutputDevice> _outputDevices;
+
         // Repeat flag
         private bool _repeat = false;
         private int _repeatType = 0;
@@ -67,6 +71,10 @@ namespace KDS.e8086Disassembler
         {
             _bus = bus;
             Halted = false;
+
+            _inputDevices = new Dictionary<UInt16, IInputDevice>();
+            _outputDevices = new Dictionary<UInt16, IOutputDevice>();
+
             InitOpCodeTable();
         }
 
@@ -125,6 +133,24 @@ namespace KDS.e8086Disassembler
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
                 _bus.UsingBasePointer = false;
             }
+        }
+
+        public void AddInputDevice(IInputDevice device, byte port)
+        {
+            if (_inputDevices.ContainsKey(port))
+            {
+                _inputDevices.Remove(port);
+            }
+            _inputDevices.Add(port, device);
+        }
+
+        public void AddOutputDevice(IOutputDevice device, byte port)
+        {
+            if (_outputDevices.ContainsKey(port))
+            {
+                _outputDevices.Remove(port);
+            }
+            _outputDevices.Add(port, device);
         }
 
         private void InitOpCodeTable()
@@ -285,7 +311,7 @@ namespace KDS.e8086Disassembler
             _opTable[0x98] = new OpCodeRecord(Execute_CBW);
             _opTable[0x99] = new OpCodeRecord(Execute_CWD);
             _opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
-            _opTable[0x9b] = new OpCodeRecord(() => { }); // for now NOP
+            _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
             // LAHF - Load AH from flags
@@ -369,21 +395,26 @@ namespace KDS.e8086Disassembler
             _opTable[0xd3] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
-            _opTable[0xd6] = new OpCodeRecord(() => { });
+            // undocumented SALC instruction
+            _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) _reg.AL = 0xff; else _reg.AL = 0x00; });
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
             _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe2] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe3] = new OpCodeRecord(Execute_JumpCXZ);
-            // E4-E5 IN
-            // E6-E7 OUT
+            _opTable[0xe4] = new OpCodeRecord(Execute_IN);
+            _opTable[0xe5] = new OpCodeRecord(Execute_IN);
+            _opTable[0xe6] = new OpCodeRecord(Execute_OUT);
+            _opTable[0xe7] = new OpCodeRecord(Execute_OUT);
             _opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
             _opTable[0xe9] = new OpCodeRecord(Execute_JumpNear);
             _opTable[0xea] = new OpCodeRecord(Execute_JumpFar);
             _opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
-            // EC-ED IN
-            // EE-EF OUT
+            _opTable[0xec] = new OpCodeRecord(Execute_IN);
+            _opTable[0xed] = new OpCodeRecord(Execute_IN);
+            _opTable[0xee] = new OpCodeRecord(Execute_OUT);
+            _opTable[0xef] = new OpCodeRecord(Execute_OUT);
             _opTable[0xf0] = new OpCodeRecord(() => { }); // LOCK
             _opTable[0xf1] = new OpCodeRecord(() => { });
             // F2 REPNE/REPNZ
@@ -461,6 +492,69 @@ namespace KDS.e8086Disassembler
                 }
             }
         }
+
+        #region Input/Output device instructions
+
+        // IN   data from port is stored in the accumulator
+        private void Execute_IN()
+        {
+            IInputDevice device;
+
+            UInt16 port;
+            if (_currentOP == 0xec || _currentOP == 0xed)
+                port = _reg.DX;
+            else
+                port = _bus.NextIP();
+
+            int word_size = Util.GetWordSize(_currentOP);
+
+            if (_inputDevices.TryGetValue(port, out device))
+            {
+                if (word_size == 0)
+                    _reg.AL = device.Read();
+                else
+                    _reg.AX = device.Read16();
+            }
+            else
+            {
+                // if no device is attached, zero out the register
+                if (word_size == 0)
+                    _reg.AL = 0;
+                else
+                    _reg.AX = 0;
+            }
+        }
+
+        // OUT  accumulator is written out to the port
+        private void Execute_OUT()
+        {
+            IOutputDevice device;
+
+            UInt16 port;
+            if (_currentOP == 0xee || _currentOP == 0xef)
+                port = _reg.DX;
+            else
+                port = _bus.NextIP();
+
+            int word_size = Util.GetWordSize(_currentOP);
+
+            if (_outputDevices.TryGetValue(port, out device))
+            {
+                if (word_size == 0)
+                    device.Write(_reg.AL);
+                else
+                    device.Write16(_reg.AX);
+            }
+            else
+            {
+                // if no device is attached, zero out the register
+                if (word_size == 0)
+                    _reg.AL = 0;
+                else
+                    _reg.AX = 0;
+            }
+        }
+        #endregion
 
         #region Grouped Instructions
         private void Execute_Group1()

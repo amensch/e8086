@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class i8086CPU
     {

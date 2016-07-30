@@ -2,7 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using KDS.e8086Disassembler;
+using KDS.e8086;
 
 namespace e8086UnitTests
 {

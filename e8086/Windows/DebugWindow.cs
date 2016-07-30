@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
-using KDS.e8086Disassembler;
+using KDS.e8086;
 
 namespace KDS.e8086
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KDS.Loader;
-using KDS.e8086Disassembler;
+using KDS.e8086;
 using System.IO;
 using System.Diagnostics;
 

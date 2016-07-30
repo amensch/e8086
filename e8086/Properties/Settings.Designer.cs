@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace KDS.e8086Disassembler.Properties {
+namespace KDS.e8086.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

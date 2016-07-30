@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class Disassemble8086 
     {

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using KDS.Utility;
 
 
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class i8086BusInterfaceUnit
     {

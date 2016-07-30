@@ -1,5 +1,5 @@
 ﻿
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class OpCodeDasmTable
     {
@@ -219,7 +219,7 @@ namespace KDS.e8086Disassembler
             new OpCodeDasmRecord(0xD3,"MRR","DISP","GRP2","RM-16","CL"),
             new OpCodeDasmRecord(0xD4,"D-8","","AAM","I-8",""),
             new OpCodeDasmRecord(0xD5,"D-8","","AAD","I-8",""),
-            new OpCodeDasmRecord(0xD6,"","","","",""),
+            new OpCodeDasmRecord(0xD6,"","","SALC","",""),
             new OpCodeDasmRecord(0xD7,"","","XLAT","",""),
             new OpCodeDasmRecord(0xD8,"MRR","DISP","ESC","OPCODE","SOURCE"),
             new OpCodeDasmRecord(0xD9,"","","","",""),

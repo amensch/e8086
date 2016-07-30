@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KDS.e8086Disassembler
+namespace KDS.e8086
 {
     public class OpCodeDasmRecord
     {
