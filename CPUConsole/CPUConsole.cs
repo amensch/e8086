@@ -20,6 +20,8 @@ namespace CPUConsole
 
         static void Main(string[] args)
         {
+            DisassembleThings();
+
             Console.SetWindowSize(100, 50);
             cpu = new i8086CPU();
             // laptop
@@ -43,6 +45,16 @@ namespace CPUConsole
             //sw.WriteLine("Count per op code:");
             //sw.Write(cpu.EU.Stats.GetOpReport());
             //sw.Close();
+
+        }
+
+        static void DisassembleThings()
+        {
+            string dasm = Disassemble8086.Disassemble(FileLoader.LoadFile("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.bin"), 0);
+
+            StreamWriter sw = new StreamWriter("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.txt");
+            sw.Write(dasm);
+            sw.Close();
 
         }
 

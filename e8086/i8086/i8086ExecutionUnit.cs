@@ -252,6 +252,7 @@ namespace KDS.e8086
             _opTable[0x5d] = new OpCodeRecord(Execute_POP);
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
+            // 0x60-6f alias 70-7f by ignoring bit 4
             _opTable[0x60] = new OpCodeRecord(() => { });
             _opTable[0x61] = new OpCodeRecord(() => { });
             _opTable[0x62] = new OpCodeRecord(() => { });
@@ -298,7 +299,7 @@ namespace KDS.e8086
             _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
             _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
             _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
-            _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);
+            _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);  // MOV CS - this should never be used in practice
             _opTable[0x8f] = new OpCodeRecord(Execute_POP);
             _opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
@@ -416,7 +417,7 @@ namespace KDS.e8086
             _opTable[0xee] = new OpCodeRecord(Execute_OUT);
             _opTable[0xef] = new OpCodeRecord(Execute_OUT);
             _opTable[0xf0] = new OpCodeRecord(() => { }); // LOCK
-            _opTable[0xf1] = new OpCodeRecord(() => { });
+            _opTable[0xf1] = new OpCodeRecord(() => { }); // officially undocumented opcode
             // F2 REPNE/REPNZ
             _opTable[0xf2] = new OpCodeRecord(() =>
             {
