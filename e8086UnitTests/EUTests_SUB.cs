@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using KDS.e8086;
+using KDS.e8086Disassembler;
 
 namespace e8086UnitTests
 {

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace KDS.e8086.Properties {
+namespace KDS.e8086Disassembler.Properties {
     using System;
     
     

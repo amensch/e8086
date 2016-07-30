@@ -1,6 +1,6 @@
 ﻿using KDS.Loader;
 
-namespace KDS.e8086
+namespace KDS.e8086Disassembler
 {
     interface ICodeDisassembler
     {

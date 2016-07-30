@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KDS.Utility;
 
-namespace KDS.e8086
+namespace KDS.e8086Disassembler
 {
     public class i8086ExecutionUnit
     {

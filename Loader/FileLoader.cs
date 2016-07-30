@@ -5,6 +5,8 @@ using System.IO;
 
 namespace KDS.Loader
 {
+    // Load a file and convert it into a byte[] array.
+    // Instantiate the class to load several files and then combine into one byte[] array.
     public class FileLoader : ICodeLoader
     {
         List<string> _fileNames = new List<string>();
@@ -14,7 +16,7 @@ namespace KDS.Loader
             _fileNames.Add(fileName);
         }
 
-        public byte[] LoadData()
+        public byte[] LoadFiles()
         {
             byte[][] buffers = new byte[_fileNames.Count][];
             for (int i = 0; i < _fileNames.Count; i++ )
@@ -25,7 +27,7 @@ namespace KDS.Loader
             return Combine(buffers);
         }
 
-        private byte[] Combine(params byte[][] arrays)
+        private static byte[] Combine(params byte[][] arrays)
         {
             byte[] ret = new byte[arrays.Sum(x => x.Length)];
             int offset = 0;
@@ -37,7 +39,7 @@ namespace KDS.Loader
             return ret;
         }
 
-        public byte[] LoadFile(string fileName)
+        public static byte[] LoadFile(string fileName)
         {
             byte[] buffer;
             FileStream fs = File.Open(fileName, FileMode.Open, FileAccess.Read);

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KDS.Loader;
-using KDS.e8086;
+using KDS.e8086Disassembler;
 using System.IO;
 using System.Diagnostics;
 
@@ -21,10 +21,13 @@ namespace CPUConsole
         static void Main(string[] args)
         {
             Console.SetWindowSize(100, 50);
-            FileLoader loader = new FileLoader();
             cpu = new i8086CPU();
-            cpu.Boot(loader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
-            cpu.EU.Registers.SP = 0x100;
+            // laptop
+            //cpu.Boot(FileLoader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
+            // desktop
+            cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
+    
+                cpu.EU.Registers.SP = 0x100;
 
             do
             {

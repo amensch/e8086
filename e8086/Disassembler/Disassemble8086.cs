@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Text;
-using System.Diagnostics;
-using KDS.Loader;
-using KDS.Utility;
 
-namespace KDS.e8086
+namespace KDS.e8086Disassembler
 {
-    public class Disassemble8086 : ICodeDisassembler
+    public class Disassemble8086 
     {
         // RegField[reg][w]
         public static string[,] RegField = new string[,]
@@ -66,24 +63,17 @@ namespace KDS.e8086
             "inc","dec","call","call","jmp","jmp","push",""
         };
 
-        public string Disassemble(ICodeLoader loader)
+        public static string Disassemble(byte[] data, UInt16 startingAddress)
         {
-            return Disassemble(loader, 0x00);
-        }
-
-        public string Disassemble(ICodeLoader loader, UInt16 startingAddress)
-        {
-            byte[] buffer = loader.LoadData();
             StringBuilder output = new StringBuilder();
 
             UInt32 pc = 0;
             string line;
 
-            while (pc < buffer.Length)
+            while (pc < data.Length)
             {
                 output.Append(pc.ToString("X4") + "\t\t");
-                pc += DisassembleNext(buffer, pc, startingAddress, out line);
-                //Debug.WriteLine(line);
+                pc += DisassembleNext(data, pc, startingAddress, out line);
                 output.AppendLine(line);
             }
 
@@ -127,14 +117,14 @@ namespace KDS.e8086
                 if (op_table.op_fmt_1.StartsWith("M-"))
                 {
                     output = string.Format("{0} [{1}],{2}", op_table.op_name,
-                                             Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"),
+                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"),
                                              op_table.op_fmt_2);
                 }
                 else
                 {
                     output = string.Format("{0} {1},[{2}]", op_table.op_name,
                                              op_table.op_fmt_1,
-                                             Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
                 }
             }
 
@@ -168,20 +158,20 @@ namespace KDS.e8086
                 if (op_table.op_fmt_1 == "I-16")
                 {
                     output = string.Format("{0} {1}", op_table.op_name,
-                                            Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
 
                 }
                 else if (op_table.op_fmt_1 == "FAR")
                 {
                     output = string.Format("{0} {1}:{2}", op_table.op_name,
-                                            Util.GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
-                                            Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
                     bytes_read += 2; // two additional bytes
                 }
                 else
                 {
                     output = string.Format("{0} {1},{2}", op_table.op_name, op_table.op_fmt_1,
-                                            Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
                 }
             }
 
@@ -198,7 +188,7 @@ namespace KDS.e8086
             // next instruction
             else if (op_table.addr_byte == "IP-INC-LO")
             {
-                UInt32 immediate = (pc + 3) + Util.GetValue16(buffer[pc + 2], buffer[pc + 1]);
+                UInt32 immediate = (pc + 3) + GetValue16(buffer[pc + 2], buffer[pc + 1]);
                 bytes_read += 2; // three byte instruction
 
                 output = string.Format("{0} {1}", op_table.op_name, immediate.ToString("X4"));
@@ -209,8 +199,8 @@ namespace KDS.e8086
             {
                 bytes_read += 4; // five byte instruction
                 output = string.Format("{0} {1}:{2}", op_table.op_name,
-                                                        Util.GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
-                                                        Util.GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                                        GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
+                                                        GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
 
             }
 
@@ -315,7 +305,7 @@ namespace KDS.e8086
             return bytes_read;
         }
 
-        public static UInt32 DisassembleRM(byte[] buffer, UInt32 pc, UInt32 offset, byte mod, byte rm, byte word_oper, out string output)
+        private static UInt32 DisassembleRM(byte[] buffer, UInt32 pc, UInt32 offset, byte mod, byte rm, byte word_oper, out string output)
         {
             UInt32 bytes_read = 0;
             output = "";
@@ -564,6 +554,10 @@ namespace KDS.e8086
             return skip;
         }
 
+        public static UInt16 GetValue16(byte hi, byte lo)
+        {
+            return (UInt16)(((UInt32)hi << 8 | (UInt32)lo) & 0xffff);
+        }
 
     }
 }

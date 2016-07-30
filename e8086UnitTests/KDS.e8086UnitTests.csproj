@@ -6,8 +6,8 @@
     <ProjectGuid>{2D066A6A-94EB-4B7B-8392-A54E9A178586}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>e8086UnitTests</RootNamespace>
-    <AssemblyName>e8086UnitTests</AssemblyName>
+    <RootNamespace>KDS.e8086UnitTests</RootNamespace>
+    <AssemblyName>KDS.e8086UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -67,9 +67,9 @@
     <Compile Include="EUTests_AdjustTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\e8086\e8086.csproj">
+    <ProjectReference Include="..\e8086\KDS.e8086.csproj">
       <Project>{9881aede-ed95-4871-878f-a250251001bb}</Project>
-      <Name>e8086</Name>
+      <Name>KDS.e8086</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

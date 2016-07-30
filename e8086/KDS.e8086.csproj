@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KDS.e8086</RootNamespace>
-    <AssemblyName>e8086</AssemblyName>
+    <AssemblyName>KDS.e8086</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -49,32 +49,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Disassembler\Disassemble8086.cs" />
-    <Compile Include="Disassembler\ICodeDisassembler.cs" />
-    <Compile Include="Disassembler.cs">
+    <Compile Include="Windows\DebugWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Disassembler.Designer.cs">
-      <DependentUpon>Disassembler.cs</DependentUpon>
+    <Compile Include="Windows\DebugWindow.Designer.cs">
+      <DependentUpon>DebugWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Components\DataRegister16.cs" />
+    <Compile Include="Disassembler\Disassemble8086.cs" />
+    <Compile Include="Disassembler\OpCodeDasmRecord.cs" />
+    <Compile Include="Disassembler\OpCodeDasmTable.cs" />
     <Compile Include="i8086\i8086BusInterfaceUnit.cs" />
     <Compile Include="i8086\i8086ConditionalRegister.cs" />
     <Compile Include="i8086\i8086CPU.cs" />
     <Compile Include="i8086\i8086ExecutionUnit.cs" />
     <Compile Include="i8086\i8086Registers.cs" />
-    <Compile Include="Disassembler\OpCodeDasmTable.cs" />
-    <Compile Include="Disassembler\OpCodeDasmRecord.cs" />
     <Compile Include="i8086\OpCode List\OpCodeRecord.cs" />
     <Compile Include="i8086\OpCode List\OpCodeTable.cs" />
-    <Compile Include="Loader\FileLoader.cs" />
-    <Compile Include="Loader\ICodeLoader.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statistics\Statistics.cs" />
     <Compile Include="Utility\Util.cs" />
-    <EmbeddedResource Include="Disassembler.resx">
-      <DependentUpon>Disassembler.cs</DependentUpon>
+    <Compile Include="Windows\NumberDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\NumberDialog.Designer.cs">
+      <DependentUpon>NumberDialog.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Windows\DebugWindow.resx">
+      <DependentUpon>DebugWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -86,6 +88,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Windows\NumberDialog.resx">
+      <DependentUpon>NumberDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -95,12 +100,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Disassembler\8086 disassembly notes.txt" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
