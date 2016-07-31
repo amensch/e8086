@@ -253,17 +253,17 @@ namespace KDS.e8086
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
             // 0x60-6f alias 70-7f by ignoring bit 4
-            _opTable[0x60] = new OpCodeRecord(() => { });
-            _opTable[0x61] = new OpCodeRecord(() => { });
-            _opTable[0x62] = new OpCodeRecord(() => { });
+            _opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
+            _opTable[0x61] = new OpCodeRecord(Execute_POPA);
+            _opTable[0x62] = new OpCodeRecord(Execute_Bound);
             _opTable[0x63] = new OpCodeRecord(() => { });
             _opTable[0x64] = new OpCodeRecord(() => { });
             _opTable[0x65] = new OpCodeRecord(() => { });
             _opTable[0x66] = new OpCodeRecord(() => { });
             _opTable[0x67] = new OpCodeRecord(() => { });
-            _opTable[0x68] = new OpCodeRecord(() => { });
+            _opTable[0x68] = new OpCodeRecord(() => { Push(GetImmediate16()); });
             _opTable[0x69] = new OpCodeRecord(() => { });
-            _opTable[0x6a] = new OpCodeRecord(() => { });
+            _opTable[0x6a] = new OpCodeRecord(() => { Push(_bus.NextIP()); });
             _opTable[0x6b] = new OpCodeRecord(() => { });
             _opTable[0x6c] = new OpCodeRecord(() => { });
             _opTable[0x6d] = new OpCodeRecord(() => { });
@@ -399,7 +399,18 @@ namespace KDS.e8086
             // undocumented SALC instruction
             _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) _reg.AL = 0xff; else _reg.AL = 0x00; });
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
+
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
+            // these are unsupported but they use the address byte so this should read
+            _opTable[0xd8] = new OpCodeRecord(() => { _bus.NextIP(); } );
+            _opTable[0xd9] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xda] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xdb] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xdc] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xdd] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xde] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xdf] = new OpCodeRecord(() => { _bus.NextIP(); });
+
             _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe2] = new OpCodeRecord(Execute_Loop);
@@ -493,6 +504,58 @@ namespace KDS.e8086
                 }
             }
         }
+
+        #region Instructions 60-6F (80186)
+
+        private void Execute_PUSHA()
+        {
+            // Op 0x60
+            UInt16 old_sp = _reg.SP;
+            Push(_reg.AX);
+            Push(_reg.CX);
+            Push(_reg.DX);
+            Push(_reg.BX);
+            Push(old_sp);
+            Push(_reg.BP);
+            Push(_reg.SI);
+            Push(_reg.DI);
+        }
+
+        private void Execute_POPA()
+        {
+            // Op 0x61
+            _reg.DI = Pop();
+            _reg.SI = Pop();
+            _reg.BP = Pop();
+            UInt16 new_sp = Pop();
+            _reg.BX = Pop();
+            _reg.DX = Pop();
+            _reg.CX = Pop();
+            _reg.AX = Pop();
+        }
+
+        private void Execute_Bound()
+        {
+            // Op 0x62
+            byte mod = 0, reg = 0, rm = 0;
+            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+            // for now assume OK
+
+            //int offset = GetSourceData(0, 1, mod, reg, rm);
+            //UInt16 source = _bus.GetData16(offset);
+
+            //offset = GetDestinationData(0, 1, mod, reg, rm);
+            //UInt16 dest = _bus.GetData16(offset);
+
+            //if( SignExtend32(source) < SignExtend32(dest) )
+            //{
+
+            //}
+        }
+
+
+        #endregion
 
         #region Input/Output device instructions
 
@@ -3318,7 +3381,7 @@ namespace KDS.e8086
                         _bus.SS = value;
                         break;
                     }
-                case 0x06:
+                case 0x03:
                     {
                         _bus.DS = value;
                         break;
