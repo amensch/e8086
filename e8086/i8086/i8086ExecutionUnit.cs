@@ -170,7 +170,7 @@ namespace KDS.e8086
             _opTable[0x0c] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
-            // _opTable[0x0f] = new OpCodeRecord(Execute_POP);  POP CS is not a valid instruction
+            // POP CS is not a valid instruction
             _opTable[0x0f] = new OpCodeRecord(() => { });
             _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
             _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
@@ -252,23 +252,174 @@ namespace KDS.e8086
             _opTable[0x5d] = new OpCodeRecord(Execute_POP);
             _opTable[0x5e] = new OpCodeRecord(Execute_POP);
             _opTable[0x5f] = new OpCodeRecord(Execute_POP);
-            // 0x60-6f alias 70-7f by ignoring bit 4
             _opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
             _opTable[0x61] = new OpCodeRecord(Execute_POPA);
             _opTable[0x62] = new OpCodeRecord(Execute_Bound);
-            _opTable[0x63] = new OpCodeRecord(() => { });
-            _opTable[0x64] = new OpCodeRecord(() => { });
-            _opTable[0x65] = new OpCodeRecord(() => { });
-            _opTable[0x66] = new OpCodeRecord(() => { });
-            _opTable[0x67] = new OpCodeRecord(() => { });
-            _opTable[0x68] = new OpCodeRecord(() => { Push(GetImmediate16()); });
-            _opTable[0x69] = new OpCodeRecord(() => { });
-            _opTable[0x6a] = new OpCodeRecord(() => { Push(_bus.NextIP()); });
-            _opTable[0x6b] = new OpCodeRecord(() => { });
-            _opTable[0x6c] = new OpCodeRecord(() => { });
-            _opTable[0x6d] = new OpCodeRecord(() => { });
-            _opTable[0x6e] = new OpCodeRecord(() => { });
-            _opTable[0x6f] = new OpCodeRecord(() => { });
+            _opTable[0x63] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x63 is not implemented"); });
+            _opTable[0x64] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x64 is not implemented"); });
+            _opTable[0x65] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x65 is not implemented"); });
+            _opTable[0x66] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x66 is not implemented"); });
+            _opTable[0x67] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x67 is not implemented"); });
+            _opTable[0x68] = new OpCodeRecord(() =>  // PUSH imm-16
+            {
+                Push(GetImmediate16());
+            });
+            _opTable[0x69] = new OpCodeRecord(() => // IMUL REG-16, RM-16, Imm
+            {
+                byte mod = 0, reg = 0, rm = 0;
+                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+                int word_size = Util.GetWordSize(_currentOP);
+                int direction = Util.GetDirection(_currentOP);
+
+                UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
+                UInt16 oper2 = GetImmediate16();
+
+                UInt32 oper1ext = SignExtend32(oper1);
+                UInt32 oper2ext = SignExtend32(oper2);
+
+                UInt32 result = oper1ext * oper2ext;
+
+                SaveToDestination((UInt16)(result & 0xffff), direction, word_size, mod, reg, rm);
+
+                if( (result & 0xffff0000) != 0 )
+                {
+                    _creg.CarryFlag = true;
+                    _creg.OverflowFlag = true;
+                }
+                else
+                {
+                    _creg.CarryFlag = false;
+                    _creg.OverflowFlag = false;
+                }
+
+            });
+            _opTable[0x6a] = new OpCodeRecord(() =>  // PUSH imm-8
+            {
+                Push(_bus.NextIP());
+            });
+            _opTable[0x6b] = new OpCodeRecord(() => 
+            {
+                byte mod = 0, reg = 0, rm = 0;
+                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+
+                int word_size = Util.GetWordSize(_currentOP);
+                int direction = Util.GetDirection(_currentOP);
+
+                UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
+                UInt16 oper2 = _bus.NextIP();
+
+                UInt32 oper1ext = SignExtend32(oper1);
+                UInt32 oper2ext = SignExtend32(oper2);
+
+                UInt32 result = oper1ext * oper2ext;
+
+                SaveToDestination((UInt16)(result & 0xffff), direction, word_size, mod, reg, rm);
+
+                if ((result & 0xffff0000) != 0)
+                {
+                    _creg.CarryFlag = true;
+                    _creg.OverflowFlag = true;
+                }
+                else
+                {
+                    _creg.CarryFlag = false;
+                    _creg.OverflowFlag = false;
+                }
+            });
+
+            _opTable[0x6c] = new OpCodeRecord(() => // INSB
+            {
+                // if repetition is on but CX is 0 then do nothing
+                if( ( _repeat ) && ( _reg.CX == 0 ) )
+                {
+                }
+                else
+                {
+                    do
+                    {
+                        Execute_IN_String();
+
+                        if (_creg.DirectionFlag)
+                            _reg.DI--;
+                        else
+                            _reg.DI++;
+
+                        if (_repeat)
+                            _reg.CX--;
+                    } while (_reg.CX != 0);
+                    _repeat = false;
+                }
+            });
+            _opTable[0x6d] = new OpCodeRecord(() => { // INSW
+            {
+                // if repetition is on but CX is 0 then do nothing
+                if ((_repeat) && (_reg.CX == 0))
+                {
+                }
+                else
+                {
+                    do
+                    {
+                        Execute_IN_String();
+
+                            if (_creg.DirectionFlag)
+                                _reg.DI -= 2;
+                            else
+                                _reg.DI += 2;
+
+                        if (_repeat)
+                            _reg.CX--;
+                    } while (_reg.CX != 0);
+                    _repeat = false;
+                }
+            });
+            _opTable[0x6e] = new OpCodeRecord(() => { // OUTSB
+            {
+                // if repetition is on but CX is 0 then do nothing
+                if ((_repeat) && (_reg.CX == 0))
+                {
+                }
+                else
+                {
+                    do
+                    {
+                        Execute_OUT_String();
+
+                        if (_creg.DirectionFlag)
+                            _reg.SI -= 1;
+                        else
+                            _reg.SI += 1;
+
+                        if (_repeat)
+                            _reg.CX--;
+                    } while (_reg.CX != 0);
+                    _repeat = false;
+                }
+            });
+            _opTable[0x6f] = new OpCodeRecord(() => { // OUTSW
+            {
+                // if repetition is on but CX is 0 then do nothing
+                if ((_repeat) && (_reg.CX == 0))
+                {
+                }
+                else
+                {
+                    do
+                    {
+                        Execute_OUT_String();
+
+                        if (_creg.DirectionFlag)
+                            _reg.SI -= 2;
+                        else
+                            _reg.SI += 2;
+
+                        if (_repeat)
+                            _reg.CX--;
+                    } while (_reg.CX != 0);
+                    _repeat = false;
+                }
+            });
             _opTable[0x70] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x71] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x72] = new OpCodeRecord(Execute_CondJump);
@@ -351,8 +502,11 @@ namespace KDS.e8086
             _opTable[0xbd] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
             _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xc0] = new OpCodeRecord(() => { });
-            _opTable[0xc1] = new OpCodeRecord(() => { });
+            // GRP2 rm-8 imm-8 (80186)
+            _opTable[0xc0] = new OpCodeRecord(Execute_RotateAndShift);
+            // GRP2 rm-16 imm-16 (80186)
+            _opTable[0xc1] = new OpCodeRecord(Execute_RotateAndShift);
+
             _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
             {
                 UInt16 oper = GetImmediate16();
@@ -367,8 +521,8 @@ namespace KDS.e8086
             _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
             _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
-            _opTable[0xc8] = new OpCodeRecord(() => { });
-            _opTable[0xc9] = new OpCodeRecord(() => { });
+            _opTable[0xc8] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0xc8 is not implemented"); });
+            _opTable[0xc9] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0xc9 is not implemented"); });
             _opTable[0xca] = new OpCodeRecord(() => // retf imm-16
             {
                 UInt16 oper = GetImmediate16();
@@ -589,6 +743,41 @@ namespace KDS.e8086
             }
         }
 
+        private void Execute_IN_String()
+        {
+            IInputDevice device;
+            int word_size = Util.GetWordSize(_currentOP);
+
+            if (_inputDevices.TryGetValue(_reg.DX, out device))
+            {
+                if (word_size == 0)
+                    _bus.StoreString8(_reg.DI, device.Read());
+                else
+                    _bus.StoreString16(_reg.DI, device.Read16());
+            }
+            else
+            {
+                if (word_size == 0)
+                    _bus.StoreString8(_reg.DI, 0);
+                else
+                    _bus.StoreString16(_reg.DI, 0);
+            }
+        }   
+
+        private void Execute_OUT_String()
+        {
+            IOutputDevice device;
+            int word_size = Util.GetWordSize(_currentOP);
+
+            if(_outputDevices.TryGetValue(_reg.DX, out device))
+            {
+                if (word_size == 0)
+                    device.Write(_bus.GetDestString8(_reg.SI));
+                else
+                    device.Write16(_bus.GetDestString16(_reg.SI));
+            }
+        }
+
         // OUT  accumulator is written out to the port
         private void Execute_OUT()
         {
@@ -608,14 +797,6 @@ namespace KDS.e8086
                     device.Write(_reg.AL);
                 else
                     device.Write16(_reg.AX);
-            }
-            else
-            {
-                // if no device is attached, zero out the register
-                if (word_size == 0)
-                    _reg.AL = 0;
-                else
-                    _reg.AX = 0;
             }
         }
         #endregion
@@ -759,9 +940,17 @@ namespace KDS.e8086
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = Util.GetWordSize(_currentOP);
+
             int operand2 = 1;
             if (_currentOP == 0xd2 || _currentOP == 0xd3)
                 operand2 = _reg.CL;
+            else if (_currentOP == 0xc0 || _currentOP == 0xc1)
+            {
+                // in this case we need to read the RM data first in the case there
+                // is displacement data to read before the immediate data
+                int operand1 = GetSourceData(0, word_size, mod, reg, rm);
+                operand2 = _bus.NextIP();
+            }
 
             switch (reg)
             {
