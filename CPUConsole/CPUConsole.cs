@@ -43,16 +43,16 @@ namespace CPUConsole
             //});
 
             // Subtraction overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
-            cpu.Boot(new byte[] {
-                                        0xc6, 0xc0, 0x5f,
-                                        0x48,
-                                        0x80, 0xe8, 0x17,
-                                        0xc6, 0x06, 0x00, 0x10, 0x7a,
-                                        0x2a, 0x06, 0x00, 0x10,
-                                        //0xb4, 0x77,
-                                        0xc6, 0xc4, 0x77,
-                                        0x28, 0xe0
-            });
+            //cpu.Boot(new byte[] {
+            //                            0xc6, 0xc0, 0x5f,
+            //                            0x48,
+            //                            0x80, 0xe8, 0x17,
+            //                            0xc6, 0x06, 0x00, 0x10, 0x7a,
+            //                            0x2a, 0x06, 0x00, 0x10,
+            //                            //0xb4, 0x77,
+            //                            0xc6, 0xc4, 0x77,
+            //                            0x28, 0xe0
+            //});
 
             do
             {

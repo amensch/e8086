@@ -988,8 +988,6 @@ namespace KDS.e8086
                 case 0x07:
                     {
                         RotateRight(word_size, operand2, mod, rm, false, true, true);
-                        // For SAR overflow flag is always zero with a count of 1. Otherwise undefined.
-                        if (operand2 == 1) _creg.OverflowFlag = false;
                         break;
                     }
             }
@@ -2071,7 +2069,6 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 source = 0x01;
             UInt16 dest = GetRegField16(rm);
             UInt16 result = (UInt16)(dest + 1);
             SaveRegField16(rm, result);
@@ -2079,10 +2076,10 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowFlag(1, 0x01, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcAuxCarryFlag(0x01, dest);
             _creg.CalcParityFlag(result);
         }
 
@@ -2095,7 +2092,6 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 source = 0x01;
             UInt16 dest = GetRegField16(rm);
             UInt16 result = (UInt16)(dest - 1);
             SaveRegField16(rm, result);
@@ -2103,10 +2099,10 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if SUB instruction was used with operand2 = 1
             // Carry flag is not affected by decrement
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowSubtract(1, 0x01, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcAuxCarryFlag(0x01, dest);
             _creg.CalcParityFlag(result);
         }
         #endregion
@@ -2610,7 +2606,7 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD or SUB instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowSubtract(1, source, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
             _creg.CalcAuxCarryFlag(source, dest);
