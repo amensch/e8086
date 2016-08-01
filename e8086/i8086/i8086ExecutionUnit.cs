@@ -988,6 +988,8 @@ namespace KDS.e8086
                 case 0x07:
                     {
                         RotateRight(word_size, operand2, mod, rm, false, true, true);
+                        // For SAR overflow flag is always zero with a count of 1. Otherwise undefined.
+                        if (operand2 == 1) _creg.OverflowFlag = false;
                         break;
                     }
             }
@@ -3070,12 +3072,20 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
-            // overflow flag
-            //_creg.CalcOverflowFlag(0, original, result);
-
-            // Clear if dest keeps sign.
-            // Set if dest changes sign.
-            _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80 ;
+            // if the operand is 1 then the overflow flag is defined
+            if( source == 1 )
+            {
+                // when shifting 1, if the two high order bits changed, set OF
+                if( shift_only )
+                {
+                    _creg.OverflowFlag = ((original & 0xc0) != (result & 0xc0));
+                }
+                else
+                {
+                    // when rotating 1, if the sign changes as a result of the rotate, set OF
+                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                }
+            }
         }
 
         private void RotateLeft16(int source, byte mod, byte rm, bool through_carry, bool shift_only)
@@ -3142,9 +3152,20 @@ namespace KDS.e8086
             // save result
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
-            // overflow flag
-            _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
-
+            // if the operand is 1 then the overflow flag is defined
+            if (source == 1)
+            {
+                // when shifting 1, if the two high order bits changed, set OF
+                if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original & 0xc000) != (result & 0xc000));
+                }
+                else
+                {
+                    // when rotating 1, if the sign changes as a result of the rotate, set OF
+                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                }
+            }
         }
 
         private void RotateRight8(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
@@ -3153,7 +3174,7 @@ namespace KDS.e8086
             int original = 0;
             int result = 0;
             int offset = 0;
-            bool old_CF;
+            bool old_CF = false;
             switch (mod)
             {
                 case 0x00:
@@ -3221,9 +3242,25 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
-            // overflow flag
-            _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
-
+            // overflow flag - only calculated if count is 1
+            if( source == 1 )
+            {
+                // arithmetic shift always clears OF
+                if(arithmetic_shift)
+                {
+                    _creg.OverflowFlag = false;
+                }
+                // if shift, set OF if the sign has changed
+                else if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                }
+                // if rotate through carry, set OF if high order bit and carry flags have changed
+                else if( !shift_only & through_carry )
+                {
+                    _creg.OverflowFlag = (((original ^ result) & 0x80) == 0x80) & (old_CF == _creg.CarryFlag);
+                }
+            }
         }
 
         private void RotateRight16(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
@@ -3232,7 +3269,7 @@ namespace KDS.e8086
             int original = 0;
             int result = 0;
             int offset = 0;
-            bool old_CF;
+            bool old_CF = false;
             switch (mod)
             {
                 case 0x00:
@@ -3299,9 +3336,25 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
-            // overflow flag
-            _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
-
+            // overflow flag - only calculated if count is 1
+            if (source == 1)
+            {
+                // arithmetic shift always clears OF
+                if (arithmetic_shift)
+                {
+                    _creg.OverflowFlag = false;
+                }
+                // if shift, set OF if the sign has changed
+                else if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                }
+                // if rotate through carry, set OF if high order bit and carry flags have changed
+                else if (!shift_only & through_carry)
+                {
+                    _creg.OverflowFlag = (((original ^ result) & 0x8000) == 0x8000) & (old_CF == _creg.CarryFlag);
+                }
+            }
         }
 
         private void Push(UInt16 value)

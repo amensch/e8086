@@ -12,8 +12,6 @@ namespace KDS.e8086UnitTests
     [TestClass]
     public class EUTest_POST_Tests
     {
-        private i8086CPU cpu;
-
         private i8086CPU GetCPU(byte[] program)
         {
             i8086CPU cpu = new i8086CPU();
