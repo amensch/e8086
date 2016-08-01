@@ -361,5 +361,35 @@ namespace e8086UnitTests
             Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
         }
 
+        [TestMethod]
+        public void TestFlags()
+        {
+            // Tests every combination of OF, SF, ZF, CF using boundary conditions
+            AdditionTest(0x7f, 0x00, 0x7f, false, false, false, false);
+            AdditionTest(0xff, 0x7f, 0x7e, false, false, false, true);
+            AdditionTest(0x00, 0x00, 0x00, false, false, true, false);
+            AdditionTest(0xff, 0x01, 0x00, false, false, true, true);
+            AdditionTest(0xff, 0x00, 0xff, false, true, false, false);
+            AdditionTest(0xff, 0xff, 0xfe, false, true, false, true);
+            AdditionTest(0xff, 0x80, 0x7f, true, false, false, true);
+            AdditionTest(0x80, 0x80, 0x00, true, false, true, true);
+            AdditionTest(0x7f, 0x7f, 0xfe, true, true, false, false);
+        }
+
+        public void AdditionTest(byte a, byte b, byte expected_result, bool expected_of, bool expected_sf, bool expected_zf, bool expected_cf)
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0xd8 });  // add al,bl
+            cpu.EU.Registers.AL = a;
+            cpu.EU.Registers.BL = b;
+            cpu.NextInstruction();
+
+            string fmt = string.Format("Add Flag Test({0:X2}+{1:X2}) ", a, b);
+            Assert.AreEqual(expected_result, cpu.EU.Registers.AL, fmt + " result failed");
+            Assert.AreEqual(expected_of, cpu.EU.CondReg.OverflowFlag, fmt + " OF failed");
+            Assert.AreEqual(expected_sf, cpu.EU.CondReg.SignFlag, fmt + " SF failed");
+            Assert.AreEqual(expected_zf, cpu.EU.CondReg.ZeroFlag, fmt + " ZF failed");
+            Assert.AreEqual(expected_cf, cpu.EU.CondReg.CarryFlag, fmt + " CF failed");
+        }
+
     }
 }

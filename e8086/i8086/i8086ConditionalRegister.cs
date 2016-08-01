@@ -153,6 +153,15 @@ namespace KDS.e8086
                 OverflowFlag = ((result ^ src) & (result ^ dest) & 0x8000) == 0x8000;
         }
 
+        public void CalcOverflowSubtract( int word_size, int src, int dest)
+        {
+            int result = dest - src;
+            if (word_size == 0)
+                OverflowFlag = ((result ^ dest) & (src ^ dest) & 0x80) == 0x80;
+            else
+                OverflowFlag = ((result ^ dest) & (src ^ dest) & 0x8000) == 0x8000;
+        }
+
         public void CalcAuxCarryFlag( int src, int dst )
         {
             int result = src + dst;

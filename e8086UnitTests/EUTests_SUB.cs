@@ -45,7 +45,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SUB (2) zero flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.SignFlag, "SUB (2) sign flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.AuxCarryFlag, "SUB (2) auxcarry flag failed");
-            Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (2) overflow flag failed");
+            Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "SUB (2) overflow flag failed");
         }
 
         [TestMethod]
@@ -317,9 +317,34 @@ namespace e8086UnitTests
 
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "CMP (2) carry flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "CMP (2) zero flag failed");
+        }
 
+        [TestMethod]
+        public void TestFlags()
+        {
+            // Tests every combination of OF, SF, ZF, CF using boundary conditions
+            SubtractionTest(0xff, 0xfe, 0x01, false, false, false, false);
+            SubtractionTest(0x7e, 0xff, 0x7f, false, false, false, true);
+            SubtractionTest(0xff, 0xff, 0x00, false, false, true, false);
+            SubtractionTest(0xff, 0x7f, 0x80, false, true, false, false);
+            SubtractionTest(0xfe, 0xff, 0xff, false, true, false, true);
+            SubtractionTest(0xfe, 0x7f, 0x7f, true, false, false, false);
+            SubtractionTest(0x7f, 0xff, 0x80, true, true, false, true);
+        }
 
+        public void SubtractionTest(byte a, byte b, byte expected_result, bool expected_of, bool expected_sf, bool expected_zf, bool expected_cf)
+        {
+            i8086CPU cpu = GetCPU(new byte[] { 0x28, 0xd8 });  // sub al,bl
+            cpu.EU.Registers.AL = a;
+            cpu.EU.Registers.BL = b;
+            cpu.NextInstruction();
 
+            string fmt = string.Format("SUB Flag Test({0:X2}-{1:X2}) ", a, b);
+            Assert.AreEqual(expected_result, cpu.EU.Registers.AL, fmt + " result failed");
+            Assert.AreEqual(expected_of, cpu.EU.CondReg.OverflowFlag, fmt + " OF failed");
+            Assert.AreEqual(expected_sf, cpu.EU.CondReg.SignFlag, fmt + " SF failed");
+            Assert.AreEqual(expected_zf, cpu.EU.CondReg.ZeroFlag, fmt + " ZF failed");
+            Assert.AreEqual(expected_cf, cpu.EU.CondReg.CarryFlag, fmt + " CF failed");
         }
     }
 }

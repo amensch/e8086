@@ -2715,13 +2715,13 @@ namespace KDS.e8086
                 if (word_size == 0)
                 {
                     dest = GetRegField8(reg);
-                    result = dest - source - carry;
+                    result = dest - (source + carry);
                     if(!comp_only) SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetRegField16(reg);
-                    result = dest - source - carry;
+                    result = dest - (source + carry);
                     if (!comp_only) SaveRegField16(reg, (UInt16)result);
                 }
             }
@@ -2733,7 +2733,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable1(rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest - source - carry;
+                            result = dest - (source + carry);
                             if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -2742,7 +2742,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable2(mod, rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest - source - carry;
+                            result = dest - (source + carry);
                             if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -2751,13 +2751,13 @@ namespace KDS.e8086
                             if (word_size == 0)
                             {
                                 dest = GetRegField8(rm);
-                                result = dest - source - carry;
+                                result = dest - (source + carry);
                                 if (!comp_only) SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
                                 dest = GetRegField16(rm);
-                                result = dest - source - carry;
+                                result = dest - (source + carry);
                                 if (!comp_only) SaveRegField16(rm, (UInt16)result);
                             }
                             break;
@@ -2766,7 +2766,7 @@ namespace KDS.e8086
             }
 
             // Flags: O S Z A P C
-            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcOverflowSubtract(word_size, source + carry, dest);
             _creg.CalcSignFlag(word_size, result);
             _creg.CalcZeroFlag(word_size, result);
             _creg.CalcAuxCarryFlag(source, dest);
@@ -3072,12 +3072,9 @@ namespace KDS.e8086
 
             // overflow flag
             //_creg.CalcOverflowFlag(0, original, result);
+
             // Clear if dest keeps sign.
             // Set if dest changes sign.
-
-            Debug.WriteLine(string.Format("original = {0:X2}", original));
-            Debug.WriteLine(string.Format("result = {0:X2}", result));
-
             _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80 ;
         }
 

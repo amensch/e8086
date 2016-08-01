@@ -31,25 +31,27 @@ namespace CPUConsole
 
             //cpu.EU.Registers.SP = 0x100;
 
+            // Addition overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
+            //cpu.Boot(new byte[] {
+            //                            0xc6, 0x06, 0x00, 0x10, 0x27,
+            //                            0xc6, 0xc0, 0x1a,
+            //                            0x40,
+            //                            0x80, 0xc0, 0x4c,
+            //                            0x02, 0x06, 0x00, 0x10,
+            //                            0x88, 0xc4,
+            //                            0x00, 0xe0
+            //});
+
+            // Subtraction overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
             cpu.Boot(new byte[] {
-                                        0xb8, 0xff, 0xff,   // mov ax,0xffff
-                                        0xf9,               // stc
-                   /* C8 */             0x8e, 0xd8,         // mov ds, ax
-                                        0x8c, 0xdb,         // mov bx, ds
-                                        0x8e, 0xc3,         // mov es, bx
-                                        0x8c, 0xc1,         
-                                        0x8e, 0xd1,
-                                        0x8c, 0xd2,
-                                        0x8b, 0xe2,
-                                        0x8b, 0xec,
-                                        0x8b, 0xf5,
-                                        0x8b, 0xfe,
-                                        0x73, 0x07,         // jnc c9
-                                        0x33, 0xc7,
-                                        0x75, 0x07,         // jnz err
-                                        0xf8,               // clc
-                                        0xeb, 0xe3,         // jmp c8
-                  /* C9 */              0x0b, 0xc7
+                                        0xc6, 0xc0, 0x5f,
+                                        0x48,
+                                        0x80, 0xe8, 0x17,
+                                        0xc6, 0x06, 0x00, 0x10, 0x7a,
+                                        0x2a, 0x06, 0x00, 0x10,
+                                        //0xb4, 0x77,
+                                        0xc6, 0xc4, 0x77,
+                                        0x28, 0xe0
             });
 
             do
