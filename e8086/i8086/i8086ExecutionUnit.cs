@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KDS.Utility;
+using System.Diagnostics;
 
 namespace KDS.e8086
 {
@@ -351,7 +352,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6d] = new OpCodeRecord(() => { // INSW
+            _opTable[0x6d] = new OpCodeRecord(() => // INSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -374,7 +375,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6e] = new OpCodeRecord(() => { // OUTSB
+            _opTable[0x6e] = new OpCodeRecord(() => // OUTSB
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -397,7 +398,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6f] = new OpCodeRecord(() => { // OUTSW
+            _opTable[0x6f] = new OpCodeRecord(() => // OUTSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -466,10 +467,10 @@ namespace KDS.e8086
             _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-            // LAHF - Load AH from flags
-            _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             // SAHF - Store SH to flags
-            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });    
+            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });
+            // LAHF - Load AH from flags
+            _opTable[0x9f] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -3008,8 +3009,8 @@ namespace KDS.e8086
         private void RotateLeft8(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
             AssertMOD(mod);
-            int original = 0;
-            int result = 0;
+            byte original = 0;
+            byte result = 0;
             bool old_CF;
             int offset = 0;
             switch (mod)
@@ -3070,8 +3071,14 @@ namespace KDS.e8086
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
             // overflow flag
-            _creg.CalcOverflowFlag(0, original, result);
+            //_creg.CalcOverflowFlag(0, original, result);
+            // Clear if dest keeps sign.
+            // Set if dest changes sign.
 
+            Debug.WriteLine(string.Format("original = {0:X2}", original));
+            Debug.WriteLine(string.Format("result = {0:X2}", result));
+
+            _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80 ;
         }
 
         private void RotateLeft16(int source, byte mod, byte rm, bool through_carry, bool shift_only)
@@ -3139,7 +3146,7 @@ namespace KDS.e8086
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
             // overflow flag
-            _creg.CalcOverflowFlag(1, original, result);
+            _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
 
         }
 
@@ -3218,7 +3225,7 @@ namespace KDS.e8086
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
             // overflow flag
-            _creg.CalcOverflowFlag(0, original, result);
+            _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
 
         }
 
@@ -3296,7 +3303,7 @@ namespace KDS.e8086
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
             // overflow flag
-            _creg.CalcOverflowFlag(1, original, result);
+            _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
 
         }
 

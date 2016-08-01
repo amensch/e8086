@@ -27,9 +27,30 @@ namespace CPUConsole
             // laptop
             //cpu.Boot(FileLoader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
             // desktop
-            cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
-    
-                cpu.EU.Registers.SP = 0x100;
+            //cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
+
+            //cpu.EU.Registers.SP = 0x100;
+
+            cpu.Boot(new byte[] {
+                                        0xb8, 0xff, 0xff,   // mov ax,0xffff
+                                        0xf9,               // stc
+                   /* C8 */             0x8e, 0xd8,         // mov ds, ax
+                                        0x8c, 0xdb,         // mov bx, ds
+                                        0x8e, 0xc3,         // mov es, bx
+                                        0x8c, 0xc1,         
+                                        0x8e, 0xd1,
+                                        0x8c, 0xd2,
+                                        0x8b, 0xe2,
+                                        0x8b, 0xec,
+                                        0x8b, 0xf5,
+                                        0x8b, 0xfe,
+                                        0x73, 0x07,         // jnc c9
+                                        0x33, 0xc7,
+                                        0x75, 0x07,         // jnz err
+                                        0xf8,               // clc
+                                        0xeb, 0xe3,         // jmp c8
+                  /* C9 */              0x0b, 0xc7
+            });
 
             do
             {
