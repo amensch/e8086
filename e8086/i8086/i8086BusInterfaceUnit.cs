@@ -184,7 +184,9 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
+            DataRegister16 data = new DataRegister16(value);
+            _ram[addr + 1] = data.HI;
+            _ram[addr] = data.LO;
         }
 
         #endregion
@@ -201,7 +203,10 @@ namespace KDS.e8086
         public void MoveString16(int src_offset, int dst_offset)
         {
             int dst_addr = (ES << 4) + dst_offset;
-            Util.SplitValue16(GetData16(src_offset), ref _ram[dst_addr + 1], ref _ram[dst_addr]);
+
+            DataRegister16 data = new DataRegister16(GetData16(src_offset));
+            _ram[dst_addr + 1] = data.HI;
+            _ram[dst_addr] = data.LO;
         }
 
         public byte GetDestString8(int offset)
@@ -223,7 +228,9 @@ namespace KDS.e8086
         public void StoreString16(int offset, UInt16 data)
         {
             int addr = (ES << 4) + offset;
-            Util.SplitValue16(data, ref _ram[addr + 1], ref _ram[addr]);
+            DataRegister16 reg = new DataRegister16(data);
+            _ram[addr + 1] = reg.HI;
+            _ram[addr] = reg.LO;
         }
 
         #endregion
@@ -247,7 +254,10 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
-            Util.SplitValue16(value, ref _ram[addr + 1], ref _ram[addr]);
+
+            DataRegister16 reg = new DataRegister16(value);
+            _ram[addr + 1] = reg.HI;
+            _ram[addr] = reg.LO;
         }
 
         #endregion

@@ -4,11 +4,6 @@ namespace KDS.Utility
 {
     public class Util
     {
-        public static void SplitValue16(UInt16 num, ref byte hi, ref byte lo)
-        {
-            hi = (byte)((num >> 8) & 0x00ff);
-            lo = (byte)(num & 0x00ff);
-        }
 
         public static byte GetMODValue(byte b)
         {
