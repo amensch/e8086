@@ -16,9 +16,9 @@ namespace KDS.e8086UnitTests
         {
             i8086CPU cpu = new i8086CPU();
             cpu.Boot(program);
-            cpu.EU.Bus.DS = 0x0000;
-            cpu.EU.Bus.SS = 0x0000;
-            cpu.EU.Bus.ES = 0x0000;
+            cpu.Bus.DS = 0x0000;
+            cpu.Bus.SS = 0x0000;
+            cpu.Bus.ES = 0x0000;
             return cpu;
         }
 

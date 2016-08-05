@@ -11,9 +11,9 @@ namespace e8086UnitTests
         {
             i8086CPU cpu = new i8086CPU();
             cpu.Boot(program);
-            cpu.EU.Bus.DS = 0x2000;
-            cpu.EU.Bus.SS = 0x4000;
-            cpu.EU.Bus.ES = 0x6000;
+            cpu.Bus.DS = 0x2000;
+            cpu.Bus.SS = 0x4000;
+            cpu.Bus.ES = 0x6000;
             return cpu;
         }
 
@@ -92,9 +92,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.EU.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x0000, cpu.EU.Bus.GetData16(0x0115), "SUB (4) result failed");
+            Assert.AreEqual(0x0000, cpu.Bus.GetData16(0x0115), "SUB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SUB (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SUB (4) zero flag failed");
@@ -148,7 +148,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.EU.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.DH, "SUB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (4) carry flag failed");
@@ -204,7 +204,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SUB (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.EU.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.EU.Registers.SI, "SUB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SUB (4) carry flag failed");

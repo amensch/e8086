@@ -31,11 +31,11 @@ namespace KDS.e8086
             txtBP.Text = RegToString(_cpu.EU.Registers.BP);
             txtSI.Text = RegToString(_cpu.EU.Registers.SI);
             txtDI.Text = RegToString(_cpu.EU.Registers.DI);
-            txtCS.Text = RegToString(_cpu.EU.Bus.CS);
-            txtDS.Text = RegToString(_cpu.EU.Bus.DS);
-            txtES.Text = RegToString(_cpu.EU.Bus.ES);
-            txtSS.Text = RegToString(_cpu.EU.Bus.SS);
-            txtIP.Text = RegToString(_cpu.EU.Bus.IP);
+            txtCS.Text = RegToString(_cpu.Bus.CS);
+            txtDS.Text = RegToString(_cpu.Bus.DS);
+            txtES.Text = RegToString(_cpu.Bus.ES);
+            txtSS.Text = RegToString(_cpu.Bus.SS);
+            txtIP.Text = RegToString(_cpu.Bus.IP);
 
             lblTF.BackColor = FlagToColor(_cpu.EU.CondReg.TrapFlag);
             lblDF.BackColor = FlagToColor(_cpu.EU.CondReg.DirectionFlag);
@@ -48,11 +48,11 @@ namespace KDS.e8086
             lblCF.BackColor = FlagToColor(_cpu.EU.CondReg.CarryFlag);
 
             string dasm;
-            int bytes = (int)Disassemble8086.DisassembleNext(_cpu.EU.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            int bytes = (int)Disassemble8086.DisassembleNext(_cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
             lblDasm.Text = dasm;
 
             lblNext.Text = "";
-            byte[] data = _cpu.EU.Bus.GetNextIPBytes(bytes);
+            byte[] data = _cpu.Bus.GetNextIPBytes(bytes);
             for (int ii = 0; ii < bytes; ii++)
             {
                 lblNext.Text += string.Format("{0:X2}", data[ii]);
@@ -93,7 +93,7 @@ namespace KDS.e8086
                 do
                 {
                     _cpu.NextInstruction();
-                } while (_cpu.EU.Bus.IP != stopIP);
+                } while (_cpu.Bus.IP != stopIP);
             }
             UpdateDisplay();
         }

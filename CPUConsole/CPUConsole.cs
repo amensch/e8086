@@ -102,7 +102,7 @@ namespace CPUConsole
                 cpu.EU.Registers.SP, cpu.EU.Registers.BP, cpu.EU.Registers.SI, cpu.EU.Registers.DI));
 
             Console.WriteLine(string.Format("CS: {0:X4}\tDS: {1:X4}\tSS: {2:X4}\tES: {3:X4}",
-                cpu.EU.Bus.CS, cpu.EU.Bus.DS, cpu.EU.Bus.SS, cpu.EU.Bus.ES));
+                cpu.Bus.CS, cpu.Bus.DS, cpu.Bus.SS, cpu.Bus.ES));
 
             Console.WriteLine("\t\tTF DF IF OF SF ZF AF PF CF");
 
@@ -119,10 +119,10 @@ namespace CPUConsole
 
             Console.WriteLine();
             string dasm;
-            int bytes = (int)Disassemble8086.DisassembleNext(cpu.EU.Bus.GetNext6Bytes(), 0, 0, out dasm);
-            Console.WriteLine("IP {0:X4}: {1}", cpu.EU.Bus.IP,dasm);
+            int bytes = (int)Disassemble8086.DisassembleNext(cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            Console.WriteLine("IP {0:X4}: {1}", cpu.Bus.IP,dasm);
 
-            byte[] data = cpu.EU.Bus.GetNextIPBytes(bytes);
+            byte[] data = cpu.Bus.GetNextIPBytes(bytes);
             string opstring = "";
             for (int ii = 0; ii < bytes; ii++)
             {
@@ -148,7 +148,7 @@ namespace CPUConsole
                 line = new StringBuilder();
                 for( int col=0; col < 80; col++)
                 {
-                    line.Append((char)cpu.EU.Bus.GetPhysicalRAM(addr++));
+                    line.Append((char)cpu.Bus.GetPhysicalRAM(addr++));
                 }
                 Console.WriteLine(line.ToString());
             }
@@ -183,7 +183,7 @@ namespace CPUConsole
                     do
                     {
                         cpu.EU.NextInstruction();
-                    } while (cpu.EU.Bus.IP != 0x01a2);
+                    } while (cpu.Bus.IP != 0x01a2);
                 }
 
             }

@@ -89,11 +89,6 @@ namespace KDS.e8086
             get { return _creg; }
         }
 
-        public i8086BusInterfaceUnit Bus
-        {
-            get { return _bus; }
-        }
-
         public Statistics Stats
         {
             get { return _stats; }
@@ -2173,8 +2168,8 @@ namespace KDS.e8086
         private void ExecuteMOV_Mem()
         {
             // MOV MEM <-> IMM (8 and 16)
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
+            byte lo = _bus.NextIP();
+            byte hi = _bus.NextIP();
             switch(_currentOP)
             {
                 case 0xa0:
