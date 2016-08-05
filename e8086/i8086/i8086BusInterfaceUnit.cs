@@ -70,7 +70,7 @@ namespace KDS.e8086
             CS = startupCS;
             IP = startupIP;
 
-            int addr = Util.ConvertLogicalToPhysical(CS, IP);
+            int addr = GetPhysicalAddress();
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} IP={1:X4}", CS, IP));
@@ -82,7 +82,7 @@ namespace KDS.e8086
         // fetch the byte pointed to by the program counter and increment IP
         public byte NextIP()
         {
-            int pc = Util.ConvertLogicalToPhysical(CS, IP);
+            int pc = GetPhysicalAddress();
 
             if (pc >= MAX_MEMORY)
             {
@@ -107,7 +107,7 @@ namespace KDS.e8086
         // the intended use is for on the fly disassembly
         public byte[] GetNextIPBytes(int num)
         {
-            int pc = Util.ConvertLogicalToPhysical(CS, IP);
+            int pc = GetPhysicalAddress();
             byte[] next = new byte[num];
 
             Array.Copy(_ram, pc, next, 0, num);
@@ -279,6 +279,11 @@ namespace KDS.e8086
                 return SS;
             else
                 return DS;
+        }
+
+        private int GetPhysicalAddress()
+        {
+            return (CS << 4) + IP;
         }
     }
 }

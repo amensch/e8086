@@ -29,11 +29,5 @@ namespace KDS.Utility
         {
             return b & 0x01;
         }
-
-        // convert a segment and offset into a physical ram address
-        public static int ConvertLogicalToPhysical(UInt16 segment, UInt16 offset)
-        {
-            return (segment << 4) + offset;
-        }
     }
 }
