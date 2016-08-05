@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using KDS.Utility;
 
 namespace KDS.e8086
 {
@@ -269,8 +268,8 @@ namespace KDS.e8086
                 byte mod = 0, reg = 0, rm = 0;
                 SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-                int word_size = Util.GetWordSize(_currentOP);
-                int direction = Util.GetDirection(_currentOP);
+                int word_size = GetWordSize();
+                int direction = GetDirection();
 
                 UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
                 UInt16 oper2 = GetImmediate16();
@@ -303,8 +302,8 @@ namespace KDS.e8086
                 byte mod = 0, reg = 0, rm = 0;
                 SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-                int word_size = Util.GetWordSize(_currentOP);
-                int direction = Util.GetDirection(_currentOP);
+                int word_size = GetWordSize();
+                int direction = GetDirection();
 
                 UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
                 UInt16 oper2 = _bus.NextIP();
@@ -724,7 +723,7 @@ namespace KDS.e8086
             else
                 port = _bus.NextIP();
 
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             if (_inputDevices.TryGetValue(port, out device))
             {
@@ -746,7 +745,7 @@ namespace KDS.e8086
         private void Execute_IN_String()
         {
             IInputDevice device;
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             if (_inputDevices.TryGetValue(_reg.DX, out device))
             {
@@ -767,7 +766,7 @@ namespace KDS.e8086
         private void Execute_OUT_String()
         {
             IOutputDevice device;
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             if(_outputDevices.TryGetValue(_reg.DX, out device))
             {
@@ -789,7 +788,7 @@ namespace KDS.e8086
             else
                 port = _bus.NextIP();
 
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             if (_outputDevices.TryGetValue(port, out device))
             {
@@ -939,7 +938,7 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             int operand2 = 1;
             if (_currentOP == 0xd2 || _currentOP == 0xd3)
@@ -1008,8 +1007,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int word_size = Util.GetWordSize(_currentOP);
-            int direction = Util.GetDirection(_currentOP);
+            int word_size = GetWordSize();
+            int direction = GetDirection();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
             int dest = 0;
@@ -1188,7 +1187,7 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             if( reg == 0x00 )
             {
@@ -1216,7 +1215,7 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             int oper = GetDestinationData(0, word_size, mod, reg, rm);
 
             switch(reg)
@@ -1418,7 +1417,7 @@ namespace KDS.e8086
         {
             do
             {
-                int word_size = Util.GetWordSize(_currentOP);
+                int word_size = GetWordSize();
                 if (word_size == 0)
                 {
                     _bus.MoveString8(_reg.SI, _reg.DI);
@@ -1459,7 +1458,7 @@ namespace KDS.e8086
         }
         private void Execute_CompareString()
         {
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             int result = 0;
             int source = 0;
             int dest = _bus.GetData(word_size, _reg.SI);
@@ -1516,7 +1515,7 @@ namespace KDS.e8086
         }
         private void Execute_ScanString()
         {
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             int result = 0;
             int source = 0;
             int dest = 0;
@@ -1570,7 +1569,7 @@ namespace KDS.e8086
         }
         private void Execute_StoreString()
         {
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             do
             {
                 if (word_size == 0)
@@ -1603,7 +1602,7 @@ namespace KDS.e8086
         }
         private void Execute_LoadString()
         {
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             do
             {
                 if (word_size == 0)
@@ -1811,8 +1810,8 @@ namespace KDS.e8086
 
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int offset = GetSourceData(direction, word_size, mod, reg, rm);
             int source = _bus.GetData(word_size, offset);
@@ -1895,8 +1894,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
 
@@ -1913,7 +1912,7 @@ namespace KDS.e8086
             bool with_carry = (_currentOP & 0x10) == 0x10;
 
             int direction = 0;
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             int source;
 
             if (word_size == 0)
@@ -1942,8 +1941,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
             SUB_Destination(source, direction, word_size, mod, reg, rm, with_carry, comp_only);
@@ -1958,7 +1957,7 @@ namespace KDS.e8086
             bool comp_only = (_currentOP & 0x30) == 0x30;
 
             int direction = 0;
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
             int source;
 
             if (word_size == 0)
@@ -1983,8 +1982,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
 
@@ -2022,7 +2021,7 @@ namespace KDS.e8086
             // TEST: A8-A9
 
             int direction = 0;
-            int word_size = Util.GetWordSize(_currentOP);
+            int word_size = GetWordSize();
 
             int source;
 
@@ -2135,8 +2134,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
             int dest = GetDestinationData(direction, word_size, mod, reg, rm);
@@ -2156,8 +2155,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm);
             SaveToDestination(source, direction, word_size, mod, reg, rm);
@@ -2167,8 +2166,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = Util.GetDirection(_currentOP);
-            int word_size = Util.GetWordSize(_currentOP);
+            int direction = GetDirection();
+            int word_size = GetWordSize();
 
             int source = GetSourceData(direction, word_size, mod, reg, rm, true);
             SaveToDestination(source, direction, word_size, mod, reg, rm, true);
@@ -3757,9 +3756,19 @@ namespace KDS.e8086
 
         private void SplitAddrByte(byte addr, ref byte mod, ref byte reg, ref byte rm)
         {
-            mod = Util.GetMODValue(addr);
-            reg = Util.GetREGValue(addr);
-            rm = Util.GetRMValue(addr);
+            mod = (byte)((addr >> 6) & 0x03);
+            reg = (byte)((addr >> 3) & 0x07);
+            rm = (byte)(addr & 0x07);
+        }
+
+        private int GetDirection()
+        {
+            return (_currentOP >> 1) & 0x01;
+        }
+
+        private int GetWordSize()
+        {
+            return (_currentOP & 0x01);
         }
 
         // Assert a proper mod value
