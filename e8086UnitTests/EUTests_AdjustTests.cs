@@ -145,7 +145,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_LoadAndStoreFlags()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x9e, 0x9f });
+            i8086CPU cpu = GetCPU(new byte[] { 0x9f, 0x9e });
 
             cpu.EU.CondReg.Register = 0x15d7;
             cpu.NextInstruction();

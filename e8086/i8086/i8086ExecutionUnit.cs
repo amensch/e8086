@@ -465,10 +465,10 @@ namespace KDS.e8086
             _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
-            // LAHF - Load AH from flags
-            _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             // SAHF - Store SH to flags
-            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), _reg.AH); });    
+            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });
+            // LAHF - Load AH from flags
+            _opTable[0x9f] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -2067,7 +2067,6 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 source = 0x01;
             UInt16 dest = GetRegField16(rm);
             UInt16 result = (UInt16)(dest + 1);
             SaveRegField16(rm, result);
@@ -2075,10 +2074,10 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowFlag(1, 0x01, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcAuxCarryFlag(0x01, dest);
             _creg.CalcParityFlag(result);
         }
 
@@ -2091,7 +2090,6 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 source = 0x01;
             UInt16 dest = GetRegField16(rm);
             UInt16 result = (UInt16)(dest - 1);
             SaveRegField16(rm, result);
@@ -2099,10 +2097,10 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if SUB instruction was used with operand2 = 1
             // Carry flag is not affected by decrement
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowSubtract(1, 0x01, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
+            _creg.CalcAuxCarryFlag(0x01, dest);
             _creg.CalcParityFlag(result);
         }
         #endregion
@@ -2606,7 +2604,7 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD or SUB instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowFlag(1, source, dest);
+            _creg.CalcOverflowSubtract(1, source, dest);
             _creg.CalcSignFlag(1, result);
             _creg.CalcZeroFlag(1, result);
             _creg.CalcAuxCarryFlag(source, dest);
@@ -2713,13 +2711,13 @@ namespace KDS.e8086
                 if (word_size == 0)
                 {
                     dest = GetRegField8(reg);
-                    result = dest - source - carry;
+                    result = dest - (source + carry);
                     if(!comp_only) SaveRegField8(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetRegField16(reg);
-                    result = dest - source - carry;
+                    result = dest - (source + carry);
                     if (!comp_only) SaveRegField16(reg, (UInt16)result);
                 }
             }
@@ -2731,7 +2729,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable1(rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest - source - carry;
+                            result = dest - (source + carry);
                             if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -2740,7 +2738,7 @@ namespace KDS.e8086
                         {
                             offset = GetRMTable2(mod, rm);
                             dest = _bus.GetData(word_size, offset);
-                            result = dest - source - carry;
+                            result = dest - (source + carry);
                             if (!comp_only) _bus.SaveData(word_size, offset, result);
                             break;
                         }
@@ -2749,13 +2747,13 @@ namespace KDS.e8086
                             if (word_size == 0)
                             {
                                 dest = GetRegField8(rm);
-                                result = dest - source - carry;
+                                result = dest - (source + carry);
                                 if (!comp_only) SaveRegField8(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
                                 dest = GetRegField16(rm);
-                                result = dest - source - carry;
+                                result = dest - (source + carry);
                                 if (!comp_only) SaveRegField16(rm, (UInt16)result);
                             }
                             break;
@@ -2764,7 +2762,7 @@ namespace KDS.e8086
             }
 
             // Flags: O S Z A P C
-            _creg.CalcOverflowFlag(word_size, source, dest);
+            _creg.CalcOverflowSubtract(word_size, source + carry, dest);
             _creg.CalcSignFlag(word_size, result);
             _creg.CalcZeroFlag(word_size, result);
             _creg.CalcAuxCarryFlag(source, dest);
@@ -3007,8 +3005,8 @@ namespace KDS.e8086
         private void RotateLeft8(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
             AssertMOD(mod);
-            int original = 0;
-            int result = 0;
+            byte original = 0;
+            byte result = 0;
             bool old_CF;
             int offset = 0;
             switch (mod)
@@ -3068,9 +3066,20 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
-            // overflow flag
-            _creg.CalcOverflowFlag(0, original, result);
-
+            // if the operand is 1 then the overflow flag is defined
+            if( source == 1 )
+            {
+                // when shifting 1, if the two high order bits changed, set OF
+                if( shift_only )
+                {
+                    _creg.OverflowFlag = ((original & 0xc0) != (result & 0xc0));
+        }
+                else
+                {
+                    // when rotating 1, if the sign changes as a result of the rotate, set OF
+                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                }
+            }
         }
 
         private void RotateLeft16(int source, byte mod, byte rm, bool through_carry, bool shift_only)
@@ -3137,9 +3146,20 @@ namespace KDS.e8086
             // save result
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
-            // overflow flag
-            _creg.CalcOverflowFlag(1, original, result);
-
+            // if the operand is 1 then the overflow flag is defined
+            if (source == 1)
+            {
+                // when shifting 1, if the two high order bits changed, set OF
+                if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original & 0xc000) != (result & 0xc000));
+                }
+                else
+                {
+                    // when rotating 1, if the sign changes as a result of the rotate, set OF
+                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                }
+            }
         }
 
         private void RotateRight8(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
@@ -3148,7 +3168,7 @@ namespace KDS.e8086
             int original = 0;
             int result = 0;
             int offset = 0;
-            bool old_CF;
+            bool old_CF = false;
             switch (mod)
             {
                 case 0x00:
@@ -3216,9 +3236,25 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 0, mod, 0, rm);
 
-            // overflow flag
-            _creg.CalcOverflowFlag(0, original, result);
-
+            // overflow flag - only calculated if count is 1
+            if( source == 1 )
+            {
+                // arithmetic shift always clears OF
+                if(arithmetic_shift)
+                {
+                    _creg.OverflowFlag = false;
+                }
+                // if shift, set OF if the sign has changed
+                else if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                }
+                // if rotate through carry, set OF if high order bit and carry flags have changed
+                else if( !shift_only & through_carry )
+                {
+                    _creg.OverflowFlag = (((original ^ result) & 0x80) == 0x80) & (old_CF == _creg.CarryFlag);
+                }
+            }
         }
 
         private void RotateRight16(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
@@ -3227,7 +3263,7 @@ namespace KDS.e8086
             int original = 0;
             int result = 0;
             int offset = 0;
-            bool old_CF;
+            bool old_CF = false;
             switch (mod)
             {
                 case 0x00:
@@ -3294,9 +3330,25 @@ namespace KDS.e8086
             // save the result
             SaveToDestination(result, 0, 1, mod, 0, rm);
 
-            // overflow flag
-            _creg.CalcOverflowFlag(1, original, result);
-
+            // overflow flag - only calculated if count is 1
+            if (source == 1)
+            {
+                // arithmetic shift always clears OF
+                if (arithmetic_shift)
+                {
+                    _creg.OverflowFlag = false;
+                }
+                // if shift, set OF if the sign has changed
+                else if (shift_only)
+                {
+                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                }
+                // if rotate through carry, set OF if high order bit and carry flags have changed
+                else if (!shift_only & through_carry)
+                {
+                    _creg.OverflowFlag = (((original ^ result) & 0x8000) == 0x8000) & (old_CF == _creg.CarryFlag);
+                }
+            }
         }
 
         private void Push(UInt16 value)

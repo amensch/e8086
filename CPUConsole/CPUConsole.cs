@@ -39,9 +39,32 @@ namespace CPUConsole
             // laptop
             //cpu.Boot(FileLoader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
             // desktop
-            cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
+            //cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
+
+            //cpu.EU.Registers.SP = 0x100;
+
+            // Addition overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
+            //cpu.Boot(new byte[] {
+            //                            0xc6, 0x06, 0x00, 0x10, 0x27,
+            //                            0xc6, 0xc0, 0x1a,
+            //                            0x40,
+            //                            0x80, 0xc0, 0x4c,
+            //                            0x02, 0x06, 0x00, 0x10,
+            //                            0x88, 0xc4,
+            //                            0x00, 0xe0
+            //});
     
-            cpu.EU.Registers.SP = 0x100;
+            // Subtraction overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
+            //cpu.Boot(new byte[] {
+            //                            0xc6, 0xc0, 0x5f,
+            //                            0x48,
+            //                            0x80, 0xe8, 0x17,
+            //                            0xc6, 0x06, 0x00, 0x10, 0x7a,
+            //                            0x2a, 0x06, 0x00, 0x10,
+            //                            //0xb4, 0x77,
+            //                            0xc6, 0xc4, 0x77,
+            //                            0x28, 0xe0
+            //});
 
             do
             {

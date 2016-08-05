@@ -63,6 +63,7 @@
     <Compile Include="EUTests_SBB.cs" />
     <Compile Include="EUTests_StringTests.cs" />
     <Compile Include="EUTests_SUB.cs" />
+    <Compile Include="EUTest_POST_Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EUTests_AdjustTests.cs" />
   </ItemGroup>
