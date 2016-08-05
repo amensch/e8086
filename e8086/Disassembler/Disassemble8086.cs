@@ -92,6 +92,7 @@ namespace KDS.e8086
             UInt32 bytes_read = 1;
             byte op = buffer[pc];
             OpCodeDasmRecord op_table = OpCodeDasmTable.opCodes[op];
+
             output = "";
 
             // if there is no entry for this code in the op_table it is unused
@@ -112,19 +113,19 @@ namespace KDS.e8086
             // A-LO: 2nd & 3rd bytes point to data at a memory location
             else if (op_table.addr_byte == "A-LO")
             {
+                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
                 bytes_read += 2;
-
                 if (op_table.op_fmt_1.StartsWith("M-"))
                 {
                     output = string.Format("{0} [{1}],{2}", op_table.op_name,
-                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"),
+                                             reg21.ToString(),
                                              op_table.op_fmt_2);
                 }
                 else
                 {
                     output = string.Format("{0} {1},[{2}]", op_table.op_name,
                                              op_table.op_fmt_1,
-                                             GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                             reg21.ToString());
                 }
             }
 
@@ -153,25 +154,29 @@ namespace KDS.e8086
             // D-LO: 2nd & 3rd bytes are 16 bit immediate data
             else if (op_table.addr_byte == "D-LO")
             {
+                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+
                 bytes_read += 2; // these are three byte instructions
 
                 if (op_table.op_fmt_1 == "I-16")
                 {
                     output = string.Format("{0} {1}", op_table.op_name,
-                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            reg21.ToString());
 
                 }
                 else if (op_table.op_fmt_1 == "FAR")
                 {
+                    DataRegister16 reg43 = new DataRegister16(buffer[pc + 4], buffer[pc + 3]);
+
                     output = string.Format("{0} {1}:{2}", op_table.op_name,
-                                            GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
-                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            reg43.ToString(),
+                                            reg21.ToString());
                     bytes_read += 2; // two additional bytes
                 }
                 else
                 {
                     output = string.Format("{0} {1},{2}", op_table.op_name, op_table.op_fmt_1,
-                                            GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                                            reg21.ToString());
                 }
             }
 
@@ -188,7 +193,9 @@ namespace KDS.e8086
             // next instruction
             else if (op_table.addr_byte == "IP-INC-LO")
             {
-                UInt32 immediate = (pc + 3) + GetValue16(buffer[pc + 2], buffer[pc + 1]);
+                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+
+                UInt32 immediate = (pc + 3) + reg21;
                 bytes_read += 2; // three byte instruction
 
                 output = string.Format("{0} {1}", op_table.op_name, immediate.ToString("X4"));
@@ -198,9 +205,10 @@ namespace KDS.e8086
             else if (op_table.addr_byte == "IP-LO")
             {
                 bytes_read += 4; // five byte instruction
-                output = string.Format("{0} {1}:{2}", op_table.op_name,
-                                                        GetValue16(buffer[pc + 4], buffer[pc + 3]).ToString("X4"),
-                                                        GetValue16(buffer[pc + 2], buffer[pc + 1]).ToString("X4"));
+                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+                DataRegister16 reg43 = new DataRegister16(buffer[pc + 4], buffer[pc + 3]);
+
+                output = string.Format("{0} {1}:{2}", op_table.op_name, reg43.ToString(), reg21.ToString());
 
             }
 
@@ -552,11 +560,6 @@ namespace KDS.e8086
                 }
             }
             return skip;
-        }
-
-        public static UInt16 GetValue16(byte hi, byte lo)
-        {
-            return (UInt16)(((UInt32)hi << 8 | (UInt32)lo) & 0xffff);
         }
 
     }

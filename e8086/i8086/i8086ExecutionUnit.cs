@@ -351,7 +351,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6d] = new OpCodeRecord(() => { // INSW
+            _opTable[0x6d] = new OpCodeRecord(() => // INSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -374,7 +374,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6e] = new OpCodeRecord(() => { // OUTSB
+            _opTable[0x6e] = new OpCodeRecord(() => // OUTSB
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -397,7 +397,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6f] = new OpCodeRecord(() => { // OUTSW
+            _opTable[0x6f] = new OpCodeRecord(() => // OUTSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (_reg.CX == 0))
@@ -469,7 +469,7 @@ namespace KDS.e8086
             // LAHF - Load AH from flags
             _opTable[0x9e] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             // SAHF - Store SH to flags
-            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });    
+            _opTable[0x9f] = new OpCodeRecord( () => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), _reg.AH); });    
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -2182,22 +2182,22 @@ namespace KDS.e8086
             {
                 case 0xa0:
                     {
-                        _reg.AL = _bus.GetData8(Util.GetValue16(hi, lo));
+                        _reg.AL = _bus.GetData8(new DataRegister16(hi, lo));
                         break;
                     }
                 case 0xa1:
                     {
-                        _reg.AX = _bus.GetData16(Util.GetValue16(hi, lo));
+                        _reg.AX = _bus.GetData16(new DataRegister16(hi, lo));
                         break;
                     }
                 case 0xa2:
                     {
-                        _bus.SaveData8(Util.GetValue16(hi, lo), _reg.AL);
+                        _bus.SaveData8(new DataRegister16(hi, lo), _reg.AL);
                         break;
                     }
                 case 0xa3:
                     {
-                        _bus.SaveData16(Util.GetValue16(hi, lo), _reg.AX);
+                        _bus.SaveData16(new DataRegister16(hi, lo), _reg.AX);
                         break;
                     }
             }
@@ -3752,7 +3752,7 @@ namespace KDS.e8086
         {
             byte lo = _bus.NextIP();
             byte hi = _bus.NextIP();
-            return Util.GetValue16(hi, lo);
+            return new DataRegister16(hi, lo);
         }
 
         private void SplitAddrByte(byte addr, ref byte mod, ref byte reg, ref byte rm)
@@ -3804,7 +3804,7 @@ namespace KDS.e8086
             if (num < 0x80)
                 return num;
             else
-                return Util.GetValue16(0xff, num);
+                return new DataRegister16(0xff, num);
         }
 
         // Sign extend 16 bits to 32 bits

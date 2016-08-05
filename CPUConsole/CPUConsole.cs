@@ -17,6 +17,18 @@ namespace CPUConsole
         static long count = 0;
         static Stopwatch sw = new Stopwatch();
 
+        /*
+        To make a full 8086 computer the following is needed:
+           - XT BIOS
+           - Intel 8253 timer 
+           - Intel 8259 interrupt controller 
+           - video driver
+
+            optional
+            - mouse
+            - Intel 8237 DMA controller (for soundblaster emulation)
+            - network
+        */
 
         static void Main(string[] args)
         {
@@ -29,7 +41,7 @@ namespace CPUConsole
             // desktop
             cpu.Boot(FileLoader.LoadFile("C:\\Users\\adam\\Documents\\My Projects\\e8086\\Resources\\codegolf.bin"));
     
-                cpu.EU.Registers.SP = 0x100;
+            cpu.EU.Registers.SP = 0x100;
 
             do
             {

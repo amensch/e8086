@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
@@ -17,6 +13,17 @@ namespace KDS.e8086
             LO = 0;
         }
 
+        public DataRegister16(UInt16 _data)
+        {
+            Register = _data;
+        }
+
+        public DataRegister16(byte _hi, byte _lo)
+        {
+            HI = _hi;
+            LO = _lo;
+        }
+
         public UInt16 Register
         {
             get
@@ -29,5 +36,22 @@ namespace KDS.e8086
                 LO = (byte)(value & 0x00ff);
             }
         }
+
+        public override string ToString()
+        {
+            return Register.ToString("X4");
+        }
+
+        // Implicit type conversion
+        public static implicit operator UInt16(DataRegister16 reg)
+        {
+            return reg.Register;
+        }
+
+        public static implicit operator UInt32(DataRegister16 reg)
+        {
+            return reg.Register;
+        }
+
     }
 }

@@ -173,7 +173,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+            return new DataRegister16(_ram[addr + 1], _ram[addr]);
         }
 
         // save the 16 bit value to the requested offset
@@ -212,7 +212,7 @@ namespace KDS.e8086
         public UInt16 GetDestString16(int offset)
         {
             int addr = (ES << 4) + offset;
-            return Util.GetValue16(_ram[addr + 1], _ram[addr]);
+            return new DataRegister16(_ram[addr + 1], _ram[addr]);
         }
 
         public void StoreString8(int offset, byte data)
@@ -237,7 +237,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
 
-            return Util.GetValue16(_ram[addr + 1], _ram[addr]); 
+            return new DataRegister16(_ram[addr + 1], _ram[addr]); 
         }
 
         public void PushStack(int offset, UInt16 value)
