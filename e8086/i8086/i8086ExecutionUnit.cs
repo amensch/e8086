@@ -466,7 +466,7 @@ namespace KDS.e8086
             _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             _opTable[0x9d] = new OpCodeRecord(Execute_POP);
             // SAHF - Store SH to flags
-            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = Util.GetValue16((byte)(_creg.Register >> 8), _reg.AH); });
+            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), _reg.AH); });
             // LAHF - Load AH from flags
             _opTable[0x9f] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
