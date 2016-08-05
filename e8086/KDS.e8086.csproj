@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chipset\i8253.cs" />
+    <Compile Include="Chipset\i8259.cs" />
     <Compile Include="i8086\IInputDevice.cs" />
     <Compile Include="i8086\IOutputDevice.cs" />
     <Compile Include="Windows\DebugWindow.cs">
