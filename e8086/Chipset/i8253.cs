@@ -15,6 +15,21 @@ namespace KDS.e8086
 
     public class i8253 : IInputDevice, IOutputDevice
     {
+        private int _port;
+
+        public i8253(int port)
+        {
+            _port = port;
+        }
+
+        public int PortNumber
+        {
+            get
+            {
+                return _port;
+            }
+        }
+
         public byte Read()
         {
             throw new NotImplementedException();

@@ -56,8 +56,8 @@ namespace KDS.e8086
         private i8086BusInterfaceUnit _bus;
 
         // I/O Ports
-        private Dictionary<UInt16, IInputDevice> _inputDevices;
-        private Dictionary<UInt16, IOutputDevice> _outputDevices;
+        private Dictionary<int, IInputDevice> _inputDevices;
+        private Dictionary<int, IOutputDevice> _outputDevices;
 
         // Repeat flag
         private bool _repeat = false;
@@ -71,8 +71,8 @@ namespace KDS.e8086
             _bus = bus;
             Halted = false;
 
-            _inputDevices = new Dictionary<UInt16, IInputDevice>();
-            _outputDevices = new Dictionary<UInt16, IOutputDevice>();
+            _inputDevices = new Dictionary<int, IInputDevice>();
+            _outputDevices = new Dictionary<int, IOutputDevice>();
 
             InitOpCodeTable();
         }
@@ -126,25 +126,26 @@ namespace KDS.e8086
                 // after executing the instruction reset the override and base pointer flags
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
                 _bus.UsingBasePointer = false;
+                _repeat = false;
             }
         }
 
-        public void AddInputDevice(IInputDevice device, byte port)
+        public void AddInputDevice(IInputDevice device)
         {
-            if (_inputDevices.ContainsKey(port))
+            if (_inputDevices.ContainsKey(device.PortNumber))
             {
-                _inputDevices.Remove(port);
+                _inputDevices.Remove(device.PortNumber);
             }
-            _inputDevices.Add(port, device);
+            _inputDevices.Add(device.PortNumber, device);
         }
 
-        public void AddOutputDevice(IOutputDevice device, byte port)
+        public void AddOutputDevice(IOutputDevice device)
         {
-            if (_outputDevices.ContainsKey(port))
+            if (_outputDevices.ContainsKey(device.PortNumber))
             {
-                _outputDevices.Remove(port);
+                _outputDevices.Remove(device.PortNumber);
             }
-            _outputDevices.Add(port, device);
+            _outputDevices.Add(device.PortNumber, device);
         }
 
         private void InitOpCodeTable()
@@ -2564,7 +2565,7 @@ namespace KDS.e8086
             _bus.CS = _bus.GetData16(int_ptr + 2);
 
             // replace IP by first word of interrupt pointer
-            _bus.CS = _bus.GetData16(int_ptr);
+            _bus.IP = _bus.GetData16(int_ptr);
         }
         #endregion
 

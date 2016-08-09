@@ -44,6 +44,25 @@ namespace KDS.e8086
 
         private byte[] _ram;
 
+        public i8086BusInterfaceUnit()
+        {
+            CS = 0xffff;
+            DS = 0x0000;
+            SS = 0x0000;
+            ES = 0x0000;
+            IP = 0x0000;
+            SegmentOverride = SegmentOverrideState.NoOverride;
+            UsingBasePointer = false;
+
+            _ram = new byte[MAX_MEMORY];  // 1,048,576 bytes (maximum addressable by the 8086)
+        }
+
+        public void LoadBIOS(byte[] bios)
+        {
+            bios.CopyTo(_ram, MAX_MEMORY - bios.GetLength(0));
+        }
+
+        // this is for testing
         public i8086BusInterfaceUnit(UInt16 startupCS, UInt16 startupIP, byte[] program)
         {
             CS = 0xffff;

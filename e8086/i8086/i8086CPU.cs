@@ -20,7 +20,8 @@ namespace KDS.e8086
 
         public i8086CPU()
         {
-
+            _bus = new i8086BusInterfaceUnit();
+            _eu = new i8086ExecutionUnit(_bus);
         }
 
         public void Boot(byte[] program)
@@ -30,24 +31,24 @@ namespace KDS.e8086
             _eu = new i8086ExecutionUnit(_bus);
 
             // i8253 input devices (PIT)
-            _eu.AddInputDevice(new i8253(), 0x40);
-            _eu.AddInputDevice(new i8253(), 0x41);
-            _eu.AddInputDevice(new i8253(), 0x42);
-            _eu.AddInputDevice(new i8253(), 0x43);
+            _eu.AddInputDevice(new i8253(0x40));
+            _eu.AddInputDevice(new i8253(0x41));
+            _eu.AddInputDevice(new i8253(0x42));
+            _eu.AddInputDevice(new i8253(0x43));
 
             // i8253 output devices (PIT)
-            _eu.AddOutputDevice(new i8253(), 0x40);
-            _eu.AddOutputDevice(new i8253(), 0x41);
-            _eu.AddOutputDevice(new i8253(), 0x42);
-            _eu.AddOutputDevice(new i8253(), 0x43);
+            _eu.AddOutputDevice(new i8253(0x40));
+            _eu.AddOutputDevice(new i8253(0x41));
+            _eu.AddOutputDevice(new i8253(0x42));
+            _eu.AddOutputDevice(new i8253(0x43));
 
             // i8259 input devices (PIC)
-            _eu.AddInputDevice(new i8259(), 0x20);
-            _eu.AddInputDevice(new i8259(), 0x21);
+            _eu.AddInputDevice(new i8259(0x20));
+            _eu.AddInputDevice(new i8259(0x21));
 
             // i8259 output devices (PIC)
-            _eu.AddOutputDevice(new i8259(), 0x20);
-            _eu.AddOutputDevice(new i8259(), 0x21);
+            _eu.AddOutputDevice(new i8259(0x20));
+            _eu.AddOutputDevice(new i8259(0x21));
 
         }
 

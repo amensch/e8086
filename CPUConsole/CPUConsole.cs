@@ -32,10 +32,13 @@ namespace CPUConsole
 
         static void Main(string[] args)
         {
-            DisassembleThings();
+            //DisassembleThings();
 
             Console.SetWindowSize(100, 50);
             cpu = new i8086CPU();
+            // BIOS
+            cpu.Bus.LoadBIOS(FileLoader.LoadFile("C:\\Users\\menschas\\Downloads\\fake86-master\\fake86-master\\data\\pcxtbios.bin"));
+            
             // laptop
             //cpu.Boot(FileLoader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
             // desktop
@@ -70,7 +73,7 @@ namespace CPUConsole
             {
                 Console.Clear();
                 DisplayDebug();
-                DisplayVRAM();
+                //DisplayVRAM();
                 DisplayMenu();
             } while (!exit);
 
