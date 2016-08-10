@@ -94,6 +94,9 @@
     <EmbeddedResource Include="Windows\NumberDialog.resx">
       <DependentUpon>NumberDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Chipset\pcxtbios.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -104,7 +107,15 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="i8086\Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loader\KDS.Loader.csproj">
+      <Project>{c9c3dfe4-7825-4ca8-959c-ccee44a0c6b7}</Project>
+      <Name>KDS.Loader</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

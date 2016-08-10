@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace KDS.e8086
 {
@@ -11,6 +12,8 @@ namespace KDS.e8086
         Eventually equivalent circuitry is sill included on modern x86 PCs.
 
         The 8253 is a Programmable Interval Timer (PIT).
+
+        The PIT oscillator runs at 1.193182 Mhz.
     */
 
     public class i8253 : IInputDevice, IOutputDevice
@@ -26,23 +29,24 @@ namespace KDS.e8086
         private const byte USE_LO_BYTE = 0;
         private const byte USE_HI_BYTE = 1;
 
+        private const long OSC_FREQUENCY = 1193182;
+
         private ushort _channeldata;
         private byte _accessmode;
         private byte _bytetoggle;
         private uint _effdata;
-        private float _chanfreq;
-        private byte _active;
+        private double _chanfreq;
         private DataRegister16 _counter = new DataRegister16();
+        public bool Active { get; set; }
 
-        private long _current_tick;
-        private long _last_tick;
         private long _tick_gap;
-        private long _total_instructions;
         private long _host_frequency;
 
         public i8253(int port)
         {
+            _host_frequency = Stopwatch.Frequency;
             _port = port;
+            Active = false;
         }
 
         public int PortNumber
@@ -134,7 +138,7 @@ namespace KDS.e8086
                     _effdata = _channeldata;
                 }
 
-                _active = 1;
+                Active = true;
 
                 _tick_gap = _host_frequency / (1193182 / _effdata);
                 if( _accessmode == MODE_TOGGLE )
@@ -143,7 +147,7 @@ namespace KDS.e8086
                     _bytetoggle = (byte)((~_bytetoggle) & 0x01);
                 }
 
-                _chanfreq = ((1193182 / _effdata) * 1000) / 1000;
+                _chanfreq = ((1193182.0 / (double)_effdata) * 1000.0) / 1000.0;
             }
         }
 
