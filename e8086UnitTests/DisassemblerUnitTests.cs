@@ -11,7 +11,7 @@ namespace e8086UnitTests
         private void TestDasm(byte[] buffer, string expected_result, int expected_bytes_read)
         {
             string output = "";
-            UInt32 bytes_read;
+            uint bytes_read;
 
             bytes_read = Disassemble8086.DisassembleNext(buffer, 0x00, 0, out output);
 

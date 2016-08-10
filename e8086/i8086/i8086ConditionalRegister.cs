@@ -9,7 +9,7 @@ namespace KDS.e8086
     public class i8086ConditionalRegister
     {
 
-        public enum Flags : UInt16
+        public enum Flags : ushort
         {
             CARRY_FLAG = 0x0001,       // 0=no carry, 1=carry
             PARITY_FLAG = 0x0004,      // 0=odd, 1=even
@@ -22,7 +22,7 @@ namespace KDS.e8086
             OVERFLOW_FLAG = 0x800
         };
         
-        public UInt16 Register
+        public ushort Register
         {
             get;
             set;
@@ -137,10 +137,10 @@ namespace KDS.e8086
         public void CalcCarryFlag(int word_size, int result)
         {
             if (word_size == 0)
-                CarryFlag = ((UInt16)result > 0xff);
+                CarryFlag = ((ushort)result > 0xff);
             else
             {
-                CarryFlag = ((UInt32)result > 0xffff);
+                CarryFlag = ((uint)result > 0xffff);
             }
         }
 
@@ -200,15 +200,15 @@ namespace KDS.e8086
 
         private bool GetBit(Flags bit)
         {
-            return ((Register & (UInt16)bit) == (UInt16)bit);
+            return ((Register & (ushort)bit) == (ushort)bit);
         }
 
         private void SetBit(Flags bit, bool set)
         {
             if (set)
-                Register = (UInt16)(Register | (UInt16)bit);
+                Register = (ushort)(Register | (ushort)bit);
             else
-                Register = (UInt16)(Register & ~(UInt16)bit);
+                Register = (ushort)(Register & ~(ushort)bit);
         }
     }
 }

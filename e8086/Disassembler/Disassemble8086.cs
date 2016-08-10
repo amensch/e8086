@@ -63,11 +63,11 @@ namespace KDS.e8086
             "inc","dec","call","call","jmp","jmp","push",""
         };
 
-        public static string Disassemble(byte[] data, UInt16 startingAddress)
+        public static string Disassemble(byte[] data, ushort startingAddress)
         {
             StringBuilder output = new StringBuilder();
 
-            UInt32 pc = 0;
+            uint pc = 0;
             string line;
 
             while (pc < data.Length)
@@ -80,7 +80,7 @@ namespace KDS.e8086
             return output.ToString();
         }
 
-        public static UInt32 DisassembleNext(byte[] buffer, UInt32 pc, UInt16 startingAddress, out string output)
+        public static uint DisassembleNext(byte[] buffer, uint pc, ushort startingAddress, out string output)
         {
             // formatting note:  immediate data does not get brackets
             // data from memory or calculations get brackets
@@ -89,7 +89,7 @@ namespace KDS.e8086
             if (buffer.Length <= pc)
                 throw new IndexOutOfRangeException("Index pc exceeds the bounds of the buffer");
 
-            UInt32 bytes_read = 1;
+            uint bytes_read = 1;
             byte op = buffer[pc];
             OpCodeDasmRecord op_table = OpCodeDasmTable.opCodes[op];
 
@@ -183,7 +183,7 @@ namespace KDS.e8086
             // IP-INC-8: Add the 8 bit number to the value of the program counter for the next instruction
             else if (op_table.addr_byte == "IP-INC-8")
             {
-                UInt32 immediate = (pc + 2) + buffer[pc + 1];
+                uint immediate = (pc + 2) + buffer[pc + 1];
                 bytes_read++; // two byte instruction
 
                 output = string.Format("{0} {1} {2}", op_table.op_name, op_table.op_fmt_1, immediate.ToString("X4"));
@@ -195,7 +195,7 @@ namespace KDS.e8086
             {
                 DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
 
-                UInt32 immediate = (pc + 3) + reg21;
+                uint immediate = (pc + 3) + reg21;
                 bytes_read += 2; // three byte instruction
 
                 output = string.Format("{0} {1}", op_table.op_name, immediate.ToString("X4"));
@@ -259,7 +259,7 @@ namespace KDS.e8086
                     oper1 = oper1_fmt;
                 }
 
-                UInt32 immed_offset = bytes_read - 1;
+                uint immed_offset = bytes_read - 1;
 
                 if (!SkipSecondOper(buffer, pc))
                 {
@@ -313,9 +313,9 @@ namespace KDS.e8086
             return bytes_read;
         }
 
-        private static UInt32 DisassembleRM(byte[] buffer, UInt32 pc, UInt32 offset, byte mod, byte rm, byte word_oper, out string output)
+        private static uint DisassembleRM(byte[] buffer, uint pc, uint offset, byte mod, byte rm, byte word_oper, out string output)
         {
-            UInt32 bytes_read = 0;
+            uint bytes_read = 0;
             output = "";
 
             if (mod == 0x00) // R/M Table 1
@@ -407,7 +407,7 @@ namespace KDS.e8086
             return (byte)((data & 0xc0) >> 6);
         }
 
-        private static byte GetREG(byte[] buffer, UInt32 pc)
+        private static byte GetREG(byte[] buffer, uint pc)
         {
             // op codes that begin with 1011 are formatted 1011wreg
             byte reg;
@@ -465,9 +465,9 @@ namespace KDS.e8086
             return mode;
         }
 
-        private static UInt32 GetRMOperand(byte[] buffer, UInt32 pc, bool with_segment, out string operand)
+        private static uint GetRMOperand(byte[] buffer, uint pc, bool with_segment, out string operand)
         {
-            UInt32 bytes_read = 0; // report extra after address byte
+            uint bytes_read = 0; // report extra after address byte
             byte op = buffer[pc];
             byte addr_byte = buffer[pc + 1];
             pc++;  // increment pc for reading the addr byte
@@ -526,7 +526,7 @@ namespace KDS.e8086
             return bytes_read;
         }
 
-        private static string GetFirstOper(byte[] buffer, UInt32 pc)
+        private static string GetFirstOper(byte[] buffer, uint pc)
         {
             byte op = buffer[pc];
             string output = OpCodeDasmTable.opCodes[op].op_fmt_1;
@@ -546,7 +546,7 @@ namespace KDS.e8086
             return output;
         }
 
-        private static bool SkipSecondOper(byte[] buffer, UInt32 pc)
+        private static bool SkipSecondOper(byte[] buffer, uint pc)
         {
             bool skip = false;
             byte op = buffer[pc];

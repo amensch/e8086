@@ -13,10 +13,10 @@ namespace KDS.e8086
         private DataRegister16 _cx = new DataRegister16();
         private DataRegister16 _dx = new DataRegister16();
 
-        public UInt16 SP { get; set; }
-        public UInt16 BP { get; set; }
-        public UInt16 SI { get; set; }
-        public UInt16 DI { get; set; }
+        public ushort SP { get; set; }
+        public ushort BP { get; set; }
+        public ushort SI { get; set; }
+        public ushort DI { get; set; }
 
         public i8086Registers()
         {
@@ -26,22 +26,22 @@ namespace KDS.e8086
             DI = 0;
         }
 
-        public UInt16 AX
+        public ushort AX
         {
             get { return _ax.Register; }
             set { _ax.Register = value; }
         }
-        public UInt16 BX
+        public ushort BX
         {
             get { return _bx.Register; }
             set { _bx.Register = value; }
         }
-        public UInt16 CX
+        public ushort CX
         {
             get { return _cx.Register; }
             set { _cx.Register = value; }
         }
-        public UInt16 DX
+        public ushort DX
         {
             get { return _dx.Register; }
             set { _dx.Register = value; }

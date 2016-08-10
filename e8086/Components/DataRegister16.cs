@@ -13,7 +13,7 @@ namespace KDS.e8086
             LO = 0;
         }
 
-        public DataRegister16(UInt16 _data)
+        public DataRegister16(ushort _data)
         {
             Register = _data;
         }
@@ -24,11 +24,11 @@ namespace KDS.e8086
             LO = _lo;
         }
 
-        public UInt16 Register
+        public ushort Register
         {
             get
             {
-                return (UInt16)(((UInt32)HI << 8 | (UInt32)LO) & 0xffff);
+                return (ushort)(((uint)HI << 8 | (uint)LO) & 0xffff);
             }
             set
             {
@@ -43,12 +43,12 @@ namespace KDS.e8086
         }
 
         // Implicit type conversion
-        public static implicit operator UInt16(DataRegister16 reg)
+        public static implicit operator ushort(DataRegister16 reg)
         {
             return reg.Register;
         }
 
-        public static implicit operator UInt32(DataRegister16 reg)
+        public static implicit operator uint(DataRegister16 reg)
         {
             return reg.Register;
         }

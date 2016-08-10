@@ -10,6 +10,6 @@ namespace KDS.e8086
     {
         int PortNumber { get; }
         byte Read();
-        UInt16 Read16();
+        ushort Read16();
     }
 }

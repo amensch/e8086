@@ -22,25 +22,18 @@ namespace KDS.e8086
         {
             _bus = new i8086BusInterfaceUnit();
             _eu = new i8086ExecutionUnit(_bus);
-        }
-
-        public void Boot(byte[] program)
-        {
-            // For now we will hard code the BIOS to start at a particular code segment.
-            _bus = new i8086BusInterfaceUnit(0x0000, 0x0000, program);
-            _eu = new i8086ExecutionUnit(_bus);
 
             // i8253 input devices (PIT)
-            _eu.AddInputDevice(new i8253(0x40));
-            _eu.AddInputDevice(new i8253(0x41));
-            _eu.AddInputDevice(new i8253(0x42));
-            _eu.AddInputDevice(new i8253(0x43));
+            //_eu.AddInputDevice(new i8253(0x40));
+            //_eu.AddInputDevice(new i8253(0x41));
+            //_eu.AddInputDevice(new i8253(0x42));
+            //_eu.AddInputDevice(new i8253(0x43));
 
             // i8253 output devices (PIT)
-            _eu.AddOutputDevice(new i8253(0x40));
-            _eu.AddOutputDevice(new i8253(0x41));
-            _eu.AddOutputDevice(new i8253(0x42));
-            _eu.AddOutputDevice(new i8253(0x43));
+            //_eu.AddOutputDevice(new i8253(0x40));
+            //_eu.AddOutputDevice(new i8253(0x41));
+            //_eu.AddOutputDevice(new i8253(0x42));
+            //_eu.AddOutputDevice(new i8253(0x43));
 
             // i8259 input devices (PIC)
             _eu.AddInputDevice(new i8259(0x20));
@@ -49,7 +42,13 @@ namespace KDS.e8086
             // i8259 output devices (PIC)
             _eu.AddOutputDevice(new i8259(0x20));
             _eu.AddOutputDevice(new i8259(0x21));
+        }
 
+        public void Boot(byte[] program)
+        {
+            // For now we will hard code the BIOS to start at a particular code segment.
+            _bus = new i8086BusInterfaceUnit(0x0000, 0x0000, program);
+            _eu = new i8086ExecutionUnit(_bus);
         }
 
         public long Run()
@@ -59,13 +58,21 @@ namespace KDS.e8086
             {
                 NextInstruction();
                 count++;
+                Debug.WriteLine("Count: " + count.ToString());
             } while (!_eu.Halted);
             return count;
         }
 
         public void NextInstruction()
         {
-            _eu.NextInstruction();
+            try
+            {
+                _eu.NextInstruction();
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Exception thrown", ex);
+            }
         }
 
         public void NextInstruction(out string dasm)

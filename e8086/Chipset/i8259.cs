@@ -36,17 +36,47 @@ namespace KDS.e8086
         private const byte PIC1_COMMAND = 0x20;
         private const byte PIC1_DATA = 0x21;
         private const byte PIC2_COMMAND = 0xa0;
-        private const byte PIC2_CDTA = 0xa1;
+        private const byte PIC2_DATA = 0xa1;
 
         private int _port;
 
-        private byte _mask;
-        private byte _request;
-        private byte _servce;
+        private byte _mask;     // imr
+        private byte _request;  // irr
+        private byte _service;   // isr
+        private byte[] _icw = new byte[5];   // icw
+        private byte _icwstep;
+        private byte _readmode;
 
         public i8259(int port)
         {
             _port = port;
+            _readmode = 0;
+        }
+
+        //private void DoIrq(byte irqnum)
+        //{
+        //    _request = (byte)(_request | (1 << irqnum));
+        //    if (irqnum == 1)
+        //    {
+        //        // keyboardwaitack = 1;
+        //    }
+        //}
+
+        public byte GetNextInterrupt()
+        {
+            byte temp;
+
+            temp = (byte)(_request & (~_mask));  // XOR request with inverted mask
+            for( byte ii = 0; ii < 8; ii++ )
+            {
+                if( ((temp >> ii) & 0x01) >= 0x01 )
+                {
+                    _request = (byte)(_request ^ (1 << ii));
+                    _service = (byte)(_service | (1 << ii));
+                    return ((byte)(_icw[2] + ii));
+                }
+            }
+            return 0;
         }
 
         public int PortNumber
@@ -59,22 +89,75 @@ namespace KDS.e8086
 
         public byte Read()
         {
-            throw new NotImplementedException();
+            if ((_port == PIC1_DATA) || (_port == PIC2_DATA))
+            {
+                return _mask;
+            }
+            else
+            {
+                if (_readmode != 0)
+                {
+                    return _service;
+                }
+                else
+                {
+                    return _request;
+                }
+            }
         }
 
         public ushort Read16()
         {
-            throw new NotImplementedException();
+            return Read();
         }
 
         public void Write(byte data)
         {
-            throw new NotImplementedException();
+            if ((_port == PIC1_DATA) || (_port == PIC2_DATA))
+            {
+                if ((_icwstep == 3) && ((byte)(_icw[1] & 0x02) == 0x02))
+                    _icwstep = 4;
+                if( _icwstep < 5 )
+                {
+                    _icw[_icwstep++] = data;
+                    return;
+                }
+                _mask = data;
+            }
+            else
+            {
+                if ((byte)(data & 0x10) == 0x10)
+                {
+                    _icwstep = 1;
+                    _mask = 0;
+                    _icw[_icwstep++] = data;
+                }
+                if ((byte)(data & 0x98) == 0x08)
+                {
+                    if ((byte)(data & 0x02) == 0x02)
+                    {
+                        _readmode = (byte)(data & 0x02);
+                    }
+                }
+                if ((byte)(data & 0x20) == 0x20)
+                {
+                    // kbwaitask = 0;
+                    for( int ii=0; ii < 8; ii++ )
+                    {
+                        if ((byte)((_service >> ii) & 0x01) == 0x01)
+                        {
+                            _service = (byte)(_service ^ (1 << ii));
+                            return;
+                        }
+                    }
+
+                }
+            }
         }
 
         public void Write16(ushort data)
         {
-            throw new NotImplementedException();
+            Write((byte)data);
         }
     }
 }

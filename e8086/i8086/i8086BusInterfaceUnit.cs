@@ -24,11 +24,11 @@ namespace KDS.e8086
         BP as Base           SS     CS,DS,ES    eff addr
         */
 
-        public UInt16 CS { get; set; }  // code segment
-        public UInt16 DS { get; set; }  // data segment
-        public UInt16 SS { get; set; }  // stack segment
-        public UInt16 ES { get; set; }  // extra segmemt
-        public UInt16 IP { get; set; }  // instruction pointer
+        public ushort CS { get; set; }  // code segment
+        public ushort DS { get; set; }  // data segment
+        public ushort SS { get; set; }  // stack segment
+        public ushort ES { get; set; }  // extra segmemt
+        public ushort IP { get; set; }  // instruction pointer
 
         public enum SegmentOverrideState
         {
@@ -63,7 +63,7 @@ namespace KDS.e8086
         }
 
         // this is for testing
-        public i8086BusInterfaceUnit(UInt16 startupCS, UInt16 startupIP, byte[] program)
+        public i8086BusInterfaceUnit(ushort startupCS, ushort startupIP, byte[] program)
         {
             CS = 0xffff;
             DS = 0x0000;
@@ -138,7 +138,7 @@ namespace KDS.e8086
         {
             if (idx >= MAX_MEMORY)
             {
-                throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={1:X4}", DS, idx));
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={0:X4}", idx));
             }
             return _ram[idx];
         }
@@ -158,7 +158,7 @@ namespace KDS.e8086
             if (word_size == 0)
                 SaveData8(offset, (byte)value);
             else
-                SaveData16(offset, (UInt16)value);
+                SaveData16(offset, (ushort)value);
         }
 
         // fetch the 8 bit value at the requested offset
@@ -184,7 +184,7 @@ namespace KDS.e8086
         }
 
         // fetch the 16 bit value at the requested offset
-        public UInt16 GetData16(int offset)
+        public ushort GetData16(int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -195,7 +195,7 @@ namespace KDS.e8086
         }
 
         // save the 16 bit value to the requested offset
-        public void SaveData16(int offset, UInt16 value)
+        public void SaveData16(int offset, ushort value)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -232,7 +232,7 @@ namespace KDS.e8086
             return _ram[(ES << 4) + offset];
         }
 
-        public UInt16 GetDestString16(int offset)
+        public ushort GetDestString16(int offset)
         {
             int addr = (ES << 4) + offset;
             return new DataRegister16(_ram[addr + 1], _ram[addr]);
@@ -243,7 +243,7 @@ namespace KDS.e8086
             _ram[(ES << 4) + offset] = data;
         }
 
-        public void StoreString16(int offset, UInt16 data)
+        public void StoreString16(int offset, ushort data)
         {
             int addr = (ES << 4) + offset;
             DataRegister16 reg = new DataRegister16(data);
@@ -254,7 +254,7 @@ namespace KDS.e8086
         #endregion
 
         #region Push and Pop
-        public UInt16 PopStack(int offset)
+        public ushort PopStack(int offset)
         {
             int addr = (SS << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -265,7 +265,7 @@ namespace KDS.e8086
             return new DataRegister16(_ram[addr + 1], _ram[addr]); 
         }
 
-        public void PushStack(int offset, UInt16 value)
+        public void PushStack(int offset, ushort value)
         {
             int addr = (SS << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -280,7 +280,7 @@ namespace KDS.e8086
 
         #endregion
 
-        private UInt16 GetDataSegment()
+        private ushort GetDataSegment()
         {
             if (SegmentOverride == SegmentOverrideState.NoOverride)
             {

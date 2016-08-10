@@ -29,7 +29,7 @@ namespace e8086UnitTests
             i8086BusInterfaceUnit bus = new i8086BusInterfaceUnit(0x100, 0x200, new byte[] { 0x05, 0x10, 0x15 });
             byte offset = 0x05;
             byte value8 = 0xaa;
-            UInt16 value16 = 0x5f02;
+            ushort value16 = 0x5f02;
 
             bus.DS = 0x300;
             bus.SaveData8(offset, value8);

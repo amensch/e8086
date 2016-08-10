@@ -62,7 +62,7 @@ namespace KDS.e8086
             lblInstrCount.Text = _cpu.EU.Stats.InstructionCount.ToString();
         }
 
-        private string RegToString(UInt16 reg)
+        private string RegToString(ushort reg)
         {
             return string.Format("{0:X4}", reg);
         }

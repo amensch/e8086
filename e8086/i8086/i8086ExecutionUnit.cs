@@ -38,7 +38,7 @@ namespace KDS.e8086
         private Statistics _stats = new Statistics();
         private long _instrCount = 0;
         private long _RMTableLookupCount = 0;
-        private UInt16 _RMTableLastLookup = 0;
+        private ushort _RMTableLastLookup = 0;
 
         // Preserve the current OP code
         private byte _currentOP;
@@ -267,15 +267,15 @@ namespace KDS.e8086
                 int word_size = GetWordSize();
                 int direction = GetDirection();
 
-                UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
-                UInt16 oper2 = GetImmediate16();
+                ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
+                ushort oper2 = GetImmediate16();
 
-                UInt32 oper1ext = SignExtend32(oper1);
-                UInt32 oper2ext = SignExtend32(oper2);
+                uint oper1ext = SignExtend32(oper1);
+                uint oper2ext = SignExtend32(oper2);
 
-                UInt32 result = oper1ext * oper2ext;
+                uint result = oper1ext * oper2ext;
 
-                SaveToDestination((UInt16)(result & 0xffff), direction, word_size, mod, reg, rm);
+                SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
 
                 if( (result & 0xffff0000) != 0 )
                 {
@@ -301,15 +301,15 @@ namespace KDS.e8086
                 int word_size = GetWordSize();
                 int direction = GetDirection();
 
-                UInt16 oper1 = (UInt16)GetSourceData(direction, word_size, mod, reg, rm);
-                UInt16 oper2 = _bus.NextIP();
+                ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
+                ushort oper2 = _bus.NextIP();
 
-                UInt32 oper1ext = SignExtend32(oper1);
-                UInt32 oper2ext = SignExtend32(oper2);
+                uint oper1ext = SignExtend32(oper1);
+                uint oper2ext = SignExtend32(oper2);
 
-                UInt32 result = oper1ext * oper2ext;
+                uint result = oper1ext * oper2ext;
 
-                SaveToDestination((UInt16)(result & 0xffff), direction, word_size, mod, reg, rm);
+                SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
 
                 if ((result & 0xffff0000) != 0)
                 {
@@ -504,7 +504,7 @@ namespace KDS.e8086
 
             _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
             {
-                UInt16 oper = GetImmediate16();
+                ushort oper = GetImmediate16();
                 _bus.IP = Pop();
                 _reg.SP += oper;
             });
@@ -520,7 +520,7 @@ namespace KDS.e8086
             _opTable[0xc9] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0xc9 is not implemented"); });
             _opTable[0xca] = new OpCodeRecord(() => // retf imm-16
             {
-                UInt16 oper = GetImmediate16();
+                ushort oper = GetImmediate16();
                 _bus.IP = Pop();
                 _bus.CS = Pop();
                 _reg.SP += oper;
@@ -641,7 +641,7 @@ namespace KDS.e8086
 
         private void Execute_Loop()
         {
-            UInt16 tmp = SignExtend(_bus.NextIP());
+            ushort tmp = SignExtend(_bus.NextIP());
             _reg.CX--;
             if( _reg.CX != 0)
             {
@@ -659,7 +659,7 @@ namespace KDS.e8086
         private void Execute_PUSHA()
         {
             // Op 0x60
-            UInt16 old_sp = _reg.SP;
+            ushort old_sp = _reg.SP;
             Push(_reg.AX);
             Push(_reg.CX);
             Push(_reg.DX);
@@ -676,7 +676,7 @@ namespace KDS.e8086
             _reg.DI = Pop();
             _reg.SI = Pop();
             _reg.BP = Pop();
-            UInt16 new_sp = Pop();
+            ushort new_sp = Pop();
             _reg.BX = Pop();
             _reg.DX = Pop();
             _reg.CX = Pop();
@@ -692,10 +692,10 @@ namespace KDS.e8086
             // for now assume OK
 
             //int offset = GetSourceData(0, 1, mod, reg, rm);
-            //UInt16 source = _bus.GetData16(offset);
+            //ushort source = _bus.GetData16(offset);
 
             //offset = GetDestinationData(0, 1, mod, reg, rm);
-            //UInt16 dest = _bus.GetData16(offset);
+            //ushort dest = _bus.GetData16(offset);
 
             //if( SignExtend32(source) < SignExtend32(dest) )
             //{
@@ -713,7 +713,7 @@ namespace KDS.e8086
         {
             IInputDevice device;
 
-            UInt16 port;
+            ushort port;
             if (_currentOP == 0xec || _currentOP == 0xed)
                 port = _reg.DX;
             else
@@ -778,7 +778,7 @@ namespace KDS.e8086
         {
             IOutputDevice device;
 
-            UInt16 port;
+            ushort port;
             if (_currentOP == 0xee || _currentOP == 0xef)
                 port = _reg.DX;
             else
@@ -1056,7 +1056,7 @@ namespace KDS.e8086
                         if (word_size == 0)
                         {
                             result = source * _reg.AL;
-                            _reg.AX = (UInt16)result;
+                            _reg.AX = (ushort)result;
 
                             _creg.CarryFlag = (_reg.AH != 0);
                             _creg.OverflowFlag = _creg.CarryFlag;
@@ -1064,8 +1064,8 @@ namespace KDS.e8086
                         else
                         {
                             result = source * _reg.AX;
-                            _reg.DX = (UInt16)(result >> 16);
-                            _reg.AX = (UInt16)(result);
+                            _reg.DX = (ushort)(result >> 16);
+                            _reg.AX = (ushort)(result);
 
                             _creg.CarryFlag = (_reg.DX != 0);
                             _creg.OverflowFlag = _creg.CarryFlag;
@@ -1076,7 +1076,7 @@ namespace KDS.e8086
                     {
                         if (word_size == 0)
                         {
-                            _reg.AX = (UInt16)(SignExtend((byte)source) * SignExtend(_reg.AL));
+                            _reg.AX = (ushort)(SignExtend((byte)source) * SignExtend(_reg.AL));
 
                             if ((_reg.AL & 0x80) == 0x80)
                                 _creg.CarryFlag = (_reg.AH != 0xff);
@@ -1088,8 +1088,8 @@ namespace KDS.e8086
                         else
                         {
                             result = (int)(SignExtend((byte)source) * SignExtend32(_reg.AX));
-                            _reg.DX = (UInt16)(result >> 16);
-                            _reg.AX = (UInt16)(result);
+                            _reg.DX = (ushort)(result >> 16);
+                            _reg.AX = (ushort)(result);
 
                             if ((_reg.AX & 0x8000) == 0x8000)
                                 _creg.CarryFlag = (_reg.DX != 0xffff);
@@ -1111,8 +1111,8 @@ namespace KDS.e8086
                         else
                         {
                             dest = (_reg.DX << 16) | _reg.AX;
-                            _reg.AX = (UInt16)(dest / source);
-                            _reg.DX = (UInt16)(dest % source);
+                            _reg.AX = (ushort)(dest / source);
+                            _reg.DX = (ushort)(dest % source);
                         }
                         break;
                     }
@@ -1121,23 +1121,23 @@ namespace KDS.e8086
                         if (word_size == 0)
                         {
 
-                            UInt16 s1 = _reg.AX;
-                            UInt16 s2 = (UInt16)source;
+                            ushort s1 = _reg.AX;
+                            ushort s2 = (ushort)source;
 
                             bool sign = ((s1 ^ s2) & 0x8000) == 0x8000;
 
                             if (s1 >= 0x8000)
-                                s1 = (UInt16)(~s1 + 1);
+                                s1 = (ushort)(~s1 + 1);
                             if (s2 >= 0x8000)
-                                s2 = (UInt16)(~s2 + 1);
+                                s2 = (ushort)(~s2 + 1);
 
-                            UInt16 d1 = (UInt16)(s1 / s2);
-                            UInt16 d2 = (UInt16)(s1 % s2);
+                            ushort d1 = (ushort)(s1 / s2);
+                            ushort d2 = (ushort)(s1 % s2);
 
                             if (sign)
                             {
-                                d1 = (UInt16)(~d1 + 1);
-                                d2 = (UInt16)(~d2 + 1);
+                                d1 = (ushort)(~d1 + 1);
+                                d2 = (ushort)(~d2 + 1);
                             }
 
                             _reg.AL = (byte)d1;
@@ -1146,28 +1146,28 @@ namespace KDS.e8086
                         else
                         {
 
-                            UInt32 dxax = (UInt32)((_reg.DX << 16) | _reg.AX);
-                            UInt32 divisor = SignExtend32((UInt16)source);
+                            uint dxax = (uint)((_reg.DX << 16) | _reg.AX);
+                            uint divisor = SignExtend32((ushort)source);
 
                             bool sign = ((dxax ^ divisor) & 0x80000000) == 0x80000000;
 
                             if (dxax >= 0x80000000)
-                                dxax = (UInt32)(~dxax + 1);
+                                dxax = (uint)(~dxax + 1);
 
                             if (divisor >= 0x80000000)
-                                divisor = (UInt32)(~divisor + 1);
+                                divisor = (uint)(~divisor + 1);
 
-                            UInt32 d1 = (UInt32)(dxax / divisor);
-                            UInt32 d2 = (UInt32)(dxax % divisor);
+                            uint d1 = (uint)(dxax / divisor);
+                            uint d2 = (uint)(dxax % divisor);
 
                             if (sign)
                             {
-                                d1 = (UInt32)((~d1 + 1) & 0xffff);
-                                d2 = (UInt32)((~d2 + 1) & 0xffff);
+                                d1 = (uint)((~d1 + 1) & 0xffff);
+                                d2 = (uint)((~d2 + 1) & 0xffff);
                             }
 
-                            _reg.AX = (UInt16)d1;
-                            _reg.DX = (UInt16)d2;
+                            _reg.AX = (ushort)d1;
+                            _reg.DX = (ushort)d2;
                         }
                         break;
                     }
@@ -1230,7 +1230,7 @@ namespace KDS.e8086
                     {
                         // CALL reg/mem-16 (intrasegment)
                         Push(_bus.IP);
-                        _bus.IP = (UInt16) oper;
+                        _bus.IP = (ushort) oper;
                         break;
                     }
                 case 0x03:
@@ -1245,7 +1245,7 @@ namespace KDS.e8086
                 case 0x04:
                     {
                         // JMP reg/mem=16 (intrasegment)
-                        _bus.IP = (UInt16) oper;
+                        _bus.IP = (ushort) oper;
                         break;
                     }
                 case 0x05:
@@ -1258,7 +1258,7 @@ namespace KDS.e8086
                 case 0x06:
                     {
                         // push mem-16
-                        Push((UInt16)oper);
+                        Push((ushort)oper);
                         break;
                     }
             }
@@ -1270,15 +1270,15 @@ namespace KDS.e8086
 
         private void Execute_CallNear()
         {
-            UInt16 oper = GetImmediate16();
+            ushort oper = GetImmediate16();
             Push(_bus.IP);
             _bus.IP += oper;
         }
 
         private void Execute_CallFar()
         {
-            UInt16 nextIP = GetImmediate16();
-            UInt16 nextCS = GetImmediate16();
+            ushort nextIP = GetImmediate16();
+            ushort nextCS = GetImmediate16();
             Push(_bus.CS);
             Push(_bus.IP);
             _bus.IP = nextIP;
@@ -1390,18 +1390,18 @@ namespace KDS.e8086
         private void Execute_JumpShort()
         {
             // add to IP "after" the instruction is complete
-            UInt16 oper = SignExtend(_bus.NextIP());
+            ushort oper = SignExtend(_bus.NextIP());
             _bus.IP += oper;
         }
         private void Execute_JumpNear()
         {
-            UInt16 oper = GetImmediate16();
+            ushort oper = GetImmediate16();
             _bus.IP += oper;
         }
         private void Execute_JumpFar()
         {
-            UInt16 nextIP = GetImmediate16();
-            UInt16 nextCS = GetImmediate16();
+            ushort nextIP = GetImmediate16();
+            ushort nextCS = GetImmediate16();
             _bus.IP = nextIP;
             _bus.CS = nextCS;
         }
@@ -2063,8 +2063,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 dest = GetRegField16(rm);
-            UInt16 result = (UInt16)(dest + 1);
+            ushort dest = GetRegField16(rm);
+            ushort result = (ushort)(dest + 1);
             SaveRegField16(rm, result);
 
             // Flags: O S Z A P
@@ -2086,8 +2086,8 @@ namespace KDS.e8086
             byte mod = 0, reg = 0, rm = 0;
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
-            UInt16 dest = GetRegField16(rm);
-            UInt16 result = (UInt16)(dest - 1);
+            ushort dest = GetRegField16(rm);
+            ushort result = (ushort)(dest - 1);
             SaveRegField16(rm, result);
 
             // Flags: O S Z A P
@@ -2115,7 +2115,7 @@ namespace KDS.e8086
 
             int first = GetRegField16(rm);
             SaveRegField16(rm, _reg.AX);
-            _reg.AX = (UInt16)first;
+            _reg.AX = (ushort)first;
 
             // no flags are affected
         }
@@ -2480,7 +2480,7 @@ namespace KDS.e8086
             {
                 if (useSREG)
                 {
-                    SaveSegRegField(reg, (UInt16)data);
+                    SaveSegRegField(reg, (ushort)data);
                 }
                 else
                 {
@@ -2490,7 +2490,7 @@ namespace KDS.e8086
                     }
                     else
                     {
-                        SaveRegField16(reg, (UInt16)data);
+                        SaveRegField16(reg, (ushort)data);
                     }
                 }
             }
@@ -2506,7 +2506,7 @@ namespace KDS.e8086
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                _bus.SaveData16(GetRMTable1(rm), (UInt16)data);
+                                _bus.SaveData16(GetRMTable1(rm), (ushort)data);
                             }
                             break;
                         }
@@ -2519,7 +2519,7 @@ namespace KDS.e8086
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                _bus.SaveData16(GetRMTable2(mod, rm), (UInt16)data);
+                                _bus.SaveData16(GetRMTable2(mod, rm), (ushort)data);
                             }
                             break;
                         }
@@ -2531,7 +2531,7 @@ namespace KDS.e8086
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                SaveRegField16(rm, (UInt16)data);
+                                SaveRegField16(rm, (ushort)data);
                             }
                             break;
                         }
@@ -2543,7 +2543,7 @@ namespace KDS.e8086
         #region Interrupt Processing
         private void Interrupt(int int_type)
         {
-            UInt16 int_ptr;
+            ushort int_ptr;
 
             // push flags
             Push(_creg.Register);
@@ -2559,7 +2559,7 @@ namespace KDS.e8086
             Push(_bus.IP);
 
             // address of pointer is calculated by multiplying interrupt type by 4
-            int_ptr = (UInt16)(int_type * 4);
+            int_ptr = (ushort)(int_type * 4);
 
             // the second word of the interrupt pointer replaces CS
             _bus.CS = _bus.GetData16(int_ptr + 2);
@@ -2634,7 +2634,7 @@ namespace KDS.e8086
                 {
                     dest = GetRegField16(reg);
                     result = source + dest + carry;
-                    SaveRegField16(reg, (UInt16)result);
+                    SaveRegField16(reg, (ushort)result);
                 }
             }
             else
@@ -2670,7 +2670,7 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField16(rm);
                                 result = source + dest + carry;
-                                SaveRegField16(rm, (UInt16)result);
+                                SaveRegField16(rm, (ushort)result);
                             }
                             break;
                         }
@@ -2714,7 +2714,7 @@ namespace KDS.e8086
                 {
                     dest = GetRegField16(reg);
                     result = dest - (source + carry);
-                    if (!comp_only) SaveRegField16(reg, (UInt16)result);
+                    if (!comp_only) SaveRegField16(reg, (ushort)result);
                 }
             }
             else
@@ -2750,7 +2750,7 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField16(rm);
                                 result = dest - (source + carry);
-                                if (!comp_only) SaveRegField16(rm, (UInt16)result);
+                                if (!comp_only) SaveRegField16(rm, (ushort)result);
                             }
                             break;
                         }
@@ -2786,7 +2786,7 @@ namespace KDS.e8086
                 {
                     dest = GetRegField16(reg);
                     result = dest & source;
-                    if (!test_only) SaveRegField16(reg, (UInt16)result);
+                    if (!test_only) SaveRegField16(reg, (ushort)result);
                 }
             }
             else
@@ -2822,7 +2822,7 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField16(rm);
                                 result = dest & source;
-                                if (!test_only) SaveRegField16(rm, (UInt16)result);
+                                if (!test_only) SaveRegField16(rm, (ushort)result);
                             }
                             break;
                         }
@@ -2858,7 +2858,7 @@ namespace KDS.e8086
                 {
                     dest = GetRegField16(reg);
                     result = dest | source;
-                    SaveRegField16(reg, (UInt16)result);
+                    SaveRegField16(reg, (ushort)result);
                 }
             }
             else
@@ -2894,7 +2894,7 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField16(rm);
                                 result = dest | source;
-                                SaveRegField16(rm, (UInt16)result);
+                                SaveRegField16(rm, (ushort)result);
                             }
                             break;
                         }
@@ -2930,7 +2930,7 @@ namespace KDS.e8086
                 {
                     dest = GetRegField16(reg);
                     result = dest ^ source;
-                    SaveRegField16(reg, (UInt16)result);
+                    SaveRegField16(reg, (ushort)result);
                 }
             }
             else
@@ -2966,7 +2966,7 @@ namespace KDS.e8086
                             {
                                 dest = GetRegField16(rm);
                                 result = dest ^ source;
-                                SaveRegField16(rm, (UInt16)result);
+                                SaveRegField16(rm, (ushort)result);
                             }
                             break;
                         }
@@ -3120,7 +3120,7 @@ namespace KDS.e8086
                 _creg.CarryFlag = ((result & 0x8000) == 0x8000);
 
                 // shift left
-                result = (UInt16)(result << 1);
+                result = (ushort)(result << 1);
 
                 if (!shift_only)
                 {
@@ -3129,12 +3129,12 @@ namespace KDS.e8086
                     if (through_carry)
                     {
                         if (old_CF)
-                            result = (UInt16)(result | 0x0001);
+                            result = (ushort)(result | 0x0001);
                     }
                     else
                     {
                         if (_creg.CarryFlag)
-                            result = (UInt16)(result | 0x0001);
+                            result = (ushort)(result | 0x0001);
                     }
                 }
             }
@@ -3295,7 +3295,7 @@ namespace KDS.e8086
                 _creg.CarryFlag = ((result & 0x0001) == 0x0001);
 
                 // shift right
-                result = (UInt16)(result >> 1);
+                result = (ushort)(result >> 1);
 
                 if (!shift_only)
                 {
@@ -3304,12 +3304,12 @@ namespace KDS.e8086
                     if (through_carry)
                     {
                         if (old_CF)
-                            result = (UInt16)(result | 0x8000);
+                            result = (ushort)(result | 0x8000);
                     }
                     else
                     {
                         if (_creg.CarryFlag)
-                            result = (UInt16)(result | 0x8000);
+                            result = (ushort)(result | 0x8000);
                     }
                 }
 
@@ -3347,15 +3347,15 @@ namespace KDS.e8086
             }
         }
 
-        private void Push(UInt16 value)
+        private void Push(ushort value)
         {
             _reg.SP -= 2;
             _bus.PushStack(_reg.SP, value);
         }
 
-        private UInt16 Pop()
+        private ushort Pop()
         {
-            UInt16 result = _bus.PopStack(_reg.SP);
+            ushort result = _bus.PopStack(_reg.SP);
             _reg.SP += 2;
             return result;
         }
@@ -3465,9 +3465,9 @@ namespace KDS.e8086
         }
 
         // Get 16 bit REG result (or R/M mod=11)
-        private UInt16 GetRegField16(byte reg)
+        private ushort GetRegField16(byte reg)
         {
-            UInt16 result = 0;
+            ushort result = 0;
             AssertREG(reg);
             switch (reg)
             {
@@ -3516,7 +3516,7 @@ namespace KDS.e8086
         }
 
         // Save 16 bit value in register indicated by REG
-        private void SaveRegField16(byte reg, UInt16 value)
+        private void SaveRegField16(byte reg, ushort value)
         {
             AssertREG(reg);
             switch (reg)
@@ -3566,9 +3566,9 @@ namespace KDS.e8086
         }
 
         // Get 16 bit SREG result
-        private UInt16 GetSegRegField(byte reg)
+        private ushort GetSegRegField(byte reg)
         {
-            UInt16 result = 0;
+            ushort result = 0;
             AssertSREG(reg);
             switch (reg)
             {
@@ -3597,7 +3597,7 @@ namespace KDS.e8086
         }
 
         // Save 16 bit value into a Seg Reg
-        private void SaveSegRegField(byte reg, UInt16 value)
+        private void SaveSegRegField(byte reg, ushort value)
         {
             AssertSREG(reg);
             switch (reg)
@@ -3631,28 +3631,28 @@ namespace KDS.e8086
         // returns the offset as a result of the operand
         private int GetRMTable1(byte rm)
         {
-            UInt16 result = 0;
+            ushort result = 0;
             AssertRM(rm);
             switch (rm)
             {
                 case 0x00:
                     {
-                        result = (UInt16)(_reg.BX + _reg.SI);
+                        result = (ushort)(_reg.BX + _reg.SI);
                         break;
                     }
                 case 0x01:
                     {
-                        result = (UInt16)(_reg.BX + _reg.DI);
+                        result = (ushort)(_reg.BX + _reg.DI);
                         break;
                     }
                 case 0x02:
                     {
-                        result = (UInt16)(_reg.BP + _reg.SI);
+                        result = (ushort)(_reg.BP + _reg.SI);
                         break;
                     }
                 case 0x03:
                     {
-                        result = (UInt16)(_reg.BP + _reg.DI);
+                        result = (ushort)(_reg.BP + _reg.DI);
                         break;
                     }
                 case 0x04:
@@ -3701,29 +3701,29 @@ namespace KDS.e8086
         // Returns the offset address as a result of the operand
         private int GetRMTable2(byte mod, byte rm)
         {
-            UInt16 result = 0;
-            UInt16 disp = 0;
+            ushort result = 0;
+            ushort disp = 0;
             AssertRM(rm);
             switch (rm)
             {
                 case 0x00:
                     {
-                        result = (UInt16)(_reg.BX + _reg.SI);
+                        result = (ushort)(_reg.BX + _reg.SI);
                         break;
                     }
                 case 0x01:
                     {
-                        result = (UInt16)(_reg.BX + _reg.DI);
+                        result = (ushort)(_reg.BX + _reg.DI);
                         break;
                     }
                 case 0x02:
                     {
-                        result = (UInt16)(_reg.BP + _reg.SI);
+                        result = (ushort)(_reg.BP + _reg.SI);
                         break;
                     }
                 case 0x03:
                     {
-                        result = (UInt16)(_reg.BP + _reg.DI);
+                        result = (ushort)(_reg.BP + _reg.DI);
                         break;
                     }
                 case 0x04:
@@ -3787,7 +3787,7 @@ namespace KDS.e8086
                         throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", _currentOP));
                     }
             }
-            return (UInt16)(result + disp);
+            return (ushort)(result + disp);
 
         }
         #endregion
@@ -3795,7 +3795,7 @@ namespace KDS.e8086
         #region Helper and Utility functions
 
         // Gets the immediate 16 bit value
-        private UInt16 GetImmediate16()
+        private ushort GetImmediate16()
         {
             byte lo = _bus.NextIP();
             byte hi = _bus.NextIP();
@@ -3856,7 +3856,7 @@ namespace KDS.e8086
         }
 
         // Sign extend 8 bits to 16 bits
-        private UInt16 SignExtend(byte num)
+        private ushort SignExtend(byte num)
         {
             if (num < 0x80)
                 return num;
@@ -3865,7 +3865,7 @@ namespace KDS.e8086
         }
 
         // Sign extend 16 bits to 32 bits
-        private UInt32 SignExtend32(UInt16 num)
+        private uint SignExtend32(ushort num)
         {
             if (num < 0x8000)
                 return num;

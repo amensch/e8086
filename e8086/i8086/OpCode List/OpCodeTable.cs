@@ -14,7 +14,7 @@ namespace KDS.e8086
         public OpCodeTable()
         {
             // initialize the entire table with new records
-            for (UInt16 ii = 0; ii < _opCodeTable.Length; ii++)
+            for (ushort ii = 0; ii < _opCodeTable.Length; ii++)
             {
                 _opCodeTable[ii] = new OpCodeRecord(OpCodeNotImplemented);
             }
