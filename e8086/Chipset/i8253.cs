@@ -18,9 +18,6 @@ namespace KDS.e8086
 
     public class i8253 : IInputDevice, IOutputDevice
     {
-
-        private int _port;
-
         private const byte MODE_LATCHCOUNT = 0;
         private const byte MODE_LOBYTE = 1;
         private const byte MODE_HIBYTE = 2;
@@ -42,19 +39,10 @@ namespace KDS.e8086
         private long _tick_gap;
         private long _host_frequency;
 
-        public i8253(int port)
+        public i8253()
         {
             _host_frequency = Stopwatch.Frequency;
-            _port = port;
             Active = false;
-        }
-
-        public int PortNumber
-        {
-            get
-            {
-                return _port;
-            }
         }
 
         public byte Read()
@@ -96,62 +84,65 @@ namespace KDS.e8086
             return Read();
         }
 
-        public void Write(byte data)
+        public void WritePort43(byte data)
         {
-            byte current_byte = 0;
-            if( _port == 0x43 ) // mode/command register
+            _accessmode = (byte)((data >> 4) & 0x03);
+            if (_accessmode == MODE_TOGGLE)
             {
-                _accessmode = (byte)((data >> 4) & 0x03);
-                if( _accessmode == MODE_TOGGLE )
-                {
-                    _bytetoggle = USE_LO_BYTE;
-                }
-            }
-            else
-            {
-                if( ( _accessmode == MODE_LOBYTE ) ||
-                    ( ( _accessmode== MODE_TOGGLE) && ( _bytetoggle == USE_LO_BYTE) ) )
-                {
-                    current_byte = USE_LO_BYTE;
-                }
-                else if( ( _accessmode == MODE_HIBYTE ) ||
-                    ( ( _accessmode == MODE_TOGGLE ) && ( _bytetoggle == USE_HI_BYTE ) ) )
-                {
-                    current_byte = USE_HI_BYTE;
-                }
-
-                if( current_byte == USE_LO_BYTE)
-                {
-                    _channeldata = (ushort)((_channeldata & 0xff00) | data);
-                }
-                else
-                {
-                    _channeldata = (ushort)((_channeldata & 0x00ff) | data);
-                }
-
-                if( _channeldata == 0 )
-                {
-                    _effdata = 0x10000;
-                }
-                else
-                {
-                    _effdata = _channeldata;
-                }
-
-                Active = true;
-
-                _tick_gap = _host_frequency / (1193182 / _effdata);
-                if( _accessmode == MODE_TOGGLE )
-                {
-                    // toggle between lo and hi
-                    _bytetoggle = (byte)((~_bytetoggle) & 0x01);
-                }
-
-                _chanfreq = ((1193182.0 / (double)_effdata) * 1000.0) / 1000.0;
+                _bytetoggle = USE_LO_BYTE;
             }
         }
 
-        public void Write16(ushort data)
+        public void WritePort43(ushort data)
+        {
+            WritePort43(data);
+        }
+
+        public void Write(byte data)
+        {
+            byte current_byte = 0;
+            if( ( _accessmode == MODE_LOBYTE ) ||
+                ( ( _accessmode== MODE_TOGGLE) && ( _bytetoggle == USE_LO_BYTE) ) )
+            {
+                current_byte = USE_LO_BYTE;
+            }
+            else if( ( _accessmode == MODE_HIBYTE ) ||
+                ( ( _accessmode == MODE_TOGGLE ) && ( _bytetoggle == USE_HI_BYTE ) ) )
+            {
+                current_byte = USE_HI_BYTE;
+            }
+
+            if( current_byte == USE_LO_BYTE)
+            {
+                _channeldata = (ushort)((_channeldata & 0xff00) | data);
+            }
+            else
+            {
+                _channeldata = (ushort)((_channeldata & 0x00ff) | data);
+            }
+
+            if( _channeldata == 0 )
+            {
+                _effdata = 0x10000;
+            }
+            else
+            {
+                _effdata = _channeldata;
+            }
+
+            Active = true;
+
+            _tick_gap = _host_frequency / (1193182 / _effdata);
+            if( _accessmode == MODE_TOGGLE )
+            {
+                // toggle between lo and hi
+                _bytetoggle = (byte)((~_bytetoggle) & 0x01);
+            }
+
+            _chanfreq = ((1193182.0 / (double)_effdata) * 1000.0) / 1000.0;
+        }
+
+        public void Write(ushort data)
         {
             Write((byte)data);
         }

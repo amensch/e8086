@@ -8,7 +8,6 @@ namespace KDS.e8086
 {
     public interface IInputDevice
     {
-        int PortNumber { get; }
         byte Read();
         ushort Read16();
     }

@@ -31,14 +31,12 @@ namespace KDS.e8086
         Beginning with PC/AT two were used in master/slave combination.
     */
 
-    public class i8259 : IInputDevice, IOutputDevice
+    public class i8259 
     {
         private const byte PIC1_COMMAND = 0x20;
         private const byte PIC1_DATA = 0x21;
         private const byte PIC2_COMMAND = 0xa0;
         private const byte PIC2_DATA = 0xa1;
-
-        private int _port;
 
         private byte _mask;     // imr
         private byte _request;  // irr
@@ -47,20 +45,14 @@ namespace KDS.e8086
         private byte _icwstep;
         private byte _readmode;
 
-        public i8259(int port)
+        public i8259()
         {
-            _port = port;
             _readmode = 0;
+            _mask = 0;
+            _request = 0;
+            _service = 0;
+            _icwstep = 0;
         }
-
-        //private void DoIrq(byte irqnum)
-        //{
-        //    _request = (byte)(_request | (1 << irqnum));
-        //    if (irqnum == 1)
-        //    {
-        //        // keyboardwaitack = 1;
-        //    }
-        //}
 
         public byte GetNextInterrupt()
         {
@@ -79,85 +71,90 @@ namespace KDS.e8086
             return 0;
         }
 
-        public int PortNumber
+        // port 0x21
+        public byte ReadPicData()
         {
-            get
-            {
-                return _port;
-            }
+            return _mask;
         }
 
-        public byte Read()
+        // port 0x20
+        public byte ReadPicCommand()
         {
-            if ((_port == PIC1_DATA) || (_port == PIC2_DATA))
+            if (_readmode != 0)
             {
-                return _mask;
+                return _service;
             }
             else
             {
-                if (_readmode != 0)
-                {
-                    return _service;
-                }
-                else
-                {
-                    return _request;
-                }
+                return _request;
             }
         }
 
-        public ushort Read16()
+        // port 0x21
+        public ushort ReadPicData16()
         {
-            return Read();
+            return ReadPicData();
         }
 
-        public void Write(byte data)
+        // port 0x20
+        public ushort ReadPicCommand16()
         {
-            if ((_port == PIC1_DATA) || (_port == PIC2_DATA))
+            return ReadPicCommand();
+        }
+
+        // port 0x20
+        public void WritePicCommand(byte data)
+        {
+            if ((byte)(data & 0x10) == 0x10)
             {
-                if ((_icwstep == 3) && ((byte)(_icw[1] & 0x02) == 0x02))
-                    _icwstep = 4;
-                if( _icwstep < 5 )
-                {
-                    _icw[_icwstep++] = data;
-                    return;
-                }
-                _mask = data;
+                _icwstep = 1;
+                _mask = 0;
+                _icw[_icwstep++] = data;
             }
-            else
+            if ((byte)(data & 0x98) == 0x08)
             {
-                if ((byte)(data & 0x10) == 0x10)
+                if ((byte)(data & 0x02) == 0x02)
                 {
-                    _icwstep = 1;
-                    _mask = 0;
-                    _icw[_icwstep++] = data;
+                    _readmode = (byte)(data & 0x02);
                 }
-                if ((byte)(data & 0x98) == 0x08)
+            }
+            if ((byte)(data & 0x20) == 0x20)
+            {
+                for (int ii = 0; ii < 8; ii++)
                 {
-                    if ((byte)(data & 0x02) == 0x02)
+                    if ((byte)((_service >> ii) & 0x01) == 0x01)
                     {
-                        _readmode = (byte)(data & 0x02);
+                        _service = (byte)(_service ^ (1 << ii));
+                        return;
                     }
                 }
-                if ((byte)(data & 0x20) == 0x20)
-                {
-                    // kbwaitask = 0;
-                    for( int ii=0; ii < 8; ii++ )
-                    {
-                        if ((byte)((_service >> ii) & 0x01) == 0x01)
-                        {
-                            _service = (byte)(_service ^ (1 << ii));
-                            return;
-                        }
-                    }
 
-                }
             }
         }
 
-        public void Write16(ushort data)
+        // port 0x20
+        public void WritePicCommand(ushort data)
         {
-            Write((byte)data);
+            WritePicCommand(data);
+        }
+
+        // port 0x21
+        public void WritePicData(byte data)
+        {
+            if ((_icwstep == 3) && ((byte)(_icw[1] & 0x02) == 0x02))
+                _icwstep = 4;
+            if( _icwstep < 5 )
+            {
+                _icw[_icwstep++] = data;
+                return;
+            }
+            _mask = data;
+        }
+
+        // port 0x21
+        public void WritePicData(ushort data)
+        {
+            WritePicData(data);
         }
     }
 }

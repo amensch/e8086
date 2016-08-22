@@ -9,20 +9,77 @@ namespace KDS.e8086
 {
     public class i8086CPU
     {
+        // List of Ports Read on Startup
+        /*
+
+            port 0x60: Intel 8042 (keyboard)
+            port 0x10: Standard Text Output
+            port 0x40: The 8253 timer
+                On a real PC interrupt 8 is fired every 55 ms
+
+            OUT 00A0
+
+            OUT 03D8 - CGA mode control register
+                        bit 0: 40 vs 80 char mode
+                        bit 3: enable video 
+                        bit 5: drop # of backcolors to 8 and enable blink
+                default value: 0x29 (all on)
+
+            OUT 03B8 - Hercules graphics (HGC) mode control register
+                Bit 0 - unused
+                    1 - 1=720x348 graphics mode, 0=80x25 text mode
+                    2 - unused, should be 0
+                    3 - 1=video enabled, 0=video disabled (blank)
+                    4 - unused, should be 0
+                    5 - 1=blink enabled, 0=blink disabled
+                    6 - unused, should be 0
+                    7 - 1=graphics memory stars at B800:0000, 0=starts at B000:0000
+
+            OUT 0063
+            OUT 0061
+            OUT 0043
+            OUT 0041
+            OUT 0043
+            OUT 0081
+            OUT 0082
+            OUT 0083
+            OUT 000D
+            OUT 000B
+            OUT 000B
+            OUT 000B
+            OUT 000B
+            OUT 0001
+            OUT 0001
+            OUT 0008
+            OUT 000A
+            OUT 0043
+            OUT 0040
+            OUT 0040
+            OUT 0213
+            OUT 0020
+            OUT 0021
+            OUT 0021
+            OUT 0021
+            IN 0061
+            OUT 0061
+            OUT 0061
+            OUT 00A0
+            OUT 0061
+
+        */
+
+
         // CPU Components
         private i8086ExecutionUnit _eu;
         private i8086BusInterfaceUnit _bus;
 
-        // External chips on 8088
-        // Intel 8237
-        // Intel 8253 - interrupt timer
-        // Intel 8259
+        // External chips
+        private i8259 _i8259;  // interrupts (PIC)
+        private i8253 _i8253;  // timer (PIT)
 
         public i8086CPU()
         {
             Reset();
-
-         
         }
 
         public void Reset()
@@ -32,31 +89,63 @@ namespace KDS.e8086
 
             _eu = new i8086ExecutionUnit(_bus);
 
-            //i8253 input devices(PIT)
-            _eu.AddInputDevice(new i8253(0x40));
-            _eu.AddInputDevice(new i8253(0x41));
-            _eu.AddInputDevice(new i8253(0x42));
-            _eu.AddInputDevice(new i8253(0x43));
+            // 0x00 - 0x0f: DMA Chip 8237A-5
 
-            //i8253 output devices(PIT)
-            _eu.AddOutputDevice(new i8253(0x40));
-            _eu.AddOutputDevice(new i8253(0x41));
-            _eu.AddOutputDevice(new i8253(0x42));
-            _eu.AddOutputDevice(new i8253(0x43));
+            // 0x20 - 0x21: Interrupt 8259A
+            Init8259();
+
+            // 0x40 - 0x43: Timer 8253
+            Init8253();
+
+            // 0x60 - 0x63: PPI 8255 (speaker)
+            // 0x80 - 0x83: DMA page registers
+            // 0xa0 - 0xaf: NMI Mask Register
+
+            // 0x200 - 0x20f: Game Control
+            // 0x210 - 0x207: Expansion Unit
+
+            // 0x220 - 0x24f: Reserved
+
+            // 0x3bc: IBM Monochrome Display & Printer Adapter
+            // 0x378: Printer Adapter
+
+
+        }
+
+        private void Init8259()
+        {
+            _i8259 = new i8259();
 
             // i8259 input devices (PIC)
-            _eu.AddInputDevice(new i8259(0x20));
-            _eu.AddInputDevice(new i8259(0x21));
+            _eu.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
+            _eu.AddInputDevice(0x21, new InputDevice(_i8259.ReadPicData, _i8259.ReadPicData16));
 
             // i8259 output devices (PIC)
-            _eu.AddOutputDevice(new i8259(0x20));
-            _eu.AddOutputDevice(new i8259(0x21));
+            _eu.AddOutputDevice(0x20, new OutputDevice(_i8259.WritePicCommand, _i8259.WritePicCommand));
+            _eu.AddOutputDevice(0x21, new OutputDevice(_i8259.WritePicData, _i8259.WritePicData));
+        }
+
+        private void Init8253()
+        {
+            _i8253 = new i8253();
+
+            //i8253 input devices(PIT)
+            _eu.AddInputDevice(0x40, new InputDevice(_i8253.Read, _i8253.Read16));
+            _eu.AddInputDevice(0x41, new InputDevice(_i8253.Read, _i8253.Read16));
+            _eu.AddInputDevice(0x42, new InputDevice(_i8253.Read, _i8253.Read16));
+            _eu.AddInputDevice(0x43, new InputDevice(_i8253.Read, _i8253.Read16));
+
+            ////i8253 output devices(PIT)
+            _eu.AddOutputDevice(0x40, new OutputDevice(_i8253.Write, _i8253.Write));
+            _eu.AddOutputDevice(0x41, new OutputDevice(_i8253.Write, _i8253.Write));
+            _eu.AddOutputDevice(0x42, new OutputDevice(_i8253.Write, _i8253.Write));
+            _eu.AddOutputDevice(0x43, new OutputDevice(_i8253.WritePort43, _i8253.WritePort43));
         }
 
         public void Boot(byte[] program)
         {
             // For now we will hard code the BIOS to start at a particular code segment.
-            _bus = new i8086BusInterfaceUnit(0x0000, 0x0000, program);
+            _bus = new i8086BusInterfaceUnit(0x0000, 0x0100, program);
             _eu = new i8086ExecutionUnit(_bus);
         }
 
@@ -65,9 +154,9 @@ namespace KDS.e8086
             long count = 0;
             do
             {
-                NextInstruction();
+                NextInstructionDebug();
                 count++;
-                Debug.WriteLine("Count: " + count.ToString());
+                //Debug.WriteLine("Count: " + count.ToString());
             } while (!_eu.Halted);
             return count;
         }

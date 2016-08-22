@@ -8,8 +8,7 @@ namespace KDS.e8086
 {
     public interface IOutputDevice
     {
-        int PortNumber { get; }
         void Write(byte data);
-        void Write16(ushort data);
+        void Write(ushort data);
     }
 }
