@@ -74,14 +74,7 @@ namespace KDS.e8086
 
         public void NextInstruction()
         {
-            try
-            {
-                _eu.NextInstruction();
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("Exception thrown", ex);
-            }
+            _eu.NextInstruction();
         }
 
         public void NextInstruction(out string dasm)

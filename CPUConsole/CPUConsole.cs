@@ -160,38 +160,33 @@ namespace CPUConsole
             Console.WriteLine("[Enter]:step [R]:run [B]:run to break [Q]:quit");
             int input;
             char ch = '0';
-            try
+
+            input = Console.Read();
+            ch = Convert.ToChar(input);
+            if( input == 13)
             {
+                cpu.EU.NextInstruction();
+                input = Console.Read();  // throw away lf char
+            }
+            else if( ch == 'r' || ch == 'R')
+            {
+                sw.Restart();
+                count = cpu.Run();
+                sw.Stop();
+            }
+            else if( ch == 'b' || ch == 'B')
+            {
+                // flush CRLF
                 input = Console.Read();
-                ch = Convert.ToChar(input);
-                if( input == 13)
+                input = Console.Read();
+                // loop until we hit our breakpoint
+                do
                 {
                     cpu.EU.NextInstruction();
-                    input = Console.Read();  // throw away lf char
-                }
-                else if( ch == 'r' || ch == 'R')
-                {
-                    sw.Restart();
-                    count = cpu.Run();
-                    sw.Stop();
-                }
-                else if( ch == 'b' || ch == 'B')
-                {
-                    // flush CRLF
-                    input = Console.Read();
-                    input = Console.Read();
-                    // loop until we hit our breakpoint
-                    do
-                    {
-                        cpu.EU.NextInstruction();
-                    } while (cpu.Bus.IP != 0x01a2);
-                }
+                } while (cpu.Bus.IP != 0x01a2);
+            }
 
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Exception!");
-            }
+
             if (ch == 'Q' || ch == 'q')
                 exit = true;
 

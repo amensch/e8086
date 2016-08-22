@@ -127,6 +127,12 @@ namespace KDS.e8086
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
                 _bus.UsingBasePointer = false;
                 _repeat = false;
+
+                // if the trap flag has been set then fire interrupt 1
+                if(_creg.TrapFlag)
+                {
+                    Interrupt(1);
+                }
             }
         }
 
@@ -2541,7 +2547,7 @@ namespace KDS.e8086
         #endregion
 
         #region Interrupt Processing
-        private void Interrupt(int int_type)
+        private void Interrupt(int interrupt_num)
         {
             ushort int_ptr;
 
@@ -2559,7 +2565,7 @@ namespace KDS.e8086
             Push(_bus.IP);
 
             // address of pointer is calculated by multiplying interrupt type by 4
-            int_ptr = (ushort)(int_type * 4);
+            int_ptr = (ushort)(interrupt_num * 4);
 
             // the second word of the interrupt pointer replaces CS
             _bus.CS = _bus.GetData16(int_ptr + 2);
