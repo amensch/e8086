@@ -788,7 +788,8 @@ namespace KDS.e8086
                 port = _bus.NextIP();
 
             int word_size = GetWordSize();
-            Debug.WriteLine("OUT " + port.ToString("X4"));
+
+            Debug.WriteLine("OUT " + port.ToString("X4") + " (data=" + _reg.AL.ToString("X2"));
 
             if (_outputDevices.TryGetValue(port, out device))
             {

@@ -12,9 +12,29 @@ namespace KDS.e8086
         // List of Ports Read on Startup
         /*
 
+            port 0x60: Intel 8042 (keyboard)
+            port 0x10: Standard Text Output
+            port 0x40: The 8253 timer
+                On a real PC interrupt 8 is fired every 55 ms
+
             OUT 00A0
-            OUT 03D8
-            OUT 03B8
+
+            OUT 03D8 - CGA mode control register
+                        bit 0: 40 vs 80 char mode
+                        bit 3: enable video 
+                        bit 5: drop # of backcolors to 8 and enable blink
+                default value: 0x29 (all on)
+
+            OUT 03B8 - Hercules graphics (HGC) mode control register
+                Bit 0 - unused
+                    1 - 1=720x348 graphics mode, 0=80x25 text mode
+                    2 - unused, should be 0
+                    3 - 1=video enabled, 0=video disabled (blank)
+                    4 - unused, should be 0
+                    5 - 1=blink enabled, 0=blink disabled
+                    6 - unused, should be 0
+                    7 - 1=graphics memory stars at B800:0000, 0=starts at B000:0000
+
             OUT 0063
             OUT 0061
             OUT 0043
@@ -36,6 +56,15 @@ namespace KDS.e8086
             OUT 0040
             OUT 0040
             OUT 0213
+            OUT 0020
+            OUT 0021
+            OUT 0021
+            OUT 0021
+            IN 0061
+            OUT 0061
+            OUT 0061
+            OUT 00A0
+            OUT 0061
 
         */
 
