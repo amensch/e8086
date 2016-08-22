@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -130,22 +131,22 @@ namespace KDS.e8086
             }
         }
 
-        public void AddInputDevice(IInputDevice device)
+        public void AddInputDevice(int port, IInputDevice device)
         {
-            if (_inputDevices.ContainsKey(device.PortNumber))
+            if (_inputDevices.ContainsKey(port))
             {
-                _inputDevices.Remove(device.PortNumber);
+                _inputDevices.Remove(port);
             }
-            _inputDevices.Add(device.PortNumber, device);
+            _inputDevices.Add(port, device);
         }
 
-        public void AddOutputDevice(IOutputDevice device)
+        public void AddOutputDevice(int port, IOutputDevice device)
         {
-            if (_outputDevices.ContainsKey(device.PortNumber))
+            if (_outputDevices.ContainsKey(port))
             {
-                _outputDevices.Remove(device.PortNumber);
+                _outputDevices.Remove(port);
             }
-            _outputDevices.Add(device.PortNumber, device);
+            _outputDevices.Add(port, device);
         }
 
         private void InitOpCodeTable()
@@ -721,6 +722,8 @@ namespace KDS.e8086
 
             int word_size = GetWordSize();
 
+            Debug.WriteLine("IN " + port.ToString("X4"));
+
             if (_inputDevices.TryGetValue(port, out device))
             {
                 if (word_size == 0)
@@ -769,7 +772,7 @@ namespace KDS.e8086
                 if (word_size == 0)
                     device.Write(_bus.GetDestString8(_reg.SI));
                 else
-                    device.Write16(_bus.GetDestString16(_reg.SI));
+                    device.Write(_bus.GetDestString16(_reg.SI));
             }
         }
 
@@ -785,13 +788,14 @@ namespace KDS.e8086
                 port = _bus.NextIP();
 
             int word_size = GetWordSize();
+            Debug.WriteLine("OUT " + port.ToString("X4"));
 
             if (_outputDevices.TryGetValue(port, out device))
             {
                 if (word_size == 0)
                     device.Write(_reg.AL);
                 else
-                    device.Write16(_reg.AX);
+                    device.Write(_reg.AX);
             }
         }
         #endregion
@@ -1862,7 +1866,7 @@ namespace KDS.e8086
                 // for segment register ops, use the reg field
                 if (_currentOP < 0x50)
                 {
-                    SaveSegRegField(rm, Pop());
+                    SaveSegRegField(reg, Pop());
                 }
                 else if (_currentOP == 0x8f) // POP R/M-16
                 {
