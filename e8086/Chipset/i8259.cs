@@ -111,24 +111,26 @@ namespace KDS.e8086
                 _mask = 0;
                 _icw[_icwstep++] = data;
             }
-            if ((byte)(data & 0x98) == 0x08)
+            else
             {
-                if ((byte)(data & 0x02) == 0x02)
+                if ((byte)(data & 0x98) == 0x08)
                 {
-                    _readmode = (byte)(data & 0x02);
-                }
-            }
-            if ((byte)(data & 0x20) == 0x20)
-            {
-                for (int ii = 0; ii < 8; ii++)
-                {
-                    if ((byte)((_service >> ii) & 0x01) == 0x01)
+                    if ((byte)(data & 0x02) == 0x02)
                     {
-                        _service = (byte)(_service ^ (1 << ii));
-                        return;
+                        _readmode = (byte)(data & 0x02);
                     }
                 }
+                if ((byte)(data & 0x20) == 0x20)
+                {
+                    for (int ii = 0; ii < 8; ii++)
+                    {
+                        if ((byte)((_service >> ii) & 0x01) == 0x01)
+                        {
+                            _service = (byte)(_service ^ (1 << ii));
+                        }
+                    }
 
+                }
             }
         }
 
@@ -143,12 +145,15 @@ namespace KDS.e8086
         {
             if ((_icwstep == 3) && ((byte)(_icw[1] & 0x02) == 0x02))
                 _icwstep = 4;
-            if( _icwstep < 5 )
+
+            if (_icwstep < 5)
             {
                 _icw[_icwstep++] = data;
-                return;
             }
-            _mask = data;
+            else
+            {
+                _mask = data;
+            }
         }
 
         // port 0x21

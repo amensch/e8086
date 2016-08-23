@@ -57,10 +57,6 @@
       <Project>{9881aede-ed95-4871-878f-a250251001bb}</Project>
       <Name>KDS.e8086</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loader\KDS.Loader.csproj">
-      <Project>{c9c3dfe4-7825-4ca8-959c-ccee44a0c6b7}</Project>
-      <Name>KDS.Loader</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

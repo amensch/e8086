@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
 
 namespace KDS.e8086
 {
@@ -85,7 +86,10 @@ namespace KDS.e8086
         public void Reset()
         {
             _bus = new i8086BusInterfaceUnit();
-            _bus.LoadBIOS(KDS.Loader.FileLoader.LoadFile("Chipset\\pcxtbios.bin"));
+            _bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
+            //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
+            //_bus.LoadROM(File.ReadAllBytes("Chipset\\rombasic.bin"), 0xf6000);
+            //_bus.LoadROM(File.ReadAllBytes("Chipset\\videorom.bin"), 0xc0000);
 
             _eu = new i8086ExecutionUnit(_bus);
 
@@ -151,12 +155,12 @@ namespace KDS.e8086
 
         public long Run()
         {
-            long count = 0;
+            long count = 1;
             do
             {
+                Debug.Write("Count: " + count.ToString() + " ");
                 NextInstructionDebug();
                 count++;
-                //Debug.WriteLine("Count: " + count.ToString());
             } while (!_eu.Halted);
             return count;
         }

@@ -62,6 +62,11 @@ namespace KDS.e8086
             bios.CopyTo(_ram, MAX_MEMORY - bios.GetLength(0));
         }
 
+        public void LoadROM(byte[] bios, int starting_address)
+        {
+            bios.CopyTo(_ram, starting_address);
+        }
+
         // this is for testing
         public i8086BusInterfaceUnit(ushort startupCS, ushort startupIP, byte[] program)
         {

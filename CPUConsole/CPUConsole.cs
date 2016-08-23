@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using KDS.Loader;
 using KDS.e8086;
 using System.IO;
 using System.Diagnostics;
@@ -86,7 +85,7 @@ namespace CPUConsole
 
         static void DisassembleThings()
         {
-            string dasm = Disassemble8086.Disassemble(FileLoader.LoadFile("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.bin"), 0);
+            string dasm = Disassemble8086.Disassemble(File.ReadAllBytes("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.bin"), 0);
 
             StreamWriter sw = new StreamWriter("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.txt");
             sw.Write(dasm);
@@ -121,7 +120,7 @@ namespace CPUConsole
             Console.WriteLine();
             string dasm;
             int bytes = (int)Disassemble8086.DisassembleNext(cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
-            Console.WriteLine("IP {0:X4}: {1}", cpu.Bus.IP,dasm);
+            Console.WriteLine("IP {0:X4}:{1:X4}: {2}", cpu.Bus.CS,cpu.Bus.IP,dasm);
 
             byte[] data = cpu.Bus.GetNextIPBytes(bytes);
             string opstring = "";
@@ -183,7 +182,7 @@ namespace CPUConsole
                 do
                 {
                     cpu.EU.NextInstruction();
-                } while (cpu.Bus.IP != 0x01a2);
+                } while (cpu.Bus.IP != 0xE1D4);
             }
 
 
