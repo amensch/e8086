@@ -2552,31 +2552,29 @@ namespace KDS.e8086
         #endregion
 
         #region Interrupt Processing
-        private void Interrupt(int interrupt_num)
+        public void Interrupt(int interrupt_num)
         {
-            ushort int_ptr;
+            // address of pointer is calculated by multiplying interrupt type by 4
+            ushort int_ptr = (ushort)(interrupt_num * 4);
 
             // push flags
             Push(_creg.Register);
 
+            // push CS and IP
+            Push(_bus.CS);
+            Push(_bus.IP);
+            
             // clear trap flag
             _creg.TrapFlag = false;
 
             // clear interrupt enable
             _creg.InterruptEnable = false;
 
-            // push CS and IP
-            Push(_bus.CS);
-            Push(_bus.IP);
-
-            // address of pointer is calculated by multiplying interrupt type by 4
-            int_ptr = (ushort)(interrupt_num * 4);
-
             // the second word of the interrupt pointer replaces CS
-            _bus.CS = _bus.GetData16(int_ptr + 2);
+            _bus.CS = _bus.GetData16(0, int_ptr + 2);
 
             // replace IP by first word of interrupt pointer
-            _bus.IP = _bus.GetData16(int_ptr);
+            _bus.IP = _bus.GetData16(0, int_ptr);
         }
         #endregion
 

@@ -148,7 +148,7 @@ namespace CPUConsole
                 line = new StringBuilder();
                 for( int col=0; col < 80; col++)
                 {
-                    line.Append((char)cpu.Bus.GetPhysicalRAM(addr++));
+                    line.Append((char)cpu.Bus.GetDataByPhysical(addr++));
                 }
                 Console.WriteLine(line.ToString());
             }

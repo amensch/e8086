@@ -102,6 +102,8 @@ namespace KDS.e8086
             Init8253();
 
             // 0x60 - 0x63: PPI 8255 (speaker)
+
+
             // 0x80 - 0x83: DMA page registers
             // 0xa0 - 0xaf: NMI Mask Register
 

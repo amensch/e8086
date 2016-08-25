@@ -137,9 +137,7 @@ namespace KDS.e8086
             return next;
         }
         
-        // The EU does not access by physical address.  
-        // Intended use is for debugging and crude video ram access.
-        public byte GetPhysicalRAM(int idx)
+        public byte GetDataByPhysical(int idx)
         {
             if (idx >= MAX_MEMORY)
             {
@@ -190,6 +188,17 @@ namespace KDS.e8086
 
         // fetch the 16 bit value at the requested offset
         public ushort GetData16(int offset)
+        {
+            int addr = (GetDataSegment() << 4) + offset;
+            if (addr >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
+            }
+            return new DataRegister16(_ram[addr + 1], _ram[addr]);
+        }
+
+        // fetch the 16 bit value at the requested offset while forcing a segment address
+        public ushort GetData16(int segment, int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
