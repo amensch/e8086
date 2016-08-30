@@ -5,9 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace KDS.e8086
 {
+
+
     public class i8086CPU
     {
         // List of Ports Read on Startup
@@ -69,7 +72,8 @@ namespace KDS.e8086
 
         */
 
-
+        public delegate void InterruptFunc(byte int_number);
+        
         // CPU Components
         private i8086ExecutionUnit _eu;
         private i8086BusInterfaceUnit _bus;
@@ -78,6 +82,10 @@ namespace KDS.e8086
         private i8259 _i8259;  // interrupts (PIC)
         private i8253 _i8253;  // timer (PIT)
 
+        // List of interrupts - thread safe FIFO queue
+        private ConcurrentQueue<byte> _interrupts;
+
+
         public i8086CPU()
         {
             Reset();
@@ -85,6 +93,7 @@ namespace KDS.e8086
 
         public void Reset()
         {
+            _interrupts = new ConcurrentQueue<byte>();
             _bus = new i8086BusInterfaceUnit();
             _bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
@@ -120,7 +129,7 @@ namespace KDS.e8086
 
         private void Init8259()
         {
-            _i8259 = new i8259();
+            _i8259 = new i8259(AddInterrupt);
 
             // i8259 input devices (PIC)
             _eu.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
@@ -133,19 +142,19 @@ namespace KDS.e8086
 
         private void Init8253()
         {
-            _i8253 = new i8253();
+            _i8253 = new i8253(AddInterrupt);
 
             //i8253 input devices(PIT)
-            _eu.AddInputDevice(0x40, new InputDevice(_i8253.Read, _i8253.Read16));
-            _eu.AddInputDevice(0x41, new InputDevice(_i8253.Read, _i8253.Read16));
-            _eu.AddInputDevice(0x42, new InputDevice(_i8253.Read, _i8253.Read16));
-            _eu.AddInputDevice(0x43, new InputDevice(_i8253.Read, _i8253.Read16));
+            _eu.AddInputDevice(0x40, new InputDevice(_i8253.ReadCounter1, _i8253.Read16));
+            _eu.AddInputDevice(0x41, new InputDevice(_i8253.ReadCounter2, _i8253.Read16));
+            _eu.AddInputDevice(0x42, new InputDevice(_i8253.ReadCounter3, _i8253.Read16));
+            _eu.AddInputDevice(0x43, new InputDevice(_i8253.ReadControlWord, _i8253.Read16));
 
             ////i8253 output devices(PIT)
-            _eu.AddOutputDevice(0x40, new OutputDevice(_i8253.Write, _i8253.Write));
-            _eu.AddOutputDevice(0x41, new OutputDevice(_i8253.Write, _i8253.Write));
-            _eu.AddOutputDevice(0x42, new OutputDevice(_i8253.Write, _i8253.Write));
-            _eu.AddOutputDevice(0x43, new OutputDevice(_i8253.WritePort43, _i8253.WritePort43));
+            _eu.AddOutputDevice(0x40, new OutputDevice(_i8253.WriteCounter1, _i8253.WriteCounter));
+            _eu.AddOutputDevice(0x41, new OutputDevice(_i8253.WriteCounter2, _i8253.WriteCounter));
+            _eu.AddOutputDevice(0x42, new OutputDevice(_i8253.WriteCounter3, _i8253.WriteCounter));
+            _eu.AddOutputDevice(0x43, new OutputDevice(_i8253.WriteControlWord, _i8253.WriteControlWord));
         }
 
         public void Boot(byte[] program)
@@ -155,12 +164,27 @@ namespace KDS.e8086
             _eu = new i8086ExecutionUnit(_bus);
         }
 
+        public void AddInterrupt(byte int_number)
+        {
+            _interrupts.Enqueue(int_number);
+        }
+
         public long Run()
         {
             long count = 1;
+            byte int_number;
             do
             {
-                Debug.Write("Count: " + count.ToString() + " ");
+
+                // check for interrupt
+                if( _interrupts.TryDequeue(out int_number))
+                {
+                    if( _eu.CondReg.InterruptEnable )
+                    {
+                        _eu.Interrupt(int_number);
+                    }
+                }
+
                 NextInstructionDebug();
                 count++;
             } while (!_eu.Halted);

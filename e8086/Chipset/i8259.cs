@@ -44,9 +44,11 @@ namespace KDS.e8086
         private byte[] _icw = new byte[5];   // icw
         private byte _icwstep;
         private byte _readmode;
+        private i8086CPU.InterruptFunc _intFunc;
 
-        public i8259()
+        public i8259(i8086CPU.InterruptFunc intFunc)
         {
+            _intFunc = intFunc;
             _readmode = 0;
             _mask = 0;
             _request = 0;

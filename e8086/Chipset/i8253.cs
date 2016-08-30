@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,135 +17,191 @@ namespace KDS.e8086
         The PIT oscillator runs at 1.193182 Mhz.
     */
 
-    public class i8253 : IInputDevice, IOutputDevice
+    public class i8253 
     {
-        private const byte MODE_LATCHCOUNT = 0;
-        private const byte MODE_LOBYTE = 1;
-        private const byte MODE_HIBYTE = 2;
-        private const byte MODE_TOGGLE = 3;
 
-        private const byte USE_LO_BYTE = 0;
-        private const byte USE_HI_BYTE = 1;
-
-        private const long OSC_FREQUENCY = 1193182;
-
-        private ushort _channeldata;
-        private byte _accessmode;
-        private byte _bytetoggle;
-        private uint _effdata;
-        private double _chanfreq;
-        private DataRegister16 _counter = new DataRegister16();
-        public bool Active { get; set; }
-
-        private long _tick_gap;
-        private long _host_frequency;
-
-        public i8253()
+        private enum TimerAccessMode
         {
-            _host_frequency = Stopwatch.Frequency;
-            Active = false;
+            Latch = 0,
+            LoByte = 1,
+            HiByte = 2,
+            BothBytes = 3
+        };
+
+        private class i8253timer
+        {
+            public TimerAccessMode accessMode { get; set; }
+            public TimerAccessMode toggleMode { get; set; }
+            public ushort counter { get; set; }
         }
 
-        public byte Read()
+        private const int TIMERS = 3;
+
+        private i8253timer[] _timers;
+        private i8086CPU.InterruptFunc _intFunc;
+        private Thread _timer;
+        private bool _stopTimer = false;
+
+        public i8253(i8086CPU.InterruptFunc intFunc)
         {
-            byte current_byte = 0;
-
-            if( ( _accessmode == MODE_LATCHCOUNT ) ||
-                ( _accessmode == MODE_LOBYTE ) ||
-                ( ( _accessmode == MODE_TOGGLE ) && _bytetoggle == USE_LO_BYTE ) )
+            //_host_frequency = Stopwatch.Frequency;
+            //Active = false;
+            _timers = new i8253timer[TIMERS];
+            _intFunc = intFunc;
+            for( int ii=0; ii < TIMERS; ii++ )
             {
-                current_byte = USE_LO_BYTE;
+                _timers[ii] = new i8253timer();
             }
-            else if ((_accessmode == MODE_HIBYTE) ||
-                ((_accessmode == MODE_TOGGLE) && _bytetoggle == USE_HI_BYTE))
+        }
+
+        public byte ReadCounter1()
+        {
+            return ReadCounter(0);
+        }
+
+        public byte ReadCounter2()
+        {
+            return ReadCounter(1);
+        }
+
+        public byte ReadCounter3()
+        {
+            return ReadCounter(2);
+        }
+
+        public byte ReadControlWord()
+        {
+            return 0;   // real system ignores this call
+        }
+
+        private byte ReadCounter(int idx)
+        {
+            byte data = 0;
+            if ((_timers[idx].accessMode == TimerAccessMode.Latch) ||
+                (_timers[idx].accessMode == TimerAccessMode.LoByte) ||
+                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.LoByte))
             {
-                current_byte = USE_HI_BYTE;
+                data = (byte)(_timers[idx].counter & 0x00ff) ;
+            }
+            else if ((_timers[idx].accessMode == TimerAccessMode.HiByte) ||
+                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.HiByte))
+            {
+                data = (byte)(_timers[idx].counter >> 8);
             }
 
-
-            if ( (_accessmode == MODE_LATCHCOUNT) || (_accessmode == MODE_TOGGLE) )
+            // if toggle mode if access mode is both
+            if (_timers[idx].accessMode == TimerAccessMode.Latch ||
+                _timers[idx].accessMode == TimerAccessMode.BothBytes)
             {
-                // toggle between lo and hi
-                _bytetoggle = (byte)((~_bytetoggle) & 0x01);
+                if (_timers[idx].toggleMode == TimerAccessMode.LoByte)
+                    _timers[idx].toggleMode = TimerAccessMode.HiByte;
+                else
+                    _timers[idx].toggleMode = TimerAccessMode.LoByte;
             }
 
-            if( current_byte == USE_LO_BYTE )
-            {
-                return _counter.LO;
-            }
-            else
-            {
-                return _counter.HI;
-            }
-
+            return data;
         }
 
         public ushort Read16()
         {
-            return Read();
+            throw new InvalidOperationException("Not Implemented");
         }
 
-        public void WritePort43(byte data)
+        // port 0x43
+        public void WriteControlWord(byte data)
         {
-            _accessmode = (byte)((data >> 4) & 0x03);
-            if (_accessmode == MODE_TOGGLE)
+            // control word (bits 7-0)
+            // SC1-SC0-RL1-RL0-M2-M1-M0-BCD
+            // Set the mode of the timer (0=latch, 1=LSB, 2=MSB, 3=both)
+
+            byte sc = (byte)(data >> 6);
+            byte rl = (byte)((data >> 4) & 0x03);
+            TimerAccessMode mode = (TimerAccessMode)rl;
+
+            if( sc == 0 )
             {
-                _bytetoggle = USE_LO_BYTE;
+                if (_timer.ThreadState == System.Threading.ThreadState.Running)
+                    _stopTimer = true;
             }
+
+            _timers[sc].accessMode = mode;
+
+            if (mode == TimerAccessMode.Latch ||
+                mode == TimerAccessMode.BothBytes)
+                _timers[sc].toggleMode = TimerAccessMode.LoByte;
         }
 
-        public void WritePort43(ushort data)
+        // port 0x43
+        public void WriteControlWord(ushort data)
         {
-            WritePort43(data);
+            WriteControlWord(data);
         }
 
-        public void Write(byte data)
+        public void WriteCounter(ushort data)
         {
-            byte current_byte = 0;
-            if( ( _accessmode == MODE_LOBYTE ) ||
-                ( ( _accessmode== MODE_TOGGLE) && ( _bytetoggle == USE_LO_BYTE) ) )
-            {
-                current_byte = USE_LO_BYTE;
-            }
-            else if( ( _accessmode == MODE_HIBYTE ) ||
-                ( ( _accessmode == MODE_TOGGLE ) && ( _bytetoggle == USE_HI_BYTE ) ) )
-            {
-                current_byte = USE_HI_BYTE;
-            }
-
-            if( current_byte == USE_LO_BYTE)
-            {
-                _channeldata = (ushort)((_channeldata & 0xff00) | data);
-            }
-            else
-            {
-                _channeldata = (ushort)((_channeldata & 0x00ff) | data);
-            }
-
-            if( _channeldata == 0 )
-            {
-                _effdata = 0x10000;
-            }
-            else
-            {
-                _effdata = _channeldata;
-            }
-
-            Active = true;
-
-            _tick_gap = _host_frequency / (1193182 / _effdata);
-            if( _accessmode == MODE_TOGGLE )
-            {
-                // toggle between lo and hi
-                _bytetoggle = (byte)((~_bytetoggle) & 0x01);
-            }
-
-            _chanfreq = ((1193182.0 / (double)_effdata) * 1000.0) / 1000.0;
+            throw new InvalidOperationException("Not Implemented");
         }
 
-        public void Write(ushort data)
+        public void WriteCounter1(byte data)
         {
-            Write((byte)data);
+            WriteCounter(0, data);
         }
-    }
+
+        public void WriteCounter2(byte data)
+        {
+            WriteCounter(1, data);
+        }
+
+        public void WriteCounter3(byte data)
+        {
+            WriteCounter(2, data);
+        }
+
+        // Write for ports 0x40-0x42
+        private void WriteCounter(int idx, byte data)
+        {
+            if( ( _timers[idx].accessMode == TimerAccessMode.LoByte ) ||
+                ( _timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.LoByte ))
+            {
+                // zero out lo byte then assign from data
+                _timers[idx].counter = (ushort)((_timers[idx].counter & 0xff00) | data);
+            }
+            else if ((_timers[idx].accessMode == TimerAccessMode.HiByte) ||
+                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.HiByte))
+            {
+                // zero out hi byte then assign from data
+                _timers[idx].counter = (ushort)((_timers[idx].counter & 0x00ff) | ( data << 8 ));
+            }
+
+            // if toggle mode if access mode is both
+            if( _timers[idx].accessMode == TimerAccessMode.BothBytes)
+            {
+                if( _timers[idx].toggleMode == TimerAccessMode.LoByte)
+                    _timers[idx].toggleMode = TimerAccessMode.HiByte;
+                else
+                    _timers[idx].toggleMode = TimerAccessMode.LoByte;
+            }
+
+            // If this timer 1, reset and start timer
+            if (idx == 0 &&
+                !(_timers[idx].accessMode == TimerAccessMode.BothBytes &&
+                    _timers[idx].toggleMode == TimerAccessMode.LoByte))
+            {
+                if(_timer.ThreadState != System.Threading.ThreadState.Running )
+                {
+                    _timer.Start();
+                }
+            }
+        }
+
+        private void TimerLoop()
+        {
+            do
+            {
+                Thread.Sleep(55);
+                _intFunc(0);
+            } while (!_stopTimer);
+            _stopTimer = false;
+        }
+    }  
 }
