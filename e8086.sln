@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUConsole", "CPUConsole\CPUConsole.csproj", "{3687E58E-5DB1-4D11-A754-47267A3A2D47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPU Monitor", "CPU Monitor\CPU Monitor.csproj", "{200645E6-4F8D-4757-9947-2693BBC73A16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{3687E58E-5DB1-4D11-A754-47267A3A2D47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3687E58E-5DB1-4D11-A754-47267A3A2D47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3687E58E-5DB1-4D11-A754-47267A3A2D47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{200645E6-4F8D-4757-9947-2693BBC73A16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{200645E6-4F8D-4757-9947-2693BBC73A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{200645E6-4F8D-4757-9947-2693BBC73A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{200645E6-4F8D-4757-9947-2693BBC73A16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
