@@ -147,15 +147,15 @@ namespace e8086UnitTests
         {
             i8086CPU cpu = GetCPU(new byte[] { 0x9f, 0x9e });
 
-            cpu.EU.CondReg.Register = 0x15d7;
+            cpu.EU.CondReg.Register = 0x14d7;
             cpu.NextInstruction();
             Assert.AreEqual(0xd7, cpu.EU.Registers.AH, "LAHF result failed");
-            Assert.AreEqual(0x15d7, cpu.EU.CondReg.Register, "LAHF result failed");
+            Assert.AreEqual(0x14d7, cpu.EU.CondReg.Register, "LAHF result failed");
 
-            cpu.EU.CondReg.Register = 0xf92e;
+            cpu.EU.CondReg.Register = 0xf82e;
             cpu.NextInstruction();
             Assert.AreEqual(0xd7, cpu.EU.Registers.AH, "SAHF result failed");
-            Assert.AreEqual(0xf9d7, cpu.EU.CondReg.Register, "SAHF result failed");
+            Assert.AreEqual(0xf8d7, cpu.EU.CondReg.Register, "SAHF result failed");
         }
     }
 }

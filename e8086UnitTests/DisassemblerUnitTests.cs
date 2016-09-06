@@ -127,6 +127,11 @@ namespace e8086UnitTests
             TestDasm(new byte[] { 0x8a, 0x88, 0xf6, 0x12 }, "mov cl,[bx+si+12f6]", 4);
         }
         [TestMethod]
+        public void Test8B()
+        {
+            TestDasm(new byte[] { 0x8b, 0x0e, 0x62, 0x00 }, "mov cx,[0062]", 4);
+        }
+        [TestMethod]
         public void Test8C()
         {
             TestDasm(new byte[] { 0x8c, 0xc8 }, "mov ax,cs", 2);
