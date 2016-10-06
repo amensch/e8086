@@ -193,7 +193,7 @@ namespace KDS.e8086
 
         public void NextInstruction()
         {
-            _eu.NextInstruction();
+            _eu.Tick();
         }
 
         public void NextInstruction(out string dasm)
