@@ -77,6 +77,9 @@
             this.RefreshButton = new System.Windows.Forms.Button();
             this.StopButton = new System.Windows.Forms.Button();
             this.RunButton = new System.Windows.Forms.Button();
+            this.txtSegment = new System.Windows.Forms.TextBox();
+            this.txtOffset = new System.Windows.Forms.TextBox();
+            this.GoToButton = new System.Windows.Forms.Button();
             this.FlagsGroupBox.SuspendLayout();
             this.RegistersGroupBox.SuspendLayout();
             this.StackGroupBox.SuspendLayout();
@@ -634,6 +637,7 @@
             // StackList
             // 
             this.StackList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.StackList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.StackList.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.StackList.FormattingEnabled = true;
             this.StackList.Items.AddRange(new object[] {
@@ -655,16 +659,17 @@
             this.DasmList.Location = new System.Drawing.Point(525, 22);
             this.DasmList.Name = "DasmList";
             this.DasmList.Size = new System.Drawing.Size(433, 633);
-            this.DasmList.TabIndex = 3;
+            this.DasmList.TabIndex = 0;
             // 
             // MemoryTextBox
             // 
             this.MemoryTextBox.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.MemoryTextBox.Location = new System.Drawing.Point(13, 396);
+            this.MemoryTextBox.Location = new System.Drawing.Point(13, 426);
             this.MemoryTextBox.Multiline = true;
             this.MemoryTextBox.Name = "MemoryTextBox";
-            this.MemoryTextBox.Size = new System.Drawing.Size(501, 259);
-            this.MemoryTextBox.TabIndex = 4;
+            this.MemoryTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.MemoryTextBox.Size = new System.Drawing.Size(501, 229);
+            this.MemoryTextBox.TabIndex = 1;
             // 
             // RebootButton
             // 
@@ -674,6 +679,7 @@
             this.RebootButton.TabIndex = 5;
             this.RebootButton.Text = "Reboot";
             this.RebootButton.UseVisualStyleBackColor = true;
+            this.RebootButton.Click += new System.EventHandler(this.RebootButton_Click);
             // 
             // RefreshButton
             // 
@@ -683,6 +689,7 @@
             this.RefreshButton.TabIndex = 6;
             this.RefreshButton.Text = "Refresh";
             this.RefreshButton.UseVisualStyleBackColor = true;
+            this.RefreshButton.Click += new System.EventHandler(this.RefreshButton_Click);
             // 
             // StopButton
             // 
@@ -692,6 +699,7 @@
             this.StopButton.TabIndex = 7;
             this.StopButton.Text = "Stop";
             this.StopButton.UseVisualStyleBackColor = true;
+            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
             // 
             // RunButton
             // 
@@ -701,12 +709,44 @@
             this.RunButton.TabIndex = 8;
             this.RunButton.Text = "Run";
             this.RunButton.UseVisualStyleBackColor = true;
+            this.RunButton.Click += new System.EventHandler(this.RunButton_Click);
+            // 
+            // txtSegment
+            // 
+            this.txtSegment.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSegment.Location = new System.Drawing.Point(13, 400);
+            this.txtSegment.Name = "txtSegment";
+            this.txtSegment.Size = new System.Drawing.Size(44, 20);
+            this.txtSegment.TabIndex = 9;
+            this.txtSegment.Text = "0000";
+            // 
+            // txtOffset
+            // 
+            this.txtOffset.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOffset.Location = new System.Drawing.Point(63, 400);
+            this.txtOffset.Name = "txtOffset";
+            this.txtOffset.Size = new System.Drawing.Size(44, 20);
+            this.txtOffset.TabIndex = 10;
+            this.txtOffset.Text = "0000";
+            // 
+            // GoToButton
+            // 
+            this.GoToButton.Location = new System.Drawing.Point(113, 400);
+            this.GoToButton.Name = "GoToButton";
+            this.GoToButton.Size = new System.Drawing.Size(75, 23);
+            this.GoToButton.TabIndex = 11;
+            this.GoToButton.Text = "Go To";
+            this.GoToButton.UseVisualStyleBackColor = true;
+            this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(971, 705);
+            this.Controls.Add(this.GoToButton);
+            this.Controls.Add(this.txtOffset);
+            this.Controls.Add(this.txtSegment);
             this.Controls.Add(this.RunButton);
             this.Controls.Add(this.StopButton);
             this.Controls.Add(this.RefreshButton);
@@ -781,6 +821,9 @@
         private System.Windows.Forms.Button RefreshButton;
         private System.Windows.Forms.Button StopButton;
         private System.Windows.Forms.Button RunButton;
+        private System.Windows.Forms.TextBox txtSegment;
+        private System.Windows.Forms.TextBox txtOffset;
+        private System.Windows.Forms.Button GoToButton;
     }
 }
 

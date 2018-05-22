@@ -10,7 +10,7 @@ namespace KDS.e8086
 {
     public class i8086BusInterfaceUnit
     {
-        private const int MAX_MEMORY = 0x100000;
+        public const int MAX_MEMORY = 0x100000;
 
         /*
         From the 8086 manual
@@ -117,34 +117,7 @@ namespace KDS.e8086
             return mem;
         }
 
-        // returns the next six bytes pointed to by the program counter
-        // does not increment IP
-        // the intended use is for on the fly disassembly
-        public byte[] GetNext6Bytes()
-        {
-            return GetNextIPBytes(6);
-        }
 
-        // returns the next num bytes pointed to by the program counter
-        // does not increment IP
-        // the intended use is for on the fly disassembly
-        public byte[] GetNextIPBytes(int num)
-        {
-            int pc = GetPhysicalAddress();
-            byte[] next = new byte[num];
-
-            Array.Copy(_ram, pc, next, 0, num);
-            return next;
-        }
-        
-        public byte GetDataByPhysical(int idx)
-        {
-            if (idx >= MAX_MEMORY)
-            {
-                throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={0:X4}", idx));
-            }
-            return _ram[idx];
-        }
 
         #region Get and Save data with segment calculation
 
@@ -317,5 +290,59 @@ namespace KDS.e8086
         {
             return (CS << 4) + IP;
         }
+
+        #region "Debugging helpers"
+
+        public byte GetDataByPhysical(int idx)
+        {
+            if (idx >= MAX_MEMORY)
+            {
+                throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={0:X4}", idx));
+            }
+            return _ram[idx];
+        }
+
+        public byte GetOffsetFromIP(int offset)
+        {
+            int idx = GetPhysicalAddress() + offset;
+            return GetDataByPhysical(idx);
+        }
+
+        public byte GetOffsetFromSP(int sp, int offset)
+        {
+            int idx = (SS << 4) + sp + offset;
+            return GetDataByPhysical(idx);
+        }
+
+        public byte[] GetNext6Bytes()
+        {
+            return GetNextIPBytes(6);
+        }
+
+        // returns the next num bytes pointed to by the program counter
+        // does not increment IP
+        // the intended use is for on the fly disassembly
+        public byte[] GetNextIPBytes(int num)
+        {
+            int pc = GetPhysicalAddress();
+            byte[] next = new byte[num];
+
+            Array.Copy(_ram, pc, next, 0, num);
+            return next;
+        }
+
+        public byte[] GetNext6Physical(int idx)
+        {
+            byte[] next = new byte[6];
+            int bytes = 6;
+
+            if (idx + 6 >= MAX_MEMORY)
+                bytes = (MAX_MEMORY - idx - 1);
+
+            Array.Copy(_ram, idx, next, 0, bytes);
+            return next;
+        }
+
+        #endregion
     }
 }

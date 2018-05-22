@@ -108,7 +108,7 @@ namespace KDS.e8086
             Init8259();
 
             // 0x40 - 0x43: Timer 8253
-            Init8253();
+//            Init8253();
 
             // 0x60 - 0x63: PPI 8255 (speaker)
 

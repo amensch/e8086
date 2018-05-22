@@ -634,6 +634,7 @@ namespace KDS.e8086
                 _reg.AH = 0x00;
             }
         }
+
         private void Execute_CWD()
         {
             if( (_reg.AX & 0x8000) == 0x8000 )

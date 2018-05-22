@@ -1,0 +1,94 @@
+﻿
+    EXECUTION UNIT (EU)                   BUS INTERFACE UNIT (BIU)
+    --------------------                  ------------------------
+    General Registers                      Segment Registers
+            |                             Instruction Pointer
+            |                                      |
+        Operands                          Address Gen and Bus Control -----> external bus
+            |                                      |
+            ALU   <-----------------------  Instruction Queue
+            |  
+            Flags
+        
+	EXECUTION UNIT NOTES
+	-------------------------------------------------------------------------------------------
+    (From the 8086 Users Manual)
+    The EU has no connection to the system bus -- the outside world.  It obtains instructions
+    from a queue maintained by the BIU.  When an instruction requires access to memory or
+    to a peripheral device, the EU requests the BIU to obtain or store the data.
+    All addresses manipulated by the EU are 16 bits wide.  The BIU performs address relocation
+    to give the EU access to the full megabyte of memory space.
+           
+    (From the 8086 Users Manual - paraphrased)
+    The BIU performs all bus operations for the EU.   Data is transferred between the CPU
+    and memory or I/O devices.
+
+	BUS INTERFACE UNIT NOTES
+	-------------------------------------------------------------------------------------------
+	*******************
+	Memory Segmentation
+	*******************
+    A segment is a unit of memory up to 64K (0x0000 - 0xffff) bytes long.
+    Every segment has a base address which is the starting location.
+    There are four segment registers to point to four addressable segments.  Programs obtain
+    access to code and data in other segments by changing the segment registers to point to
+    the desired segments.
+
+    General segmentation:
+        - 64K bytes for code
+        - 64K bytes for stack
+        - 128K bytes for data storage
+
+    Every physical memory location has a 20 bit address from 0x00 to 0xfffff.  
+        
+    A logical address is a segment base plus an offset value. For any given memory location,
+    the segment base value locates the first byte of the containing segment an the offset
+    value is the distance, in bytes, of the target location.  Both segment and offset values
+    are 16 bit unsigned numbers.
+
+    It is possible for a physical memory location to have more than one logical address.
+
+    Whenever the BIU accesses memory it generates a phyiscal address from a logical address.
+    This is done by shifting the segment base 4 bit positions to the left and adding the offset.
+
+    The BIU obtains the logical address from different sources depending on the type of reference
+    that is being made.
+
+	Instruction Fetch is always CS:IP
+	Stack Operation is always SS:SP
+
+	String Source is DS:SI.  Can use CS,ES,SS as an alternate.
+	String Destination is always ES:DI
+	String instructions always automatically adjuts SI and DI as strings are processed.
+
+	Non-string variable is DS:effective address by default.  Can use CS,ES,SS as an alternate.
+
+	BP used as base register is SS:effective address by default.  Can use CS,DS,ES as an alternate.
+
+	A one byte instruction can provide a segment override for the following instruction to override the default.
+
+	******************
+	Stack Implentation
+	******************
+
+	Stack locations are referenced by SS:SP.  SS is the base address and SP points to the top of the stack.
+	All stack operations are 16 bit.  When an item is pushed onto the stack, SP is decremented by 2.  When an
+	item is popped off the stack SP is incremented by 2.  The stack grows down in memory towards the base address.
+
+	*****************************
+	Dedicated and Reserved Memory
+	*****************************
+	Memory locations 0x00 - 0x7f and 0xffff0 - 0xfffff are used for interrupt and system reset and are off limits to software.
+	Memory location 0xf8 - 0xff are used for I/O and are off limits to software.
+
+	****************************
+	System Reset
+	****************************
+	Values at reset:
+	Flags: Clear
+	IP, DS, SS, ES = 0x0000
+	CS = 0xffff
+	Queue = empty
+
+
+

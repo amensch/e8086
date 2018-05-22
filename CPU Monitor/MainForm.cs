@@ -19,21 +19,21 @@ namespace CPU_Monitor
         public MainForm()
         {
             InitializeComponent();
+
+            StackList.DrawItem += StackList_DrawItem;
+
             Boot();
-
-            _cpu.EU.CondReg.ParityFlag = true;
-            _cpu.EU.Registers.DX = 0xfe37;
-
-            RefreshData();
         }
 
         private void Boot()
         {
             _cpu = new i8086CPU();
+            RefreshData();
         }
 
         private void RefreshData()
         {
+
             CFLabel.BackColor = CondRegColor(_cpu.EU.CondReg.CarryFlag);
             ZFLabel.BackColor = CondRegColor(_cpu.EU.CondReg.ZeroFlag);
             SFLabel.BackColor = CondRegColor(_cpu.EU.CondReg.SignFlag);
@@ -65,6 +65,47 @@ namespace CPU_Monitor
 
             IPLabel.Text = _cpu.Bus.IP.ToString("X4");
 
+            RefreshStackData();
+            RefreshDasmData();
+            RefreshMemoryData();
+        }
+
+        private void RefreshStackData()
+        {
+            int items_in_list = 26; // this is the number that fits neatly in the size of the listbox
+            ushort seg = _cpu.Bus.SS;
+            ushort offset = (ushort)(_cpu.EU.Registers.SP - (items_in_list / 2));
+
+            StackList.Items.Clear();
+
+            for( int ii=0; ii < items_in_list; ii++)
+            {
+                StackList.Items.Add(string.Format("{0:X4}:{1:X4} {2:X2}", seg.ToString("X4"), offset.ToString("X4"), 
+                                                                _cpu.Bus.GetDataByPhysical((seg << 4) + offset)));
+                offset++;
+            }
+        }
+
+        private void RefreshDasmData()
+        {
+
+        }
+
+        private void RefreshMemoryData()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for ( int ii=0; ii < i8086BusInterfaceUnit.MAX_MEMORY; ii++ )
+            {
+                sb.Append(string.Format("{0:X2} ", _cpu.Bus.GetDataByPhysical(ii)));
+                if ((ii+1) % 16 == 0)
+                    sb.AppendLine();
+                else if ((ii+1) % 8 == 0)
+                    sb.Append("- ");
+            }
+            MemoryTextBox.Text = sb.ToString();
+
+          
         }
 
         private Color CondRegColor(bool value)
@@ -75,5 +116,56 @@ namespace CPU_Monitor
                 return SystemColors.Window;
         }
 
+        private void StackList_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+
+            Graphics g = e.Graphics;
+            ListBox lb = (ListBox)sender;
+
+            if (e.Index > -1)
+            {
+                g.FillRectangle(new SolidBrush(Color.White), e.Bounds);
+                g.DrawString(lb.Items[e.Index].ToString(), e.Font, new SolidBrush(Color.Black), new PointF(e.Bounds.X, e.Bounds.Y));
+            }
+
+            e.DrawFocusRectangle();
+        }
+
+        private void RebootButton_Click(object sender, EventArgs e)
+        {
+            Boot();
+        }
+
+        private void RefreshButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void StopButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void RunButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if( keyData == (Keys.F5))
+            {
+                _cpu.NextInstruction();
+                RefreshData();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void GoToButton_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
