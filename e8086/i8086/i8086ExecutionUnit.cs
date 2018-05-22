@@ -95,46 +95,74 @@ namespace KDS.e8086
             get { return _stats; }
         }
 
-        public void NextInstruction()
+        public void Tick()
         {
+
+            // If the trap flag is set, trigger interrupt 1
+            if (_creg.TrapFlag)
+            {
+                Interrupt(1);
+            }
+
+            // If interrupts are enabled and there is an interrupt waiting,
+            // trigger the next interrupt.  Only one interrupt is processed per
+            // tick if multiple are waiting.
+            if( _creg.InterruptEnable ) // && i8259 has an interrupt waiting
+            {
+                // Interrupt( i8259 next interrupt ) ;
+            }
+
+            // Retrieve the next instruction and count stats
             _instrCount++;
             _currentOP = _bus.NextIP();
-
-            // count statistics
             _stats.AddOpCode(_currentOP);
 
-            // if segment override process that right here
+            // If segment override then process that right here.
+            // Process the next instruction immediately after.  Cannot allow an interrupt here or
+            // the segment override will be lost after the interrupt.
             if (_currentOP == 0x26)
             {
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+                _instrCount++;
+                _currentOP = _bus.NextIP();
+                _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x2e)
             {
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseCS;
+                _instrCount++;
+                _currentOP = _bus.NextIP();
+                _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x36)
             {
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseSS;
+                _instrCount++;
+                _currentOP = _bus.NextIP();
+                _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x3e)
             {
                 _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseDS;
+                _instrCount++;
+                _currentOP = _bus.NextIP();
+                _stats.AddOpCode(_currentOP);
             }
-            else
-            {
-                _opTable[_currentOP].opAction();
 
-                // after executing the instruction reset the override and base pointer flags
-                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
-                _bus.UsingBasePointer = false;
-                _repeat = false;
+            // Call method to execute this instruction
+            _opTable[_currentOP].opAction();
 
-                // if the trap flag has been set then fire interrupt 1
-                if(_creg.TrapFlag)
-                {
-                    Interrupt(1);
-                }
-            }
+            // NOTE: a current minor flaw here is if there is a repeat instruction because the entire loop
+            // will get executed immediately without allowing for any interrupts.  Watch for timing issues
+            // with PIT if there is a long loop.
+
+            // Tick the PIT
+            // i8253.Tick()
+
+            // After executing the instruction reset the override and base pointer flags.
+            _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
+            _bus.UsingBasePointer = false;
+            _repeat = false;
         }
 
         public void AddInputDevice(int port, IInputDevice device)

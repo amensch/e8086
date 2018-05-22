@@ -164,7 +164,7 @@ namespace CPUConsole
             ch = Convert.ToChar(input);
             if( input == 13)
             {
-                cpu.EU.NextInstruction();
+                cpu.EU.Tick();
                 input = Console.Read();  // throw away lf char
             }
             else if( ch == 'r' || ch == 'R')
@@ -181,7 +181,7 @@ namespace CPUConsole
                 // loop until we hit our breakpoint
                 do
                 {
-                    cpu.EU.NextInstruction();
+                    cpu.EU.Tick();
                 } while (cpu.Bus.IP != 0xE1D4);
             }
 
