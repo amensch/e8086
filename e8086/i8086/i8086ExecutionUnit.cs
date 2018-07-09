@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class i8086ExecutionUnit
+    public class i8086ExecutionUnit : IExecutionUnit
     {
         /*
 
@@ -37,7 +37,7 @@ namespace KDS.e8086
 
         // Statistics
         private Statistics _stats = new Statistics();
-        private long _instrCount = 0;
+        public long InstructionCount { get; set; } = 0;
         private long _RMTableLookupCount = 0;
         private ushort _RMTableLastLookup = 0;
 
@@ -46,6 +46,7 @@ namespace KDS.e8086
 
         // Table of OpCodes
         private OpCodeTable _opTable = new OpCodeTable();
+        private Dictionary<int, Instruction> instructions = new Dictionary<int, Instruction>();
 
         // General Registers: AX, BX, CX, DX and SP, BP, SI, DI
         private i8086Registers _reg = new i8086Registers();
@@ -54,7 +55,7 @@ namespace KDS.e8086
         private i8086ConditionalRegister _creg = new i8086ConditionalRegister();
 
         // Bus Interface Unit
-        private i8086BusInterfaceUnit _bus;
+        public IBus Bus { get; set; }
 
         // I/O Ports
         private Dictionary<int, IInputDevice> _inputDevices;
@@ -67,9 +68,9 @@ namespace KDS.e8086
         // Property to indicate a halt has been encountered
         public bool Halted { get; set; }
 
-        public i8086ExecutionUnit(i8086BusInterfaceUnit bus)
+        public i8086ExecutionUnit(IBus bus)
         {
-            _bus = bus;
+            Bus = bus;
             Halted = false;
 
             _inputDevices = new Dictionary<int, IInputDevice>();
@@ -113,8 +114,8 @@ namespace KDS.e8086
             }
 
             // Retrieve the next instruction and count stats
-            _instrCount++;
-            _currentOP = _bus.NextIP();
+            InstructionCount++;
+            _currentOP = Bus.NextIP();
             _stats.AddOpCode(_currentOP);
 
             // If segment override then process that right here.
@@ -122,35 +123,45 @@ namespace KDS.e8086
             // the segment override will be lost after the interrupt.
             if (_currentOP == 0x26)
             {
-                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
-                _instrCount++;
-                _currentOP = _bus.NextIP();
+                Bus.SegmentOverride = SegmentOverrideState.UseES;
+                InstructionCount++;
+                _currentOP = Bus.NextIP();
                 _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x2e)
             {
-                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseCS;
-                _instrCount++;
-                _currentOP = _bus.NextIP();
+                Bus.SegmentOverride = SegmentOverrideState.UseCS;
+                InstructionCount++;
+                _currentOP = Bus.NextIP();
                 _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x36)
             {
-                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseSS;
-                _instrCount++;
-                _currentOP = _bus.NextIP();
+                Bus.SegmentOverride = SegmentOverrideState.UseSS;
+                InstructionCount++;
+                _currentOP = Bus.NextIP();
                 _stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x3e)
             {
-                _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseDS;
-                _instrCount++;
-                _currentOP = _bus.NextIP();
+                Bus.SegmentOverride = SegmentOverrideState.UseDS;
+                InstructionCount++;
+                _currentOP = Bus.NextIP();
                 _stats.AddOpCode(_currentOP);
             }
 
-            // Call method to execute this instruction
-            _opTable[_currentOP].opAction();
+            // If this is in the dictionary of op codes call it, otherwise
+            // use the "old" array
+            if (instructions.ContainsKey(_currentOP))
+            {
+                instructions[_currentOP].Execute();
+            }
+            else
+            {
+
+                // Call method to execute this instruction
+                _opTable[_currentOP].opAction();
+            }
 
             // NOTE: a current minor flaw here is if there is a repeat instruction because the entire loop
             // will get executed immediately without allowing for any interrupts.  Watch for timing issues
@@ -160,8 +171,8 @@ namespace KDS.e8086
             // i8253.Tick()
 
             // After executing the instruction reset the override and base pointer flags.
-            _bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
-            _bus.UsingBasePointer = false;
+            Bus.SegmentOverride = SegmentOverrideState.NoOverride;
+            Bus.UsingBasePointer = false;
             _repeat = false;
         }
 
@@ -185,39 +196,103 @@ namespace KDS.e8086
 
         private void InitOpCodeTable()
         {
-            _opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x02] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x03] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
-            _opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
-            _opTable[0x06] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x07] = new OpCodeRecord(Execute_POP);
+            instructions.Add(0x00, new ADD(0x00, this, Bus));
+            instructions.Add(0x01, new ADD(0x01, this, Bus));
+            instructions.Add(0x02, new ADD(0x02, this, Bus));
+            instructions.Add(0x03, new ADD(0x03, this, Bus));
+            instructions.Add(0x04, new ADD_Immediate(0x04, this, Bus));
+            instructions.Add(0x05, new ADD_Immediate(0x05, this, Bus));
+            instructions.Add(0x06, new PUSH(0x06, this, Bus));
+            instructions.Add(0x07, new POP(0x07, this, Bus));
+            instructions.Add(0x0e, new PUSH(0x0e, this, Bus));
+
+            instructions.Add(0x10, new ADD(0x10, this, Bus));
+            instructions.Add(0x11, new ADD(0x11, this, Bus));
+            instructions.Add(0x12, new ADD(0x12, this, Bus));
+            instructions.Add(0x13, new ADD(0x13, this, Bus));
+            instructions.Add(0x14, new ADD_Immediate(0x14, this, Bus));
+            instructions.Add(0x15, new ADD_Immediate(0x15, this, Bus));
+            instructions.Add(0x16, new PUSH(0x16, this, Bus));
+            instructions.Add(0x17, new POP(0x17, this, Bus));
+
+            instructions.Add(0x18, new SUB(0x18, this, Bus));
+            instructions.Add(0x19, new SUB(0x19, this, Bus));
+            instructions.Add(0x1a, new SUB(0x1a, this, Bus));
+            instructions.Add(0x1b, new SUB(0x1b, this, Bus));
+            instructions.Add(0x1c, new SUB_Immediate(0x1c, this, Bus));
+            instructions.Add(0x1d, new SUB_Immediate(0x1d, this, Bus));
+            instructions.Add(0x1e, new PUSH(0x1e, this, Bus));
+            instructions.Add(0x1f, new POP(0x1f, this, Bus));
+
+            instructions.Add(0x28, new SUB(0x28, this, Bus));
+            instructions.Add(0x29, new SUB(0x29, this, Bus));
+            instructions.Add(0x2a, new SUB(0x2a, this, Bus));
+            instructions.Add(0x2b, new SUB(0x2b, this, Bus));
+            instructions.Add(0x2c, new SUB_Immediate(0x2c, this, Bus));
+            instructions.Add(0x2d, new SUB_Immediate(0x2d, this, Bus));
+
+            instructions.Add(0x38, new SUB(0x38, this, Bus));
+            instructions.Add(0x39, new SUB(0x39, this, Bus));
+            instructions.Add(0x3a, new SUB(0x3a, this, Bus));
+            instructions.Add(0x3b, new SUB(0x3b, this, Bus));
+            instructions.Add(0x3c, new SUB_Immediate(0x3c, this, Bus));
+            instructions.Add(0x3d, new SUB_Immediate(0x3d, this, Bus));
+
+            instructions.Add(0x50, new PUSH(0x50, this, Bus));
+            instructions.Add(0x51, new PUSH(0x51, this, Bus));
+            instructions.Add(0x52, new PUSH(0x52, this, Bus));
+            instructions.Add(0x53, new PUSH(0x53, this, Bus));
+            instructions.Add(0x54, new PUSH(0x54, this, Bus));
+            instructions.Add(0x55, new PUSH(0x55, this, Bus));
+            instructions.Add(0x56, new PUSH(0x56, this, Bus));
+            instructions.Add(0x57, new PUSH(0x57, this, Bus));
+            instructions.Add(0x58, new POP(0x58, this, Bus));
+            instructions.Add(0x59, new POP(0x59, this, Bus));
+            instructions.Add(0x5a, new POP(0x5a, this, Bus));
+            instructions.Add(0x5b, new POP(0x5b, this, Bus));
+            instructions.Add(0x5c, new POP(0x5c, this, Bus));
+            instructions.Add(0x5d, new POP(0x5d, this, Bus));
+            instructions.Add(0x5e, new POP(0x5e, this, Bus));
+            instructions.Add(0x5f, new POP(0x5f, this, Bus));
+
+            instructions.Add(0x8f, new POP_regmem(0x8f, this, Bus));
+
+            instructions.Add(0x9c, new PUSHF(0x9c, this, Bus));
+            instructions.Add(0x9d, new POPF(0x9d, this, Bus));
+
+            //_opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x02] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x03] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x04] = new OpCodeRecord(ExecuteADD_Immediate);
+            //_opTable[0x05] = new OpCodeRecord(ExecuteADD_Immediate);
+            //_opTable[0x06] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x07] = new OpCodeRecord(Execute_POP);
             _opTable[0x08] = new OpCodeRecord(ExecuteLogical_General);      // OR 
             _opTable[0x09] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0a] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0b] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x0c] = new OpCodeRecord(ExecuteLogical_Immediate);
             _opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
-            _opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
             // POP CS is not a valid instruction
             _opTable[0x0f] = new OpCodeRecord(() => { });
-            _opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
-            _opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
-            _opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
-            _opTable[0x16] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x17] = new OpCodeRecord(Execute_POP);
-            _opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x1a] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x1b] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
-            _opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
-            _opTable[0x1e] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x1f] = new OpCodeRecord(Execute_POP);  
+            //_opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x13] = new OpCodeRecord(ExecuteADD_General);
+            //_opTable[0x14] = new OpCodeRecord(ExecuteADD_Immediate);
+            //_opTable[0x15] = new OpCodeRecord(ExecuteADD_Immediate);
+            //_opTable[0x16] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x17] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x18] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x19] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x1a] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x1b] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x1c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x1d] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x1e] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x1f] = new OpCodeRecord(Execute_POP);  
             _opTable[0x20] = new OpCodeRecord(ExecuteLogical_General);     // AND
             _opTable[0x21] = new OpCodeRecord(ExecuteLogical_General);
             _opTable[0x22] = new OpCodeRecord(ExecuteLogical_General);
@@ -226,12 +301,12 @@ namespace KDS.e8086
             _opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x26]  segment override is processed in the NextInstruction() method
             _opTable[0x27] = new OpCodeRecord(Execute_DecimalAdjustADD);
-            _opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x2b] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
-            _opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x2b] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x2e]  segment override is processed in the NextInstruction() method
             _opTable[0x2f] = new OpCodeRecord(Execute_DecimalAdjustSUB);
             _opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
@@ -242,12 +317,12 @@ namespace KDS.e8086
             _opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x36]  segment override is processed in the NextInstruction() method
             _opTable[0x37] = new OpCodeRecord(Execute_AsciiAdjustADD);
-            _opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
-            _opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x3b] = new OpCodeRecord(ExecuteSUB_General);
-            _opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
-            _opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
+            //_opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x3b] = new OpCodeRecord(ExecuteSUB_General);
+            //_opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
+            //_opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3e]  segment override is processed in the NextInstruction() method
             _opTable[0x3f] = new OpCodeRecord(Execute_AsciiAdjustSUB);
             _opTable[0x40] = new OpCodeRecord(ExecuteINC);
@@ -266,22 +341,22 @@ namespace KDS.e8086
             _opTable[0x4d] = new OpCodeRecord(ExecuteDEC);
             _opTable[0x4e] = new OpCodeRecord(ExecuteDEC);
             _opTable[0x4f] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x50] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x51] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x52] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x53] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x54] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x55] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x56] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x57] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x58] = new OpCodeRecord(Execute_POP);
-            _opTable[0x59] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5a] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5b] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5c] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5d] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5e] = new OpCodeRecord(Execute_POP);
-            _opTable[0x5f] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x50] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x51] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x52] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x53] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x54] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x55] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x56] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x57] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x58] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x59] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5a] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5b] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5c] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5d] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5e] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x5f] = new OpCodeRecord(Execute_POP);
             _opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
             _opTable[0x61] = new OpCodeRecord(Execute_POPA);
             _opTable[0x62] = new OpCodeRecord(Execute_Bound);
@@ -297,7 +372,7 @@ namespace KDS.e8086
             _opTable[0x69] = new OpCodeRecord(() => // IMUL REG-16, RM-16, Imm
             {
                 byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
                 int word_size = GetWordSize();
                 int direction = GetDirection();
@@ -326,18 +401,18 @@ namespace KDS.e8086
             });
             _opTable[0x6a] = new OpCodeRecord(() =>  // PUSH imm-8
             {
-                Push(_bus.NextIP());
+                Push(Bus.NextIP());
             });
             _opTable[0x6b] = new OpCodeRecord(() => 
             {
                 byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
                 int word_size = GetWordSize();
                 int direction = GetDirection();
 
                 ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
-                ushort oper2 = _bus.NextIP();
+                ushort oper2 = Bus.NextIP();
 
                 uint oper1ext = SignExtend32(oper1);
                 uint oper2ext = SignExtend32(oper2);
@@ -361,7 +436,7 @@ namespace KDS.e8086
             _opTable[0x6c] = new OpCodeRecord(() => // INSB
             {
                 // if repetition is on but CX is 0 then do nothing
-                if( ( _repeat ) && ( _reg.CX == 0 ) )
+                if( ( _repeat ) && ( Registers.CX == 0 ) )
                 {
                 }
                 else
@@ -371,20 +446,20 @@ namespace KDS.e8086
                         Execute_IN_String();
 
                         if (_creg.DirectionFlag)
-                            _reg.DI--;
+                            Registers.DI--;
                         else
-                            _reg.DI++;
+                            Registers.DI++;
 
                         if (_repeat)
-                            _reg.CX--;
-                    } while (_reg.CX != 0);
+                            Registers.CX--;
+                    } while (Registers.CX != 0);
                     _repeat = false;
                 }
             });
             _opTable[0x6d] = new OpCodeRecord(() => // INSW
             {
                 // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (_reg.CX == 0))
+                if ((_repeat) && (Registers.CX == 0))
                 {
                 }
                 else
@@ -394,20 +469,20 @@ namespace KDS.e8086
                         Execute_IN_String();
 
                             if (_creg.DirectionFlag)
-                                _reg.DI -= 2;
+                                Registers.DI -= 2;
                             else
-                                _reg.DI += 2;
+                                Registers.DI += 2;
 
                         if (_repeat)
-                            _reg.CX--;
-                    } while (_reg.CX != 0);
+                            Registers.CX--;
+                    } while (Registers.CX != 0);
                     _repeat = false;
                 }
             });
             _opTable[0x6e] = new OpCodeRecord(() => // OUTSB
             {
                 // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (_reg.CX == 0))
+                if ((_repeat) && (Registers.CX == 0))
                 {
                 }
                 else
@@ -417,20 +492,20 @@ namespace KDS.e8086
                         Execute_OUT_String();
 
                         if (_creg.DirectionFlag)
-                            _reg.SI -= 1;
+                            Registers.SI -= 1;
                         else
-                            _reg.SI += 1;
+                            Registers.SI += 1;
 
                         if (_repeat)
-                            _reg.CX--;
-                    } while (_reg.CX != 0);
+                            Registers.CX--;
+                    } while (Registers.CX != 0);
                     _repeat = false;
                 }
             });
             _opTable[0x6f] = new OpCodeRecord(() => // OUTSW
             {
                 // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (_reg.CX == 0))
+                if ((_repeat) && (Registers.CX == 0))
                 {
                 }
                 else
@@ -440,13 +515,13 @@ namespace KDS.e8086
                         Execute_OUT_String();
 
                         if (_creg.DirectionFlag)
-                            _reg.SI -= 2;
+                            Registers.SI -= 2;
                         else
-                            _reg.SI += 2;
+                            Registers.SI += 2;
 
                         if (_repeat)
-                            _reg.CX--;
-                    } while (_reg.CX != 0);
+                            Registers.CX--;
+                    } while (Registers.CX != 0);
                     _repeat = false;
                 }
             });
@@ -481,7 +556,7 @@ namespace KDS.e8086
             _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
             _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
             _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);  // MOV CS - this should never be used in practice
-            _opTable[0x8f] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x8f] = new OpCodeRecord(Execute_POP);
             _opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
             _opTable[0x92] = new OpCodeRecord(ExecuteXCHG_AX);
@@ -494,12 +569,12 @@ namespace KDS.e8086
             _opTable[0x99] = new OpCodeRecord(Execute_CWD);
             _opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
             _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
-            _opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
-            _opTable[0x9d] = new OpCodeRecord(Execute_POP);
+            //_opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
+            //_opTable[0x9d] = new OpCodeRecord(Execute_POP);
             // SAHF - Store SH to flags
-            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), _reg.AH); });
+            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), Registers.AH); });
             // LAHF - Load AH from flags
-            _opTable[0x9f] = new OpCodeRecord( () => { _reg.AH = (byte)(_creg.Register & 0x00ff); });
+            _opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(_creg.Register & 0x00ff); });
             _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -540,12 +615,12 @@ namespace KDS.e8086
             _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
             {
                 ushort oper = GetImmediate16();
-                _bus.IP = Pop();
-                _reg.SP += oper;
+                Bus.IP = Pop();
+                Registers.SP += oper;
             });
             _opTable[0xc3] = new OpCodeRecord(() => // ret
             {
-                _bus.IP = Pop();
+                Bus.IP = Pop();
             });
             _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
             _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
@@ -556,22 +631,22 @@ namespace KDS.e8086
             _opTable[0xca] = new OpCodeRecord(() => // retf imm-16
             {
                 ushort oper = GetImmediate16();
-                _bus.IP = Pop();
-                _bus.CS = Pop();
-                _reg.SP += oper;
+                Bus.IP = Pop();
+                Bus.CS = Pop();
+                Registers.SP += oper;
             });
             _opTable[0xcb] = new OpCodeRecord(() => // retf
             {
-                _bus.IP = Pop();
-                _bus.CS = Pop();
+                Bus.IP = Pop();
+                Bus.CS = Pop();
             });
             _opTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
-            _opTable[0xcd] = new OpCodeRecord(() => { Interrupt(_bus.NextIP()); });
+            _opTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
             _opTable[0xce] = new OpCodeRecord(() => { if (_creg.OverflowFlag) Interrupt(4); });
             _opTable[0xcf] = new OpCodeRecord(() => // iret
             {
-                _bus.IP = Pop();
-                _bus.CS = Pop();
+                Bus.IP = Pop();
+                Bus.CS = Pop();
                 _creg.Register = Pop();
             });
             _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
@@ -581,19 +656,19 @@ namespace KDS.e8086
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // undocumented SALC instruction
-            _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) _reg.AL = 0xff; else _reg.AL = 0x00; });
+            _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
             _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
 
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
             // these are unsupported but they use the address byte so this should read
-            _opTable[0xd8] = new OpCodeRecord(() => { _bus.NextIP(); } );
-            _opTable[0xd9] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xda] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xdb] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xdc] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xdd] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xde] = new OpCodeRecord(() => { _bus.NextIP(); });
-            _opTable[0xdf] = new OpCodeRecord(() => { _bus.NextIP(); });
+            _opTable[0xd8] = new OpCodeRecord(() => { Bus.NextIP(); } );
+            _opTable[0xd9] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xda] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xdb] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xdc] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xdd] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xde] = new OpCodeRecord(() => { Bus.NextIP(); });
+            _opTable[0xdf] = new OpCodeRecord(() => { Bus.NextIP(); });
 
             _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
@@ -627,7 +702,7 @@ namespace KDS.e8086
             });
             _opTable[0xf4] = new OpCodeRecord(() => // F4 HLT
             {
-                _bus.IP--;
+                Bus.IP--;
                 Halted = true;
             }); 
             _opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
@@ -648,44 +723,44 @@ namespace KDS.e8086
             // one byte instruction (0xd7)
             // Store into AL the value located at a 256 byte lookup table
             // BX is the beginning of the table and AL is the offset
-            _reg.AL = _bus.GetData8(_reg.BX + _reg.AL);
+            Registers.AL = Bus.GetData8(Registers.BX + Registers.AL);
         }
 
         private void Execute_CBW()
         {
-            if( (_reg.AL & 0x80) == 0x80 )
+            if( (Registers.AL & 0x80) == 0x80 )
             {
-                _reg.AH = 0xff;
+                Registers.AH = 0xff;
             }
             else
             {
-                _reg.AH = 0x00;
+                Registers.AH = 0x00;
             }
         }
 
         private void Execute_CWD()
         {
-            if( (_reg.AX & 0x8000) == 0x8000 )
+            if( (Registers.AX & 0x8000) == 0x8000 )
             {
-                _reg.DX = 0xffff;
+                Registers.DX = 0xffff;
             }
             else
             {
-                _reg.DX = 0;
+                Registers.DX = 0;
             }
         }
 
         private void Execute_Loop()
         {
-            ushort tmp = SignExtend(_bus.NextIP());
-            _reg.CX--;
-            if( _reg.CX != 0)
+            ushort tmp = SignExtend(Bus.NextIP());
+            Registers.CX--;
+            if( Registers.CX != 0)
             {
                 if ((_currentOP == 0xe0 && !_creg.ZeroFlag) ||  // LOOPNZ
                     (_currentOP == 0xe1 && _creg.ZeroFlag) ||   // LOOPZ
                     (_currentOP == 0xe2))                       // LOOP
                 {
-                    _bus.IP += tmp;
+                    Bus.IP += tmp;
                 }
             }
         }
@@ -695,35 +770,35 @@ namespace KDS.e8086
         private void Execute_PUSHA()
         {
             // Op 0x60
-            ushort old_sp = _reg.SP;
-            Push(_reg.AX);
-            Push(_reg.CX);
-            Push(_reg.DX);
-            Push(_reg.BX);
+            ushort old_sp = Registers.SP;
+            Push(Registers.AX);
+            Push(Registers.CX);
+            Push(Registers.DX);
+            Push(Registers.BX);
             Push(old_sp);
-            Push(_reg.BP);
-            Push(_reg.SI);
-            Push(_reg.DI);
+            Push(Registers.BP);
+            Push(Registers.SI);
+            Push(Registers.DI);
         }
 
         private void Execute_POPA()
         {
             // Op 0x61
-            _reg.DI = Pop();
-            _reg.SI = Pop();
-            _reg.BP = Pop();
+            Registers.DI = Pop();
+            Registers.SI = Pop();
+            Registers.BP = Pop();
             ushort new_sp = Pop();
-            _reg.BX = Pop();
-            _reg.DX = Pop();
-            _reg.CX = Pop();
-            _reg.AX = Pop();
+            Registers.BX = Pop();
+            Registers.DX = Pop();
+            Registers.CX = Pop();
+            Registers.AX = Pop();
         }
 
         private void Execute_Bound()
         {
             // Op 0x62
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             // for now assume OK
 
@@ -751,9 +826,9 @@ namespace KDS.e8086
 
             ushort port;
             if (_currentOP == 0xec || _currentOP == 0xed)
-                port = _reg.DX;
+                port = Registers.DX;
             else
-                port = _bus.NextIP();
+                port = Bus.NextIP();
 
             int word_size = GetWordSize();
 
@@ -762,17 +837,17 @@ namespace KDS.e8086
             if (_inputDevices.TryGetValue(port, out device))
             {
                 if (word_size == 0)
-                    _reg.AL = device.Read();
+                    Registers.AL = device.Read();
                 else
-                    _reg.AX = device.Read16();
+                    Registers.AX = device.Read16();
             }
             else
             {
                 // if no device is attached, zero out the register
                 if (word_size == 0)
-                    _reg.AL = 0;
+                    Registers.AL = 0;
                 else
-                    _reg.AX = 0;
+                    Registers.AX = 0;
             }
         }
 
@@ -781,19 +856,19 @@ namespace KDS.e8086
             IInputDevice device;
             int word_size = GetWordSize();
 
-            if (_inputDevices.TryGetValue(_reg.DX, out device))
+            if (_inputDevices.TryGetValue(Registers.DX, out device))
             {
                 if (word_size == 0)
-                    _bus.StoreString8(_reg.DI, device.Read());
+                    Bus.StoreString8(Registers.DI, device.Read());
                 else
-                    _bus.StoreString16(_reg.DI, device.Read16());
+                    Bus.StoreString16(Registers.DI, device.Read16());
             }
             else
             {
                 if (word_size == 0)
-                    _bus.StoreString8(_reg.DI, 0);
+                    Bus.StoreString8(Registers.DI, 0);
                 else
-                    _bus.StoreString16(_reg.DI, 0);
+                    Bus.StoreString16(Registers.DI, 0);
             }
         }   
 
@@ -802,12 +877,12 @@ namespace KDS.e8086
             IOutputDevice device;
             int word_size = GetWordSize();
 
-            if(_outputDevices.TryGetValue(_reg.DX, out device))
+            if(_outputDevices.TryGetValue(Registers.DX, out device))
             {
                 if (word_size == 0)
-                    device.Write(_bus.GetDestString8(_reg.SI));
+                    device.Write(Bus.GetDestString8(Registers.SI));
                 else
-                    device.Write(_bus.GetDestString16(_reg.SI));
+                    device.Write(Bus.GetDestString16(Registers.SI));
             }
         }
 
@@ -818,20 +893,20 @@ namespace KDS.e8086
 
             ushort port;
             if (_currentOP == 0xee || _currentOP == 0xef)
-                port = _reg.DX;
+                port = Registers.DX;
             else
-                port = _bus.NextIP();
+                port = Bus.NextIP();
 
             int word_size = GetWordSize();
 
-            Debug.WriteLine("OUT " + port.ToString("X4") + " (data=" + _reg.AL.ToString("X2") + ")");
+            Debug.WriteLine("OUT " + port.ToString("X4") + " (data=" + Registers.AL.ToString("X2") + ")");
 
             if (_outputDevices.TryGetValue(port, out device))
             {
                 if (word_size == 0)
-                    device.Write(_reg.AL);
+                    device.Write(Registers.AL);
                 else
-                    device.Write(_reg.AX);
+                    device.Write(Registers.AX);
             }
         }
         #endregion
@@ -852,7 +927,7 @@ namespace KDS.e8086
             }
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             AssertMOD(mod);
             AssertREG(reg);
@@ -876,11 +951,11 @@ namespace KDS.e8086
 
             if (_currentOP == 0x83)
             {
-                source = SignExtend(_bus.NextIP());
+                source = SignExtend(Bus.NextIP());
             }
             else if (word_size == 0)
             {
-                source = _bus.NextIP();
+                source = Bus.NextIP();
 
             }
             else
@@ -972,19 +1047,19 @@ namespace KDS.e8086
             */
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = GetWordSize();
 
             int operand2 = 1;
             if (_currentOP == 0xd2 || _currentOP == 0xd3)
-                operand2 = _reg.CL;
+                operand2 = Registers.CL;
             else if (_currentOP == 0xc0 || _currentOP == 0xc1)
             {
                 // in this case we need to read the RM data first in the case there
                 // is displacement data to read before the immediate data
                 int operand1 = GetSourceData(0, word_size, mod, reg, rm);
-                operand2 = _bus.NextIP();
+                operand2 = Bus.NextIP();
             }
 
             switch (reg)
@@ -1041,7 +1116,7 @@ namespace KDS.e8086
             */
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = GetWordSize();
             int direction = GetDirection();
@@ -1055,7 +1130,7 @@ namespace KDS.e8086
                 case 0x00: // TEST
                     {
                         if (word_size == 0)
-                            dest = _bus.NextIP();
+                            dest = Bus.NextIP();
                         else
                             dest = GetImmediate16();
 
@@ -1095,19 +1170,19 @@ namespace KDS.e8086
                     {
                         if (word_size == 0)
                         {
-                            result = source * _reg.AL;
-                            _reg.AX = (ushort)result;
+                            result = source * Registers.AL;
+                            Registers.AX = (ushort)result;
 
-                            _creg.CarryFlag = (_reg.AH != 0);
+                            _creg.CarryFlag = (Registers.AH != 0);
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
                         else
                         {
-                            result = source * _reg.AX;
-                            _reg.DX = (ushort)(result >> 16);
-                            _reg.AX = (ushort)(result);
+                            result = source * Registers.AX;
+                            Registers.DX = (ushort)(result >> 16);
+                            Registers.AX = (ushort)(result);
 
-                            _creg.CarryFlag = (_reg.DX != 0);
+                            _creg.CarryFlag = (Registers.DX != 0);
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
                         break;
@@ -1116,25 +1191,25 @@ namespace KDS.e8086
                     {
                         if (word_size == 0)
                         {
-                            _reg.AX = (ushort)(SignExtend((byte)source) * SignExtend(_reg.AL));
+                            Registers.AX = (ushort)(SignExtend((byte)source) * SignExtend(Registers.AL));
 
-                            if ((_reg.AL & 0x80) == 0x80)
-                                _creg.CarryFlag = (_reg.AH != 0xff);
+                            if ((Registers.AL & 0x80) == 0x80)
+                                _creg.CarryFlag = (Registers.AH != 0xff);
                             else
-                                _creg.CarryFlag = (_reg.AH != 0x00);
+                                _creg.CarryFlag = (Registers.AH != 0x00);
 
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
                         else
                         {
-                            result = (int)(SignExtend((byte)source) * SignExtend32(_reg.AX));
-                            _reg.DX = (ushort)(result >> 16);
-                            _reg.AX = (ushort)(result);
+                            result = (int)(SignExtend((byte)source) * SignExtend32(Registers.AX));
+                            Registers.DX = (ushort)(result >> 16);
+                            Registers.AX = (ushort)(result);
 
-                            if ((_reg.AX & 0x8000) == 0x8000)
-                                _creg.CarryFlag = (_reg.DX != 0xffff);
+                            if ((Registers.AX & 0x8000) == 0x8000)
+                                _creg.CarryFlag = (Registers.DX != 0xffff);
                             else
-                                _creg.CarryFlag = (_reg.DX != 0x0000);
+                                _creg.CarryFlag = (Registers.DX != 0x0000);
 
                             _creg.OverflowFlag = _creg.CarryFlag;
                         }
@@ -1144,15 +1219,15 @@ namespace KDS.e8086
                     {
                         if (word_size == 0)
                         {
-                            result = (byte)(_reg.AX / source);
-                            _reg.AH = (byte)(_reg.AX % source);
-                            _reg.AL = (byte)(result);
+                            result = (byte)(Registers.AX / source);
+                            Registers.AH = (byte)(Registers.AX % source);
+                            Registers.AL = (byte)(result);
                         }
                         else
                         {
-                            dest = (_reg.DX << 16) | _reg.AX;
-                            _reg.AX = (ushort)(dest / source);
-                            _reg.DX = (ushort)(dest % source);
+                            dest = (Registers.DX << 16) | Registers.AX;
+                            Registers.AX = (ushort)(dest / source);
+                            Registers.DX = (ushort)(dest % source);
                         }
                         break;
                     }
@@ -1161,7 +1236,7 @@ namespace KDS.e8086
                         if (word_size == 0)
                         {
 
-                            ushort s1 = _reg.AX;
+                            ushort s1 = Registers.AX;
                             ushort s2 = (ushort)source;
 
                             bool sign = ((s1 ^ s2) & 0x8000) == 0x8000;
@@ -1180,13 +1255,13 @@ namespace KDS.e8086
                                 d2 = (ushort)(~d2 + 1);
                             }
 
-                            _reg.AL = (byte)d1;
-                            _reg.AH = (byte)d2;
+                            Registers.AL = (byte)d1;
+                            Registers.AH = (byte)d2;
                         }
                         else
                         {
 
-                            uint dxax = (uint)((_reg.DX << 16) | _reg.AX);
+                            uint dxax = (uint)((Registers.DX << 16) | Registers.AX);
                             uint divisor = SignExtend32((ushort)source);
 
                             bool sign = ((dxax ^ divisor) & 0x80000000) == 0x80000000;
@@ -1206,8 +1281,8 @@ namespace KDS.e8086
                                 d2 = (uint)((~d2 + 1) & 0xffff);
                             }
 
-                            _reg.AX = (ushort)d1;
-                            _reg.DX = (ushort)d2;
+                            Registers.AX = (ushort)d1;
+                            Registers.DX = (ushort)d2;
                         }
                         break;
                     }
@@ -1221,7 +1296,7 @@ namespace KDS.e8086
             // all others are undefined
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = GetWordSize();
 
@@ -1249,7 +1324,7 @@ namespace KDS.e8086
             // REG 007: undefined
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int word_size = GetWordSize();
             int oper = GetDestinationData(0, word_size, mod, reg, rm);
@@ -1269,30 +1344,30 @@ namespace KDS.e8086
                 case 0x02:
                     {
                         // CALL reg/mem-16 (intrasegment)
-                        Push(_bus.IP);
-                        _bus.IP = (ushort) oper;
+                        Push(Bus.IP);
+                        Bus.IP = (ushort) oper;
                         break;
                     }
                 case 0x03:
                     {
                         // CALL mem-16 (intersegment)
-                        Push(_bus.CS);
-                        Push(_bus.IP);
-                        _bus.IP = _bus.GetData16(oper);
-                        _bus.CS = _bus.GetData16(oper + 2);
+                        Push(Bus.CS);
+                        Push(Bus.IP);
+                        Bus.IP = Bus.GetData16(oper);
+                        Bus.CS = Bus.GetData16(oper + 2);
                         break;
                     }
                 case 0x04:
                     {
                         // JMP reg/mem=16 (intrasegment)
-                        _bus.IP = (ushort) oper;
+                        Bus.IP = (ushort) oper;
                         break;
                     }
                 case 0x05:
                     {
                         // JMP mem-16 (intersegment)
-                        _bus.IP = _bus.GetData16(oper);
-                        _bus.CS = _bus.GetData16(oper + 2);
+                        Bus.IP = Bus.GetData16(oper);
+                        Bus.CS = Bus.GetData16(oper + 2);
                         break;
                     }
                 case 0x06:
@@ -1311,18 +1386,18 @@ namespace KDS.e8086
         private void Execute_CallNear()
         {
             ushort oper = GetImmediate16();
-            Push(_bus.IP);
-            _bus.IP += oper;
+            Push(Bus.IP);
+            Bus.IP += oper;
         }
 
         private void Execute_CallFar()
         {
             ushort nextIP = GetImmediate16();
             ushort nextCS = GetImmediate16();
-            Push(_bus.CS);
-            Push(_bus.IP);
-            _bus.IP = nextIP;
-            _bus.CS = nextCS;
+            Push(Bus.CS);
+            Push(Bus.IP);
+            Bus.IP = nextIP;
+            Bus.CS = nextCS;
         }
 
         private void Execute_CondJump()
@@ -1418,32 +1493,32 @@ namespace KDS.e8086
             if (jumping)
                 Execute_JumpShort();
             else
-                _bus.NextIP();  
+                Bus.NextIP();  
         }
         private void Execute_JumpCXZ()
         {
-            if (_reg.CX == 0)
+            if (Registers.CX == 0)
                 Execute_JumpShort();
             else
-                _bus.NextIP();
+                Bus.NextIP();
         }
         private void Execute_JumpShort()
         {
             // add to IP "after" the instruction is complete
-            ushort oper = SignExtend(_bus.NextIP());
-            _bus.IP += oper;
+            ushort oper = SignExtend(Bus.NextIP());
+            Bus.IP += oper;
         }
         private void Execute_JumpNear()
         {
             ushort oper = GetImmediate16();
-            _bus.IP += oper;
+            Bus.IP += oper;
         }
         private void Execute_JumpFar()
         {
             ushort nextIP = GetImmediate16();
             ushort nextCS = GetImmediate16();
-            _bus.IP = nextIP;
-            _bus.CS = nextCS;
+            Bus.IP = nextIP;
+            Bus.CS = nextCS;
         }
 
         #endregion  
@@ -1456,40 +1531,40 @@ namespace KDS.e8086
                 int word_size = GetWordSize();
                 if (word_size == 0)
                 {
-                    _bus.MoveString8(_reg.SI, _reg.DI);
+                    Bus.MoveString8(Registers.SI, Registers.DI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI--;
-                        _reg.DI--;
+                        Registers.SI--;
+                        Registers.DI--;
                     }
                     else
                     {
-                        _reg.SI++;
-                        _reg.DI++;
+                        Registers.SI++;
+                        Registers.DI++;
                     }
                 }
                 else
                 {
-                    _bus.MoveString16(_reg.SI, _reg.DI);
+                    Bus.MoveString16(Registers.SI, Registers.DI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI -= 2;
-                        _reg.DI -= 2;
+                        Registers.SI -= 2;
+                        Registers.DI -= 2;
                     }
                     else
                     {
-                        _reg.SI += 2;
-                        _reg.DI += 2;
+                        Registers.SI += 2;
+                        Registers.DI += 2;
                     }
                 }
-                if (_repeat) _reg.CX--;
+                if (_repeat) Registers.CX--;
 
                 if (_repeatType == 1 && !_creg.ZeroFlag)
                     _repeat = false;
                 if (_repeatType == 2 && _creg.ZeroFlag)
                     _repeat = false;
 
-            } while (_repeat && _reg.CX != 0);
+            } while (_repeat && Registers.CX != 0);
             _repeat = false;
         }
         private void Execute_CompareString()
@@ -1497,7 +1572,7 @@ namespace KDS.e8086
             int word_size = GetWordSize();
             int result = 0;
             int source = 0;
-            int dest = _bus.GetData(word_size, _reg.SI);
+            int dest = Bus.GetData(word_size, Registers.SI);
 
             // NOTE: the concept of "source" and "dest" for subtraction here is flipped.
 
@@ -1505,30 +1580,30 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    source = _bus.GetDestString8(_reg.DI);
+                    source = Bus.GetDestString8(Registers.DI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI--;
-                        _reg.DI--;
+                        Registers.SI--;
+                        Registers.DI--;
                     }
                     else
                     {
-                        _reg.SI++;
-                        _reg.DI++;
+                        Registers.SI++;
+                        Registers.DI++;
                     }
                 }
                 else
                 {
-                    source = _bus.GetDestString16(_reg.DI);
+                    source = Bus.GetDestString16(Registers.DI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI -= 2;
-                        _reg.DI -= 2;
+                        Registers.SI -= 2;
+                        Registers.DI -= 2;
                     }
                     else
                     {
-                        _reg.SI += 2;
-                        _reg.DI += 2;
+                        Registers.SI += 2;
+                        Registers.DI += 2;
                     }
                 }
 
@@ -1539,14 +1614,14 @@ namespace KDS.e8086
                 _creg.CalcAuxCarryFlag(source, dest);
                 _creg.CalcParityFlag(result);
                 _creg.CalcCarryFlag(word_size, result);
-                if (_repeat) _reg.CX--;
+                if (_repeat) Registers.CX--;
 
                 if (_repeatType == 1 && !_creg.ZeroFlag)
                     _repeat = false;
                 if (_repeatType == 2 && _creg.ZeroFlag)
                     _repeat = false;
 
-            } while (_repeat && _reg.CX != 0);
+            } while (_repeat && Registers.CX != 0);
             _repeat = false;
         }
         private void Execute_ScanString()
@@ -1560,28 +1635,28 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    dest = _bus.GetDestString8(_reg.DI);
-                    source = _reg.AL;
+                    dest = Bus.GetDestString8(Registers.DI);
+                    source = Registers.AL;
                     if (_creg.DirectionFlag)
                     {
-                        _reg.DI--;
+                        Registers.DI--;
                     }
                     else
                     {
-                        _reg.DI++;
+                        Registers.DI++;
                     }
                 }
                 else
                 {
-                    dest = _bus.GetDestString16(_reg.DI);
-                    source = _reg.AX;
+                    dest = Bus.GetDestString16(Registers.DI);
+                    source = Registers.AX;
                     if (_creg.DirectionFlag)
                     {
-                        _reg.DI -= 2;
+                        Registers.DI -= 2;
                     }
                     else
                     {
-                        _reg.DI += 2;
+                        Registers.DI += 2;
                     }
                 }
 
@@ -1593,14 +1668,14 @@ namespace KDS.e8086
                 _creg.CalcParityFlag(result);
                 _creg.CalcCarryFlag(word_size, result);
 
-                if (_repeat) _reg.CX--;
+                if (_repeat) Registers.CX--;
 
                 if (_repeatType == 1 && !_creg.ZeroFlag)
                     _repeat = false;
                 if (_repeatType == 2 && _creg.ZeroFlag)
                     _repeat = false;
 
-            } while (_repeat && _reg.CX != 0);
+            } while (_repeat && Registers.CX != 0);
             _repeat = false;
         }
         private void Execute_StoreString()
@@ -1610,30 +1685,30 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    _bus.StoreString8(_reg.DI, _reg.AL);
+                    Bus.StoreString8(Registers.DI, Registers.AL);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.DI--;
+                        Registers.DI--;
                     }
                     else
                     {
-                        _reg.DI++;
+                        Registers.DI++;
                     }
                 }
                 else
                 {
-                    _bus.StoreString16(_reg.DI, _reg.AX);
+                    Bus.StoreString16(Registers.DI, Registers.AX);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.DI -= 2;
+                        Registers.DI -= 2;
                     }
                     else
                     {
-                        _reg.DI += 2;
+                        Registers.DI += 2;
                     }
                 }
-                if (_repeat) _reg.CX--;
-            } while (_repeat && _reg.CX != 0);
+                if (_repeat) Registers.CX--;
+            } while (_repeat && Registers.CX != 0);
             _repeat = false;
         }
         private void Execute_LoadString()
@@ -1643,30 +1718,30 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    _reg.AL = _bus.GetData8(_reg.SI);
+                    Registers.AL = Bus.GetData8(Registers.SI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI--;
+                        Registers.SI--;
                     }
                     else
                     {
-                        _reg.SI++;
+                        Registers.SI++;
                     }
                 }
                 else
                 {
-                    _reg.AX = _bus.GetData16(_reg.SI);
+                    Registers.AX = Bus.GetData16(Registers.SI);
                     if (_creg.DirectionFlag)
                     {
-                        _reg.SI -= 2;
+                        Registers.SI -= 2;
                     }
                     else
                     {
-                        _reg.SI += 2;
+                        Registers.SI += 2;
                     }
                 }
-                if (_repeat) _reg.CX--;
-            } while (_repeat && _reg.CX != 0);
+                if (_repeat) Registers.CX--;
+            } while (_repeat && Registers.CX != 0);
             _repeat = false;
         }
         #endregion
@@ -1674,16 +1749,16 @@ namespace KDS.e8086
         #region BCD adjustment instructions
         private void Execute_DecimalAdjustADD()
         {
-            byte old_al = _reg.AL;
+            byte old_al = Registers.AL;
             bool old_cf = _creg.CarryFlag;
 
-            if( ( _reg.AL & 0x0f ) > 9 || _creg.AuxCarryFlag )
+            if( ( Registers.AL & 0x0f ) > 9 || _creg.AuxCarryFlag )
             {
-                _creg.CalcCarryFlag(0, _reg.AL+6);
+                _creg.CalcCarryFlag(0, Registers.AL+6);
                 _creg.CarryFlag = old_cf | _creg.CarryFlag;
                 _creg.AuxCarryFlag = true;
 
-                _reg.AL += 6;
+                Registers.AL += 6;
             }
             else
             {
@@ -1692,7 +1767,7 @@ namespace KDS.e8086
 
             if ((old_al > 0x99) | old_cf)
             {
-                _reg.AL += 0x60;
+                Registers.AL += 0x60;
                 _creg.CarryFlag = true;
             }
             else
@@ -1700,22 +1775,22 @@ namespace KDS.e8086
                 _creg.CarryFlag = false;
             }
 
-            _creg.CalcSignFlag(0, _reg.AL);
-            _creg.CalcZeroFlag(0, _reg.AL);
-            _creg.CalcParityFlag(_reg.AL);
+            _creg.CalcSignFlag(0, Registers.AL);
+            _creg.CalcZeroFlag(0, Registers.AL);
+            _creg.CalcParityFlag(Registers.AL);
         }
         private void Execute_DecimalAdjustSUB()
         {
-            byte old_al = _reg.AL;
+            byte old_al = Registers.AL;
             bool old_cf = _creg.CarryFlag;
 
-            if ((_reg.AL & 0x0f) > 9 || _creg.AuxCarryFlag)
+            if ((Registers.AL & 0x0f) > 9 || _creg.AuxCarryFlag)
             {
-                _creg.CalcCarryFlag(0, _reg.AL - 6);
+                _creg.CalcCarryFlag(0, Registers.AL - 6);
                 _creg.CarryFlag = old_cf | _creg.CarryFlag;
                 _creg.AuxCarryFlag = true;
 
-                _reg.AL -= 6;
+                Registers.AL -= 6;
             }
             else
             {
@@ -1724,7 +1799,7 @@ namespace KDS.e8086
 
             if ((old_al > 0x99) | old_cf)
             {
-                _reg.AL -= 0x60;
+                Registers.AL -= 0x60;
                 _creg.CarryFlag = true;
             }
             else
@@ -1732,16 +1807,16 @@ namespace KDS.e8086
                 _creg.CarryFlag = false;
             }
 
-            _creg.CalcSignFlag(0, _reg.AL);
-            _creg.CalcZeroFlag(0, _reg.AL);
-            _creg.CalcParityFlag(_reg.AL);
+            _creg.CalcSignFlag(0, Registers.AL);
+            _creg.CalcZeroFlag(0, Registers.AL);
+            _creg.CalcParityFlag(Registers.AL);
         }
         private void Execute_AsciiAdjustADD()
         {
-            if ((_reg.AL > 9) | _creg.AuxCarryFlag)
+            if ((Registers.AL > 9) | _creg.AuxCarryFlag)
             {
-                _reg.AL += 6;
-                _reg.AH += 1;
+                Registers.AL += 6;
+                Registers.AH += 1;
                 _creg.AuxCarryFlag = true;
                 _creg.CarryFlag = true;
             }
@@ -1752,14 +1827,14 @@ namespace KDS.e8086
             }
 
             // clear high nibble of AL
-            _reg.AL = (byte)(_reg.AL & 0x0f);
+            Registers.AL = (byte)(Registers.AL & 0x0f);
         }
         private void Execute_AsciiAdjustSUB()
         {
-            if ((_reg.AL > 9) | _creg.AuxCarryFlag)
+            if ((Registers.AL > 9) | _creg.AuxCarryFlag)
             {
-                _reg.AL -= 6;
-                _reg.AH -= 1;
+                Registers.AL -= 6;
+                Registers.AH -= 1;
                 _creg.AuxCarryFlag = true;
                 _creg.CarryFlag = true;
             }
@@ -1770,23 +1845,23 @@ namespace KDS.e8086
             }
 
             // clear high nibble of AL
-            _reg.AL = (byte)(_reg.AL & 0x0f);
+            Registers.AL = (byte)(Registers.AL & 0x0f);
         }
         private void Execute_AsciiAdjustMUL()
         {
-            _reg.AH = (byte)(_reg.AL / 10);
-            _reg.AL = (byte)(_reg.AL % 10);
-            _creg.CalcParityFlag(_reg.AX);
-            _creg.CalcSignFlag(1, _reg.AX);
-            _creg.CalcZeroFlag(1, _reg.AX);
+            Registers.AH = (byte)(Registers.AL / 10);
+            Registers.AL = (byte)(Registers.AL % 10);
+            _creg.CalcParityFlag(Registers.AX);
+            _creg.CalcSignFlag(1, Registers.AX);
+            _creg.CalcZeroFlag(1, Registers.AX);
         }
         private void Execute_AsciiAdjustDIV()
         {
-            _reg.AL += (byte)(_reg.AH * 10);
-            _reg.AH = 0;
-            _creg.CalcParityFlag(_reg.AX);
-            _creg.CalcSignFlag(1, _reg.AX);
-            _creg.CalcZeroFlag(1, _reg.AX);
+            Registers.AL += (byte)(Registers.AH * 10);
+            Registers.AH = 0;
+            _creg.CalcParityFlag(Registers.AX);
+            _creg.CalcSignFlag(1, Registers.AX);
+            _creg.CalcZeroFlag(1, Registers.AX);
         }
         #endregion
 
@@ -1806,7 +1881,7 @@ namespace KDS.e8086
             */
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int offset = 0;
 
@@ -1815,13 +1890,13 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        offset = _bus.GetData16(GetRMTable1(rm));
+                        offset = Bus.GetData16(GetRMTable1(rm));
                         break;
                     }
                 case 0x01:
                 case 0x02:   // difference is processed in the GetRMTable2 function
                     {
-                        offset = _bus.GetData16(GetRMTable2(mod, rm));
+                        offset = Bus.GetData16(GetRMTable2(mod, rm));
                         break;
                     }
                 case 0x03:
@@ -1830,12 +1905,12 @@ namespace KDS.e8086
                     }
             }
 
-            SaveRegField16(reg, _bus.GetData16(offset));
+            SaveRegField16(reg, Bus.GetData16(offset));
 
             if (_currentOP == 0xc4)
-                _bus.ES = _bus.GetData16(offset + 2);
+                Bus.ES = Bus.GetData16(offset + 2);
             else
-                _bus.DS = _bus.GetData16(offset + 2);
+                Bus.DS = Bus.GetData16(offset + 2);
         }
 
         private void Execute_LEA()
@@ -1845,12 +1920,12 @@ namespace KDS.e8086
             // loads the offset of the source (rather than its value) and stores it in the destination
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
             int direction = GetDirection();
             int word_size = GetWordSize();
 
             int offset = GetSourceData(direction, word_size, mod, reg, rm);
-            int source = _bus.GetData(word_size, offset);
+            int source = Bus.GetData(word_size, offset);
             SaveToDestination(source, direction, word_size, mod, reg, rm);
         }
 
@@ -1894,7 +1969,7 @@ namespace KDS.e8086
                 SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
                
                 if(_currentOP == 0x8f)
-                    SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+                    SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
                 else
                     SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
@@ -1928,7 +2003,7 @@ namespace KDS.e8086
             bool with_carry = (_currentOP & 0x10) == 0x10;
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -1952,7 +2027,7 @@ namespace KDS.e8086
             int source;
 
             if (word_size == 0)
-                source = _bus.NextIP();
+                source = Bus.NextIP();
             else
                 source = GetImmediate16();
 
@@ -1975,7 +2050,7 @@ namespace KDS.e8086
             bool comp_only = (_currentOP & 0x30) == 0x30;
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -1997,7 +2072,7 @@ namespace KDS.e8086
             int source;
 
             if (word_size == 0)
-                source = _bus.NextIP();
+                source = Bus.NextIP();
             else
                 source = GetImmediate16();
 
@@ -2016,7 +2091,7 @@ namespace KDS.e8086
             // TEST: 84-85
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -2062,7 +2137,7 @@ namespace KDS.e8086
             int source;
 
             if (word_size == 0)
-                source = _bus.NextIP();
+                source = Bus.NextIP();
             else
                 source = GetImmediate16();
 
@@ -2154,8 +2229,8 @@ namespace KDS.e8086
             SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
 
             int first = GetRegField16(rm);
-            SaveRegField16(rm, _reg.AX);
-            _reg.AX = (ushort)first;
+            SaveRegField16(rm, Registers.AX);
+            Registers.AX = (ushort)first;
 
             // no flags are affected
         }
@@ -2166,7 +2241,7 @@ namespace KDS.e8086
             // no flags
 
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -2187,7 +2262,7 @@ namespace KDS.e8086
         private void ExecuteMOV_General()
         {
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -2198,7 +2273,7 @@ namespace KDS.e8086
         private void ExecuteMOV_SReg()
         {
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int direction = GetDirection();
             int word_size = GetWordSize();
@@ -2209,28 +2284,28 @@ namespace KDS.e8086
         private void ExecuteMOV_Mem()
         {
             // MOV MEM <-> IMM (8 and 16)
-            byte lo = _bus.NextIP();
-            byte hi = _bus.NextIP();
+            byte lo = Bus.NextIP();
+            byte hi = Bus.NextIP();
             switch(_currentOP)
             {
                 case 0xa0:
                     {
-                        _reg.AL = _bus.GetData8(new DataRegister16(hi, lo));
+                        Registers.AL = Bus.GetData8(new DataRegister16(hi, lo));
                         break;
                     }
                 case 0xa1:
                     {
-                        _reg.AX = _bus.GetData16(new DataRegister16(hi, lo));
+                        Registers.AX = Bus.GetData16(new DataRegister16(hi, lo));
                         break;
                     }
                 case 0xa2:
                     {
-                        _bus.SaveData8(new DataRegister16(hi, lo), _reg.AL);
+                        Bus.SaveData8(new DataRegister16(hi, lo), Registers.AL);
                         break;
                     }
                 case 0xa3:
                     {
-                        _bus.SaveData16(new DataRegister16(hi, lo), _reg.AX);
+                        Bus.SaveData16(new DataRegister16(hi, lo), Registers.AX);
                         break;
                     }
             }
@@ -2239,47 +2314,47 @@ namespace KDS.e8086
         {
             // Covers op codes B0-B7
             // MOV <reg>, IMM-8
-            byte mem = _bus.NextIP();
+            byte mem = Bus.NextIP();
             switch(_currentOP)
             {
                 case 0xb0:
                     {
-                        _reg.AL = mem;
+                        Registers.AL = mem;
                         break;
                     }
                 case 0xb1:
                     {
-                        _reg.CL = mem;
+                        Registers.CL = mem;
                         break;
                     }
                 case 0xb2:
                     {
-                        _reg.DL = mem;
+                        Registers.DL = mem;
                         break;
                     }
                 case 0xb3:
                     {
-                        _reg.BL = mem;
+                        Registers.BL = mem;
                         break;
                     }
                 case 0xb4:
                     {
-                        _reg.AH = mem;
+                        Registers.AH = mem;
                         break;
                     }
                 case 0xb5:
                     {
-                        _reg.CH = mem;
+                        Registers.CH = mem;
                         break;
                     }
                 case 0xb6:
                     {
-                        _reg.DH = mem;
+                        Registers.DH = mem;
                         break;
                     }
                 case 0xb7:
                     {
-                        _reg.BH = mem;
+                        Registers.BH = mem;
                         break;
                     }
                 default:
@@ -2297,42 +2372,42 @@ namespace KDS.e8086
             {
                 case 0xb8:
                     {
-                        _reg.AX = GetImmediate16();
+                        Registers.AX = GetImmediate16();
                         break;
                     }
                 case 0xb9:
                     {
-                        _reg.CX = GetImmediate16();
+                        Registers.CX = GetImmediate16();
                         break;
                     }
                 case 0xba:
                     {
-                        _reg.DX = GetImmediate16();
+                        Registers.DX = GetImmediate16();
                         break;
                     }
                 case 0xbb:
                     {
-                        _reg.BX = GetImmediate16();
+                        Registers.BX = GetImmediate16();
                         break;
                     }
                 case 0xbc:
                     {
-                        _reg.SP = GetImmediate16();
+                        Registers.SP = GetImmediate16();
                         break;
                     }
                 case 0xbd:
                     {
-                        _reg.BP = GetImmediate16();
+                        Registers.BP = GetImmediate16();
                         break;
                     }
                 case 0xbe:
                     {
-                        _reg.SI = GetImmediate16();
+                        Registers.SI = GetImmediate16();
                         break;
                     }
                 case 0xbf:
                     {
-                        _reg.DI = GetImmediate16();
+                        Registers.DI = GetImmediate16();
                         break;
                     }
                 default:
@@ -2347,7 +2422,7 @@ namespace KDS.e8086
             // displacement bytes are optional so don't retrieve the immediate value
             // until the destination offset has been determined.
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
             
             int dest;
             AssertMOD(mod);
@@ -2356,24 +2431,24 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         dest = GetRMTable1(rm);
-                        _bus.SaveData8(dest, _bus.NextIP());
+                        Bus.SaveData8(dest, Bus.NextIP());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(mod, rm);
-                        _bus.SaveData8(dest, _bus.NextIP());
+                        Bus.SaveData8(dest, Bus.NextIP());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(mod, rm);
-                        _bus.SaveData8(dest, _bus.NextIP());
+                        Bus.SaveData8(dest, Bus.NextIP());
                         break;
                     }
                 case 0x03:
                     {
-                        SaveRegField8(rm, _bus.NextIP());
+                        SaveRegField8(rm, Bus.NextIP());
                         break;
                     }
             }
@@ -2384,7 +2459,7 @@ namespace KDS.e8086
             // displacement bytes are optional so don't retrieve the immediate value
             // until the destination offset has been determined.
             byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_bus.NextIP(), ref mod, ref reg, ref rm);
+            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
             int dest;
             AssertMOD(mod);
@@ -2393,19 +2468,19 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         dest = GetRMTable1(rm);
-                        _bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveData16(dest, GetImmediate16());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(mod, rm);
-                        _bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveData16(dest, GetImmediate16());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(mod, rm);
-                        _bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveData16(dest, GetImmediate16());
                         break;
                     }
                 case 0x03:
@@ -2455,11 +2530,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = _bus.GetData8(GetRMTable1(rm));
+                                result = Bus.GetData8(GetRMTable1(rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = _bus.GetData16(GetRMTable1(rm));
+                                result = Bus.GetData16(GetRMTable1(rm));
                             }
                             break;
                         }
@@ -2468,11 +2543,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = _bus.GetData8(GetRMTable2(mod, rm));
+                                result = Bus.GetData8(GetRMTable2(mod, rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = _bus.GetData16(GetRMTable2(mod, rm));
+                                result = Bus.GetData16(GetRMTable2(mod, rm));
                             }
                             break;
                         }
@@ -2542,11 +2617,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                _bus.SaveData8(GetRMTable1(rm), (byte)data);
+                                Bus.SaveData8(GetRMTable1(rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                _bus.SaveData16(GetRMTable1(rm), (ushort)data);
+                                Bus.SaveData16(GetRMTable1(rm), (ushort)data);
                             }
                             break;
                         }
@@ -2555,11 +2630,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                _bus.SaveData8(GetRMTable2(mod, rm), (byte)data);
+                                Bus.SaveData8(GetRMTable2(mod, rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                _bus.SaveData16(GetRMTable2(mod, rm), (ushort)data);
+                                Bus.SaveData16(GetRMTable2(mod, rm), (ushort)data);
                             }
                             break;
                         }
@@ -2590,8 +2665,8 @@ namespace KDS.e8086
             Push(_creg.Register);
 
             // push CS and IP
-            Push(_bus.CS);
-            Push(_bus.IP);
+            Push(Bus.CS);
+            Push(Bus.IP);
             
             // clear trap flag
             _creg.TrapFlag = false;
@@ -2600,10 +2675,10 @@ namespace KDS.e8086
             _creg.InterruptEnable = false;
 
             // the second word of the interrupt pointer replaces CS
-            _bus.CS = _bus.GetData16(0, int_ptr + 2);
+            Bus.CS = Bus.GetData16(0, int_ptr + 2);
 
             // replace IP by first word of interrupt pointer
-            _bus.IP = _bus.GetData16(0, int_ptr);
+            Bus.IP = Bus.GetData16(0, int_ptr);
         }
         #endregion
 
@@ -2682,18 +2757,18 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = source + dest + carry;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = source + dest + carry;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -2762,18 +2837,18 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest - (source + carry);
-                            if (!comp_only) _bus.SaveData(word_size, offset, result);
+                            if (!comp_only) Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest - (source + carry);
-                            if (!comp_only) _bus.SaveData(word_size, offset, result);
+                            if (!comp_only) Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -2834,18 +2909,18 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest & source;
-                            if (!test_only) _bus.SaveData(word_size, offset, result);
+                            if (!test_only) Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest & source;
-                            if (!test_only) _bus.SaveData(word_size, offset, result);
+                            if (!test_only) Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -2906,18 +2981,18 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest | source;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest | source;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -2978,18 +3053,18 @@ namespace KDS.e8086
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest ^ source;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = _bus.GetData(word_size, offset);
+                            dest = Bus.GetData(word_size, offset);
                             result = dest ^ source;
-                            _bus.SaveData(word_size, offset, result);
+                            Bus.SaveData(word_size, offset, result);
                             break;
                         }
                     case 0x03:
@@ -3048,14 +3123,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = _bus.GetData8(offset);
+                        original = Bus.GetData8(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = _bus.GetData8(offset);
+                        original = Bus.GetData8(offset);
                         break;
                     }
                 case 0x03:
@@ -3128,14 +3203,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = _bus.GetData16(offset);
+                        original = Bus.GetData16(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = _bus.GetData16(offset);
+                        original = Bus.GetData16(offset);
                         break;
                     }
                 case 0x03:
@@ -3208,14 +3283,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = _bus.GetData8(offset);
+                        original = Bus.GetData8(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = _bus.GetData8(offset) ;
+                        original = Bus.GetData8(offset) ;
                         break;
                     }
                 case 0x03:
@@ -3303,14 +3378,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = _bus.GetData16(offset);
+                        original = Bus.GetData16(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = _bus.GetData16(offset);
+                        original = Bus.GetData16(offset);
                         break;
                     }
                 case 0x03:
@@ -3387,14 +3462,14 @@ namespace KDS.e8086
 
         private void Push(ushort value)
         {
-            _reg.SP -= 2;
-            _bus.PushStack(_reg.SP, value);
+            Registers.SP -= 2;
+            Bus.PushStack(Registers.SP, value);
         }
 
         private ushort Pop()
         {
-            ushort result = _bus.PopStack(_reg.SP);
-            _reg.SP += 2;
+            ushort result = Bus.PopStack(Registers.SP);
+            Registers.SP += 2;
             return result;
         }
 
@@ -3410,42 +3485,42 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        result = _reg.AL;
+                        result = Registers.AL;
                         break;
                     }
                 case 0x01:
                     {
-                        result = _reg.CL;
+                        result = Registers.CL;
                         break;
                     }
                 case 0x02:
                     {
-                        result = _reg.DL;
+                        result = Registers.DL;
                         break;
                     }
                 case 0x03:
                     {
-                        result = _reg.BL;
+                        result = Registers.BL;
                         break;
                     }
                 case 0x04:
                     {
-                        result = _reg.AH;
+                        result = Registers.AH;
                         break;
                     }
                 case 0x05:
                     {
-                        result = _reg.CH;
+                        result = Registers.CH;
                         break;
                     }
                 case 0x06:
                     {
-                        result = _reg.DH;
+                        result = Registers.DH;
                         break;
                     }
                 case 0x07:
                     {
-                        result = _reg.BH;
+                        result = Registers.BH;
                         break;
                     }
             }
@@ -3460,42 +3535,42 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                       _reg.AL = value;
+                       Registers.AL = value;
                         break;
                     }
                 case 0x01:
                     {
-                        _reg.CL = value;
+                        Registers.CL = value;
                         break;
                     }
                 case 0x02:
                     {
-                        _reg.DL = value;
+                        Registers.DL = value;
                         break;
                     }
                 case 0x03:
                     {
-                        _reg.BL = value;
+                        Registers.BL = value;
                         break;
                     }
                 case 0x04:
                     {
-                        _reg.AH = value;
+                        Registers.AH = value;
                         break;
                     }
                 case 0x05:
                     {
-                        _reg.CH = value;
+                        Registers.CH = value;
                         break;
                     }
                 case 0x06:
                     {
-                        _reg.DH = value;
+                        Registers.DH = value;
                         break;
                     }
                 case 0x07:
                     {
-                        _reg.BH = value;
+                        Registers.BH = value;
                         break;
                     }
             }
@@ -3511,42 +3586,42 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        result = _reg.AX;
+                        result = Registers.AX;
                         break;
                     }
                 case 0x01:
                     {
-                        result = _reg.CX;
+                        result = Registers.CX;
                         break;
                     }
                 case 0x02:
                     {
-                        result = _reg.DX;
+                        result = Registers.DX;
                         break;
                     }
                 case 0x03:
                     {
-                        result = _reg.BX;
+                        result = Registers.BX;
                         break;
                     }
                 case 0x04:
                     {
-                        result = _reg.SP;
+                        result = Registers.SP;
                         break;
                     }
                 case 0x05:
                     {
-                        result = _reg.BP;
+                        result = Registers.BP;
                         break;
                     }
                 case 0x06:
                     {
-                        result = _reg.SI;
+                        result = Registers.SI;
                         break;
                     }
                 case 0x07:
                     {
-                        result = _reg.DI;
+                        result = Registers.DI;
                         break;
                     }
             }
@@ -3561,42 +3636,42 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        _reg.AX = value;
+                        Registers.AX = value;
                         break;
                     }
                 case 0x01:
                     {
-                        _reg.CX = value;
+                        Registers.CX = value;
                         break;
                     }
                 case 0x02:
                     {
-                        _reg.DX = value;
+                        Registers.DX = value;
                         break;
                     }
                 case 0x03:
                     {
-                        _reg.BX = value;
+                        Registers.BX = value;
                         break;
                     }
                 case 0x04:
                     {
-                        _reg.SP = value;
+                        Registers.SP = value;
                         break;
                     }
                 case 0x05:
                     {
-                        _reg.BP = value;
+                        Registers.BP = value;
                         break;
                     }
                 case 0x06:
                     {
-                        _reg.SI = value;
+                        Registers.SI = value;
                         break;
                     }
                 case 0x07:
                     {
-                        _reg.DI = value;
+                        Registers.DI = value;
                         break;
                     }
             }
@@ -3612,22 +3687,22 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        result = _bus.ES;
+                        result = Bus.ES;
                         break;
                     }
                 case 0x01:
                     {
-                        result = _bus.CS;
+                        result = Bus.CS;
                         break;
                     }
                 case 0x02:
                     {
-                        result = _bus.SS;
+                        result = Bus.SS;
                         break;
                     }
                 case 0x03:
                     {
-                        result = _bus.DS;
+                        result = Bus.DS;
                         break;
                     }
             }
@@ -3642,22 +3717,22 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        _bus.ES = value;
+                        Bus.ES = value;
                         break;
                     }
                 case 0x01:
                     {
-                        _bus.CS = value;
+                        Bus.CS = value;
                         break;
                     }
                 case 0x02:
                     {
-                        _bus.SS = value;
+                        Bus.SS = value;
                         break;
                     }
                 case 0x03:
                     {
-                        _bus.DS = value;
+                        Bus.DS = value;
                         break;
                     }
             }
@@ -3675,32 +3750,32 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        result = (ushort)(_reg.BX + _reg.SI);
+                        result = (ushort)(Registers.BX + Registers.SI);
                         break;
                     }
                 case 0x01:
                     {
-                        result = (ushort)(_reg.BX + _reg.DI);
+                        result = (ushort)(Registers.BX + Registers.DI);
                         break;
                     }
                 case 0x02:
                     {
-                        result = (ushort)(_reg.BP + _reg.SI);
+                        result = (ushort)(Registers.BP + Registers.SI);
                         break;
                     }
                 case 0x03:
                     {
-                        result = (ushort)(_reg.BP + _reg.DI);
+                        result = (ushort)(Registers.BP + Registers.DI);
                         break;
                     }
                 case 0x04:
                     {
-                        result = _reg.SI;
+                        result = Registers.SI;
                         break;
                     }
                 case 0x05:
                     {
-                        result = _reg.DI;
+                        result = Registers.DI;
                         break;
                     }
                 case 0x06:
@@ -3708,7 +3783,7 @@ namespace KDS.e8086
                         // direct address
                         // There is only one RM table lookup per instruction but this may be invoked more than once
                         // for certain instructions.  For this reason we preserve the offset in case it is needed again.
-                        if (_RMTableLookupCount == _instrCount)
+                        if (_RMTableLookupCount == InstructionCount)
                         {
                             result = _RMTableLastLookup;
                         }
@@ -3716,14 +3791,14 @@ namespace KDS.e8086
                         {
                             result = GetImmediate16();
                             _RMTableLastLookup = result;
-                            _RMTableLookupCount = _instrCount;
+                            _RMTableLookupCount = InstructionCount;
                             
                         }
                         break;
                     }
                 case 0x07:
                     {
-                        result = _reg.BX;
+                        result = Registers.BX;
                         break;
                     }
             }
@@ -3746,43 +3821,43 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        result = (ushort)(_reg.BX + _reg.SI);
+                        result = (ushort)(Registers.BX + Registers.SI);
                         break;
                     }
                 case 0x01:
                     {
-                        result = (ushort)(_reg.BX + _reg.DI);
+                        result = (ushort)(Registers.BX + Registers.DI);
                         break;
                     }
                 case 0x02:
                     {
-                        result = (ushort)(_reg.BP + _reg.SI);
+                        result = (ushort)(Registers.BP + Registers.SI);
                         break;
                     }
                 case 0x03:
                     {
-                        result = (ushort)(_reg.BP + _reg.DI);
+                        result = (ushort)(Registers.BP + Registers.DI);
                         break;
                     }
                 case 0x04:
                     {
-                        result = _reg.SI;
+                        result = Registers.SI;
                         break;
                     }
                 case 0x05:
                     {
-                        result = _reg.DI;
+                        result = Registers.DI;
                         break;
                     }
                 case 0x06:
                     {
-                        _bus.UsingBasePointer = true;
-                        result = _reg.BP;
+                        Bus.UsingBasePointer = true;
+                        result = Registers.BP;
                         break;
                     }
                 case 0x07:
                     {
-                        result = _reg.BX;
+                        result = Registers.BX;
                         break;
                     }
             }
@@ -3793,22 +3868,22 @@ namespace KDS.e8086
                 case 0x01:
                     {
                         // 8 bit displacement
-                        if (_RMTableLookupCount == _instrCount)
+                        if (_RMTableLookupCount == InstructionCount)
                         {
                             disp = _RMTableLastLookup;
                         }
                         else
                         {
-                            disp = _bus.NextIP();
+                            disp = Bus.NextIP();
                             _RMTableLastLookup = disp;
-                            _RMTableLookupCount = _instrCount;
+                            _RMTableLookupCount = InstructionCount;
                         }
                         break;
                     }
                 case 0x02:
                     {
                         // 16 bit displacement
-                        if (_RMTableLookupCount == _instrCount)
+                        if (_RMTableLookupCount == InstructionCount)
                         {
                             disp = _RMTableLastLookup;
                         }
@@ -3816,7 +3891,7 @@ namespace KDS.e8086
                         {
                             disp = GetImmediate16();
                             _RMTableLastLookup = disp;
-                            _RMTableLookupCount = _instrCount;
+                            _RMTableLookupCount = InstructionCount;
                         }
                         break;
                     }
@@ -3835,8 +3910,8 @@ namespace KDS.e8086
         // Gets the immediate 16 bit value
         private ushort GetImmediate16()
         {
-            byte lo = _bus.NextIP();
-            byte hi = _bus.NextIP();
+            byte lo = Bus.NextIP();
+            byte hi = Bus.NextIP();
             return new DataRegister16(hi, lo);
         }
 

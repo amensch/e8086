@@ -49,14 +49,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="i8086\AddressMode.cs" />
     <Compile Include="Chipset\i8253.cs" />
     <Compile Include="Chipset\i8259.cs" />
     <Compile Include="Chipset\InputDevice.cs" />
     <Compile Include="Chipset\OutputDevice.cs" />
+    <Compile Include="i8086\IBus.cs" />
+    <Compile Include="i8086\IExecutionUnit.cs" />
     <Compile Include="i8086\IInputDevice.cs" />
     <Compile Include="i8086\Instructions\ADD.cs" />
-    <Compile Include="i8086\Instructions\BaseInstruction.cs" />
+    <Compile Include="i8086\Instructions\ADD_Immediate.cs" />
+    <Compile Include="i8086\Instructions\Instruction.cs" />
+    <Compile Include="i8086\Instructions\POP.cs" />
+    <Compile Include="i8086\Instructions\POPF.cs" />
+    <Compile Include="i8086\Instructions\POP_regmem.cs" />
+    <Compile Include="i8086\Instructions\PUSH.cs" />
+    <Compile Include="i8086\Instructions\PUSHF.cs" />
+    <Compile Include="i8086\Instructions\SUB.cs" />
+    <Compile Include="i8086\Instructions\SUB_Immediate.cs" />
+    <Compile Include="i8086\Instructions\TwoByteInstruction.cs" />
     <Compile Include="i8086\IOutputDevice.cs" />
+    <Compile Include="i8086\RAM.cs" />
     <Compile Include="Windows\DebugWindow.cs">
       <SubType>Form</SubType>
     </Compile>

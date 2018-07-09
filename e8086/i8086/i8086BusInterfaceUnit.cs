@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace KDS.e8086
 {
-    public class i8086BusInterfaceUnit
+    public class i8086BusInterfaceUnit : IBus
     {
         public const int MAX_MEMORY = 0x100000;
 
@@ -30,19 +30,10 @@ namespace KDS.e8086
         public ushort ES { get; set; }  // extra segmemt
         public ushort IP { get; set; }  // instruction pointer
 
-        public enum SegmentOverrideState
-        {
-            UseCS,
-            UseDS,
-            UseSS,
-            UseES,
-            NoOverride
-        };
-
         public SegmentOverrideState SegmentOverride { get; set; }
         public bool UsingBasePointer { get; set; }
 
-        private byte[] _ram;
+        public RAM ram { get; set; }
 
         public i8086BusInterfaceUnit()
         {
@@ -54,17 +45,17 @@ namespace KDS.e8086
             SegmentOverride = SegmentOverrideState.NoOverride;
             UsingBasePointer = false;
 
-            _ram = new byte[MAX_MEMORY];  // 1,048,576 bytes (maximum addressable by the 8086)
+            ram = new RAM(MAX_MEMORY);  // 1,048,576 bytes (maximum addressable by the 8086)
         }
 
         public void LoadBIOS(byte[] bios)
         {
-            bios.CopyTo(_ram, MAX_MEMORY - bios.GetLength(0));
+            ram.Load(bios, MAX_MEMORY - bios.GetLength(0));
         }
 
         public void LoadROM(byte[] bios, int starting_address)
         {
-            bios.CopyTo(_ram, starting_address);
+            ram.Load(bios, starting_address);
         }
 
         // this is for testing
@@ -78,7 +69,7 @@ namespace KDS.e8086
             SegmentOverride = SegmentOverrideState.NoOverride;
             UsingBasePointer = false;
 
-            _ram = new byte[MAX_MEMORY];  // 1,048,576 bytes (maximum addressable by the 8086)
+            ram = new RAM(MAX_MEMORY);  // 1,048,576 bytes (maximum addressable by the 8086)
 
             // On bootup the architecture is hard coded to look at memory location 0xffff0 (FFFF:0000). This is the reset vector that
             // contains a 16 byte address.  The CPU will jump to this address and begin executing.  On a PC this will be
@@ -99,7 +90,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} IP={1:X4}", CS, IP));
             }
 
-            program.CopyTo(_ram, addr);
+            ram.Load(program, addr);
         }
 
         // fetch the byte pointed to by the program counter and increment IP
@@ -112,7 +103,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. CS={0:X4} IP={1:X4}", CS, IP));
             }
 
-            byte mem = _ram[pc];
+            byte mem = ram[pc];
             IP++;
             return mem;
         }
@@ -145,7 +136,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return _ram[addr];
+            return ram[addr];
         }
 
         // save the 8 bit value to the requested offset
@@ -156,7 +147,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            _ram[addr] = value;
+            ram[addr] = value;
         }
 
         // fetch the 16 bit value at the requested offset
@@ -167,7 +158,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return new DataRegister16(_ram[addr + 1], _ram[addr]);
+            return new DataRegister16(ram[addr + 1], ram[addr]);
         }
 
         // fetch the 16 bit value at the requested offset while forcing a segment address
@@ -178,7 +169,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return new DataRegister16(_ram[addr + 1], _ram[addr]);
+            return new DataRegister16(ram[addr + 1], ram[addr]);
         }
 
         // save the 16 bit value to the requested offset
@@ -190,8 +181,8 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
             DataRegister16 data = new DataRegister16(value);
-            _ram[addr + 1] = data.HI;
-            _ram[addr] = data.LO;
+            ram[addr + 1] = data.HI;
+            ram[addr] = data.LO;
         }
 
         #endregion
@@ -202,7 +193,7 @@ namespace KDS.e8086
         // the dest string segment is always ES
         public void MoveString8(int src_offset, int dst_offset)
         {
-            _ram[(ES << 4) + dst_offset] = GetData8(src_offset);
+            ram[(ES << 4) + dst_offset] = GetData8(src_offset);
         }
 
         public void MoveString16(int src_offset, int dst_offset)
@@ -210,32 +201,32 @@ namespace KDS.e8086
             int dst_addr = (ES << 4) + dst_offset;
 
             DataRegister16 data = new DataRegister16(GetData16(src_offset));
-            _ram[dst_addr + 1] = data.HI;
-            _ram[dst_addr] = data.LO;
+            ram[dst_addr + 1] = data.HI;
+            ram[dst_addr] = data.LO;
         }
 
         public byte GetDestString8(int offset)
         {
-            return _ram[(ES << 4) + offset];
+            return ram[(ES << 4) + offset];
         }
 
         public ushort GetDestString16(int offset)
         {
             int addr = (ES << 4) + offset;
-            return new DataRegister16(_ram[addr + 1], _ram[addr]);
+            return new DataRegister16(ram[addr + 1], ram[addr]);
         }
 
         public void StoreString8(int offset, byte data)
         {
-            _ram[(ES << 4) + offset] = data;
+            ram[(ES << 4) + offset] = data;
         }
 
         public void StoreString16(int offset, ushort data)
         {
             int addr = (ES << 4) + offset;
             DataRegister16 reg = new DataRegister16(data);
-            _ram[addr + 1] = reg.HI;
-            _ram[addr] = reg.LO;
+            ram[addr + 1] = reg.HI;
+            ram[addr] = reg.LO;
         }
 
         #endregion
@@ -249,7 +240,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
 
-            return new DataRegister16(_ram[addr + 1], _ram[addr]); 
+            return new DataRegister16(ram[addr + 1], ram[addr]); 
         }
 
         public void PushStack(int offset, ushort value)
@@ -261,8 +252,8 @@ namespace KDS.e8086
             }
 
             DataRegister16 reg = new DataRegister16(value);
-            _ram[addr + 1] = reg.HI;
-            _ram[addr] = reg.LO;
+            ram[addr + 1] = reg.HI;
+            ram[addr] = reg.LO;
         }
 
         #endregion
@@ -299,7 +290,7 @@ namespace KDS.e8086
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. physaddr={0:X4}", idx));
             }
-            return _ram[idx];
+            return ram[idx];
         }
 
         public byte GetOffsetFromIP(int offset)
@@ -324,23 +315,7 @@ namespace KDS.e8086
         // the intended use is for on the fly disassembly
         public byte[] GetNextIPBytes(int num)
         {
-            int pc = GetPhysicalAddress();
-            byte[] next = new byte[num];
-
-            Array.Copy(_ram, pc, next, 0, num);
-            return next;
-        }
-
-        public byte[] GetNext6Physical(int idx)
-        {
-            byte[] next = new byte[6];
-            int bytes = 6;
-
-            if (idx + 6 >= MAX_MEMORY)
-                bytes = (MAX_MEMORY - idx - 1);
-
-            Array.Copy(_ram, idx, next, 0, bytes);
-            return next;
+            return ram.GetChunk(GetPhysicalAddress(), num);
         }
 
         #endregion

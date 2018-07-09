@@ -102,7 +102,7 @@ namespace e8086UnitTests
             cpu.NextInstruction();
 
             // now set the override again so the correct memory segment is accessed
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
             Assert.AreEqual(value8, cpu.Bus.GetData8(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
 
         }

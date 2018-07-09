@@ -27,7 +27,7 @@ namespace e8086UnitTests
         {
             i8086CPU cpu = GetCPU(new byte[] { 0xa4, 0xa4, 0xa4, 0xa4, 0xa4 });
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseDS;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseDS;
             cpu.EU.Registers.SI = 0x100;
             cpu.EU.Registers.DI = 0x200;
 
@@ -39,21 +39,21 @@ namespace e8086UnitTests
             }
 
             // write a bunch of data to ES:offset (to show the correct data is overwritten)
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
             value = 0x55;
             for (int ii = cpu.EU.Registers.DI; ii <= 0x220; ii++)
             {
                 cpu.Bus.SaveData8(ii, value++);
             }
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.NoOverride;
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
             Assert.AreEqual(0xa1, cpu.Bus.GetData8(0x200), "MOVS 1 result failed");
             Assert.AreEqual(0xa2, cpu.Bus.GetData8(0x201), "MOVS 2 result failed");
             Assert.AreEqual(0xa3, cpu.Bus.GetData8(0x202), "MOVS 3 result failed");
@@ -67,7 +67,7 @@ namespace e8086UnitTests
         {
             i8086CPU cpu = GetCPU(new byte[] { 0xa5, 0xa5, 0xa5, 0xa5, 0xa5 });
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseDS;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseDS;
 
             cpu.EU.Registers.SI = 0x100;
             cpu.EU.Registers.DI = 0x200;
@@ -80,21 +80,21 @@ namespace e8086UnitTests
             }
 
             // write a bunch of data to ES:offset (to show the correct data is overwritten)
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
             value = 0x55;
             for (int ii = cpu.EU.Registers.DI; ii <= 0x220; ii++)
             {
                 cpu.Bus.SaveData8(ii, value++);
             }
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.NoOverride;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.NoOverride;
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
             cpu.NextInstruction();
 
-            cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
+            cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
             Assert.AreEqual(0xa2a1, cpu.Bus.GetData16(0x200), "MOVSW 1 result failed");
             Assert.AreEqual(0xa4a3, cpu.Bus.GetData16(0x202), "MOVSW 2 result failed");
             Assert.AreEqual(0xa6a5, cpu.Bus.GetData16(0x204), "MOVSW 3 result failed");
