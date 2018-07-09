@@ -54,6 +54,8 @@
     <Compile Include="Chipset\InputDevice.cs" />
     <Compile Include="Chipset\OutputDevice.cs" />
     <Compile Include="i8086\IInputDevice.cs" />
+    <Compile Include="i8086\Instructions\ADD.cs" />
+    <Compile Include="i8086\Instructions\BaseInstruction.cs" />
     <Compile Include="i8086\IOutputDevice.cs" />
     <Compile Include="Windows\DebugWindow.cs">
       <SubType>Form</SubType>

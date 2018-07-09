@@ -96,13 +96,10 @@ namespace e8086UnitTests
             value8 = 0x2f;
 
             cpu.EU.Registers.CL = value8;
-            cpu.NextInstruction();
-            Assert.AreEqual(i8086BusInterfaceUnit.SegmentOverrideState.UseES, cpu.Bus.SegmentOverride, "Invalid segment override value");
 
+            // only need to call NextInstruction once because when there is a segment override the next instruction is always
+            // executed immediately.  In a real system, interrupts are not allowed after a segment override.
             cpu.NextInstruction();
-
-            // after the instruction the override should be turned off
-            Assert.AreEqual(i8086BusInterfaceUnit.SegmentOverrideState.NoOverride, cpu.Bus.SegmentOverride, "Invalid segment override value");
 
             // now set the override again so the correct memory segment is accessed
             cpu.Bus.SegmentOverride = i8086BusInterfaceUnit.SegmentOverrideState.UseES;
