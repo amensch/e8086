@@ -74,6 +74,8 @@
     <Compile Include="i8086\Instructions\POP_regmem.cs" />
     <Compile Include="i8086\Instructions\PUSH.cs" />
     <Compile Include="i8086\Instructions\PUSHF.cs" />
+    <Compile Include="i8086\Instructions\PUSH_ImmediateByte.cs" />
+    <Compile Include="i8086\Instructions\PUSH_ImmediateWord.cs" />
     <Compile Include="i8086\Instructions\SUB.cs" />
     <Compile Include="i8086\Instructions\SUB_Immediate.cs" />
     <Compile Include="i8086\Instructions\TEST.cs" />

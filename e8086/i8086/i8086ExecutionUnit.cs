@@ -214,9 +214,8 @@ namespace KDS.e8086
             instructions.Add(0x0b, new OR(0x0b, this, Bus));
             instructions.Add(0x0c, new OR_Immediate(0x0c, this, Bus));
             instructions.Add(0x0d, new OR_Immediate(0x0d, this, Bus));
-
             instructions.Add(0x0e, new PUSH(0x0e, this, Bus));
-
+            instructions.Add(0x0f, new NOOP(0x0f, this, Bus)); // POP CS is not a valid instruction
             instructions.Add(0x10, new ADD(0x10, this, Bus));
             instructions.Add(0x11, new ADD(0x11, this, Bus));
             instructions.Add(0x12, new ADD(0x12, this, Bus));
@@ -225,7 +224,6 @@ namespace KDS.e8086
             instructions.Add(0x15, new ADD_Immediate(0x15, this, Bus));
             instructions.Add(0x16, new PUSH(0x16, this, Bus));
             instructions.Add(0x17, new POP(0x17, this, Bus));
-
             instructions.Add(0x18, new SUB(0x18, this, Bus));
             instructions.Add(0x19, new SUB(0x19, this, Bus));
             instructions.Add(0x1a, new SUB(0x1a, this, Bus));
@@ -298,6 +296,9 @@ namespace KDS.e8086
             instructions.Add(0x5e, new POP(0x5e, this, Bus));
             instructions.Add(0x5f, new POP(0x5f, this, Bus));
 
+            instructions.Add(0x68, new PUSH_ImmediateWord(0x68, this, Bus));
+            instructions.Add(0x6a, new PUSH_ImmediateByte(0x6a, this, Bus));
+
             instructions.Add(0x84, new TEST(0x84, this, Bus));
             instructions.Add(0x85, new TEST(0x85, this, Bus));
 
@@ -325,7 +326,7 @@ namespace KDS.e8086
             //_opTable[0x0d] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x0e] = new OpCodeRecord(Execute_PUSH);
             // POP CS is not a valid instruction
-            _opTable[0x0f] = new OpCodeRecord(() => { });
+            //_opTable[0x0f] = new OpCodeRecord(() => { });
             //_opTable[0x10] = new OpCodeRecord(ExecuteADD_General);
             //_opTable[0x11] = new OpCodeRecord(ExecuteADD_General);
             //_opTable[0x12] = new OpCodeRecord(ExecuteADD_General);
@@ -414,10 +415,10 @@ namespace KDS.e8086
             _opTable[0x65] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x65 is not implemented"); });
             _opTable[0x66] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x66 is not implemented"); });
             _opTable[0x67] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x67 is not implemented"); });
-            _opTable[0x68] = new OpCodeRecord(() =>  // PUSH imm-16
-            {
-                Push(GetImmediate16());
-            });
+            //_opTable[0x68] = new OpCodeRecord(() =>  // PUSH imm-16
+            //{
+            //    Push(GetImmediate16());
+            //});
             _opTable[0x69] = new OpCodeRecord(() => // IMUL REG-16, RM-16, Imm
             {
                 byte mod = 0, reg = 0, rm = 0;
@@ -448,10 +449,10 @@ namespace KDS.e8086
                 }
 
             });
-            _opTable[0x6a] = new OpCodeRecord(() =>  // PUSH imm-8
-            {
-                Push(Bus.NextIP());
-            });
+            //_opTable[0x6a] = new OpCodeRecord(() =>  // PUSH imm-8
+            //{
+            //    Push(Bus.NextIP());
+            //});
             _opTable[0x6b] = new OpCodeRecord(() => 
             {
                 byte mod = 0, reg = 0, rm = 0;
