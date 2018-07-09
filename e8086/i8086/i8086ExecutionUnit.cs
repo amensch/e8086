@@ -196,6 +196,10 @@ namespace KDS.e8086
 
         private void InitOpCodeTable()
         {
+            // TODO
+            // Logical and Logical Immediate classes are written
+            // need to be inserted into the Dictionary
+
             instructions.Add(0x00, new ADD(0x00, this, Bus));
             instructions.Add(0x01, new ADD(0x01, this, Bus));
             instructions.Add(0x02, new ADD(0x02, this, Bus));
@@ -238,6 +242,24 @@ namespace KDS.e8086
             instructions.Add(0x3c, new SUB_Immediate(0x3c, this, Bus));
             instructions.Add(0x3d, new SUB_Immediate(0x3d, this, Bus));
 
+            instructions.Add(0x40, new INC(0x40, this, Bus));
+            instructions.Add(0x41, new INC(0x41, this, Bus));
+            instructions.Add(0x42, new INC(0x42, this, Bus));
+            instructions.Add(0x43, new INC(0x43, this, Bus));
+            instructions.Add(0x44, new INC(0x44, this, Bus));
+            instructions.Add(0x45, new INC(0x45, this, Bus));
+            instructions.Add(0x46, new INC(0x46, this, Bus));
+            instructions.Add(0x47, new INC(0x47, this, Bus));
+
+            instructions.Add(0x48, new DEC(0x48, this, Bus));
+            instructions.Add(0x49, new DEC(0x49, this, Bus));
+            instructions.Add(0x4a, new DEC(0x4a, this, Bus));
+            instructions.Add(0x4b, new DEC(0x4b, this, Bus));
+            instructions.Add(0x4c, new DEC(0x4c, this, Bus));
+            instructions.Add(0x4d, new DEC(0x4d, this, Bus));
+            instructions.Add(0x4e, new DEC(0x4e, this, Bus));
+            instructions.Add(0x4f, new DEC(0x4f, this, Bus));
+
             instructions.Add(0x50, new PUSH(0x50, this, Bus));
             instructions.Add(0x51, new PUSH(0x51, this, Bus));
             instructions.Add(0x52, new PUSH(0x52, this, Bus));
@@ -246,6 +268,7 @@ namespace KDS.e8086
             instructions.Add(0x55, new PUSH(0x55, this, Bus));
             instructions.Add(0x56, new PUSH(0x56, this, Bus));
             instructions.Add(0x57, new PUSH(0x57, this, Bus));
+
             instructions.Add(0x58, new POP(0x58, this, Bus));
             instructions.Add(0x59, new POP(0x59, this, Bus));
             instructions.Add(0x5a, new POP(0x5a, this, Bus));
@@ -325,22 +348,22 @@ namespace KDS.e8086
             //_opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3e]  segment override is processed in the NextInstruction() method
             _opTable[0x3f] = new OpCodeRecord(Execute_AsciiAdjustSUB);
-            _opTable[0x40] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x41] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x42] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x43] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x44] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x45] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x46] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x47] = new OpCodeRecord(ExecuteINC);
-            _opTable[0x48] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x49] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4a] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4b] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4c] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4d] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4e] = new OpCodeRecord(ExecuteDEC);
-            _opTable[0x4f] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x40] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x41] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x42] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x43] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x44] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x45] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x46] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x47] = new OpCodeRecord(ExecuteINC);
+            //_opTable[0x48] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x49] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4a] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4b] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4c] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4d] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4e] = new OpCodeRecord(ExecuteDEC);
+            //_opTable[0x4f] = new OpCodeRecord(ExecuteDEC);
             //_opTable[0x50] = new OpCodeRecord(Execute_PUSH);
             //_opTable[0x51] = new OpCodeRecord(Execute_PUSH);
             //_opTable[0x52] = new OpCodeRecord(Execute_PUSH);

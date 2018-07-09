@@ -9,6 +9,7 @@ namespace KDS.e8086
     public abstract class Instruction
     {
         public byte OpCode { get; private set; }
+        protected AddressMode OpCodeMode { get; private set; }
 
         protected IExecutionUnit EU { get; private set; }
         protected IBus Bus { get; private set; }
@@ -25,6 +26,7 @@ namespace KDS.e8086
             Bus = bus;
             direction = (OpCode >> 1) & 0x01;
             wordSize = (OpCode & 0x01);
+            OpCodeMode = new AddressMode(opCode);
         }
 
         protected virtual void PreProcessing() { }

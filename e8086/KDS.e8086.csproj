@@ -59,7 +59,12 @@
     <Compile Include="i8086\IInputDevice.cs" />
     <Compile Include="i8086\Instructions\ADD.cs" />
     <Compile Include="i8086\Instructions\ADD_Immediate.cs" />
+    <Compile Include="i8086\Instructions\DEC.cs" />
+    <Compile Include="i8086\Instructions\INC.cs" />
     <Compile Include="i8086\Instructions\Instruction.cs" />
+    <Compile Include="i8086\Instructions\Logical.cs" />
+    <Compile Include="i8086\Instructions\Logical_Immediate.cs" />
+    <Compile Include="i8086\Instructions\NOOP.cs" />
     <Compile Include="i8086\Instructions\POP.cs" />
     <Compile Include="i8086\Instructions\POPF.cs" />
     <Compile Include="i8086\Instructions\POP_regmem.cs" />

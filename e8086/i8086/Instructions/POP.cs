@@ -15,18 +15,15 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            // parse the op code byte into r/m components
-            var opByte = new AddressMode(OpCode);
-
             // for segment register ops, use the reg field
             if (OpCode < 0x50)
             {
-                SaveSegRegField(opByte.REG, Pop());
+                SaveSegRegField(OpCodeMode.REG, Pop());
             }
             // else use rm field to determine the register
             else
             {
-                SaveRegField16(opByte.RM, Pop());
+                SaveRegField16(OpCodeMode.RM, Pop());
             }
         }
 
