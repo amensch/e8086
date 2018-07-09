@@ -462,7 +462,7 @@ namespace KDS.e8086
         }
 
         // Generic function to retrieve the current data in the destination based on the op code and addr byte
-        private int GetDestinationData(int direction, int word_size, byte mod, byte reg, byte rm)
+        protected int GetDestinationData(int direction, int word_size, byte mod, byte reg, byte rm)
         {
             if (direction == 0)
             {

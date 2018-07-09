@@ -295,20 +295,74 @@ namespace KDS.e8086
             instructions.Add(0x5d, new POP(0x5d, this, Bus));
             instructions.Add(0x5e, new POP(0x5e, this, Bus));
             instructions.Add(0x5f, new POP(0x5f, this, Bus));
+            instructions.Add(0x60, new PUSHA(0x60, this, Bus));
+            instructions.Add(0x61, new POPA(0x61, this, Bus));
 
             instructions.Add(0x68, new PUSH_ImmediateWord(0x68, this, Bus));
             instructions.Add(0x6a, new PUSH_ImmediateByte(0x6a, this, Bus));
 
             instructions.Add(0x84, new TEST(0x84, this, Bus));
             instructions.Add(0x85, new TEST(0x85, this, Bus));
+            instructions.Add(0x86, new XCHG(0x86, this, Bus));
+            instructions.Add(0x87, new XCHG(0x87, this, Bus));
 
+            instructions.Add(0x88, new MOV(0x88, this, Bus));
+            instructions.Add(0x89, new MOV(0x89, this, Bus));
+            instructions.Add(0x8a, new MOV(0x8a, this, Bus));
+            instructions.Add(0x8b, new MOV(0x8b, this, Bus));
+            instructions.Add(0x8c, new MOV_SReg(0x8c, this, Bus));
+
+            instructions.Add(0x8e, new MOV_SReg(0x8e, this, Bus));
             instructions.Add(0x8f, new POP_regmem(0x8f, this, Bus));
+            instructions.Add(0x90, new XCHG_AX(0x90, this, Bus));
+            instructions.Add(0x91, new XCHG_AX(0x91, this, Bus));
+            instructions.Add(0x92, new XCHG_AX(0x92, this, Bus));
+            instructions.Add(0x93, new XCHG_AX(0x93, this, Bus));
+            instructions.Add(0x94, new XCHG_AX(0x94, this, Bus));
+            instructions.Add(0x95, new XCHG_AX(0x95, this, Bus));
+            instructions.Add(0x96, new XCHG_AX(0x96, this, Bus));
+            instructions.Add(0x97, new XCHG_AX(0x97, this, Bus));
+            instructions.Add(0x98, new CBW(0x98, this, Bus));
+            instructions.Add(0x99, new CWD(0x99, this, Bus));
 
             instructions.Add(0x9c, new PUSHF(0x9c, this, Bus));
             instructions.Add(0x9d, new POPF(0x9d, this, Bus));
 
+            instructions.Add(0xa0, new MOV_MemImmediate(0xa0, this, Bus));
+            instructions.Add(0xa1, new MOV_MemImmediate(0xa1, this, Bus));
+            instructions.Add(0xa2, new MOV_MemImmediate(0xa2, this, Bus));
+            instructions.Add(0xa3, new MOV_MemImmediate(0xa3, this, Bus));
+
             instructions.Add(0xa8, new TEST_Immediate(0xa8, this, Bus));
             instructions.Add(0xa9, new TEST_Immediate(0xa9, this, Bus));
+
+            instructions.Add(0xb0, new MOV_ImmediateByte(0xb0, this, Bus));
+            instructions.Add(0xb1, new MOV_ImmediateByte(0xb1, this, Bus));
+            instructions.Add(0xb2, new MOV_ImmediateByte(0xb2, this, Bus));
+            instructions.Add(0xb3, new MOV_ImmediateByte(0xb3, this, Bus));
+            instructions.Add(0xb4, new MOV_ImmediateByte(0xb4, this, Bus));
+            instructions.Add(0xb5, new MOV_ImmediateByte(0xb5, this, Bus));
+            instructions.Add(0xb6, new MOV_ImmediateByte(0xb6, this, Bus));
+            instructions.Add(0xb7, new MOV_ImmediateByte(0xb7, this, Bus));
+            instructions.Add(0xb8, new MOV_ImmediateWord(0xb8, this, Bus));
+            instructions.Add(0xb9, new MOV_ImmediateWord(0xb9, this, Bus));
+            instructions.Add(0xba, new MOV_ImmediateWord(0xba, this, Bus));
+            instructions.Add(0xbb, new MOV_ImmediateWord(0xbb, this, Bus));
+            instructions.Add(0xbc, new MOV_ImmediateWord(0xbc, this, Bus));
+            instructions.Add(0xbd, new MOV_ImmediateWord(0xbd, this, Bus));
+            instructions.Add(0xbe, new MOV_ImmediateWord(0xbe, this, Bus));
+            instructions.Add(0xbf, new MOV_ImmediateWord(0xbf, this, Bus));
+
+            instructions.Add(0xd7, new XLAT(0xd7, this, Bus));
+
+            instructions.Add(0xf5, new FlagInstructions(0xf5, this, Bus));
+
+            instructions.Add(0xf8, new FlagInstructions(0xf8, this, Bus));
+            instructions.Add(0xf9, new FlagInstructions(0xf9, this, Bus));
+            instructions.Add(0xfa, new FlagInstructions(0xfa, this, Bus));
+            instructions.Add(0xfb, new FlagInstructions(0xfb, this, Bus));
+            instructions.Add(0xfc, new FlagInstructions(0xfc, this, Bus));
+            instructions.Add(0xfd, new FlagInstructions(0xfd, this, Bus));
 
             //_opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
             //_opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
@@ -407,8 +461,8 @@ namespace KDS.e8086
             //_opTable[0x5d] = new OpCodeRecord(Execute_POP);
             //_opTable[0x5e] = new OpCodeRecord(Execute_POP);
             //_opTable[0x5f] = new OpCodeRecord(Execute_POP);
-            _opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
-            _opTable[0x61] = new OpCodeRecord(Execute_POPA);
+            //_opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
+            //_opTable[0x61] = new OpCodeRecord(Execute_POPA);
             _opTable[0x62] = new OpCodeRecord(Execute_Bound);
             _opTable[0x63] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x63 is not implemented"); });
             _opTable[0x64] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x64 is not implemented"); });
@@ -597,26 +651,26 @@ namespace KDS.e8086
             _opTable[0x83] = new OpCodeRecord(Execute_Group1);
             //_opTable[0x84] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             //_opTable[0x85] = new OpCodeRecord(ExecuteLogical_General);  // TEST
-            _opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
-            _opTable[0x87] = new OpCodeRecord(ExecuteXCHG_General);
-            _opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
-            _opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
-            _opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
-            _opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
-            _opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
+            //_opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);
+            //_opTable[0x87] = new OpCodeRecord(ExecuteXCHG_General);
+            //_opTable[0x88] = new OpCodeRecord(ExecuteMOV_General);
+            //_opTable[0x89] = new OpCodeRecord(ExecuteMOV_General);
+            //_opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
+            //_opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
+            //_opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
             _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
-            _opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);  // MOV CS - this should never be used in practice
+            //_opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);  // MOV CS - this should never be used in practice
             //_opTable[0x8f] = new OpCodeRecord(Execute_POP);
-            _opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x92] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x93] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x94] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x95] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
-            _opTable[0x98] = new OpCodeRecord(Execute_CBW);
-            _opTable[0x99] = new OpCodeRecord(Execute_CWD);
+            //_opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x91] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x92] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x93] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x94] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x95] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x96] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
+            //_opTable[0x98] = new OpCodeRecord(Execute_CBW);
+            //_opTable[0x99] = new OpCodeRecord(Execute_CWD);
             _opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
             _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
             //_opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
@@ -625,10 +679,10 @@ namespace KDS.e8086
             _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), Registers.AH); });
             // LAHF - Load AH from flags
             _opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(_creg.Register & 0x00ff); });
-            _opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
-            _opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
-            _opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
-            _opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
+            //_opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
+            //_opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
+            //_opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
+            //_opTable[0xa3] = new OpCodeRecord(ExecuteMOV_Mem);
             _opTable[0xa4] = new OpCodeRecord(Execute_MoveString);
             _opTable[0xa5] = new OpCodeRecord(Execute_MoveString);
             _opTable[0xa6] = new OpCodeRecord(Execute_CompareString);
@@ -641,22 +695,22 @@ namespace KDS.e8086
             _opTable[0xad] = new OpCodeRecord(Execute_LoadString);
             _opTable[0xae] = new OpCodeRecord(Execute_ScanString);
             _opTable[0xaf] = new OpCodeRecord(Execute_ScanString);
-            _opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb2] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb3] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb4] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb5] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb6] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb7] = new OpCodeRecord(ExecuteMOV_Imm8);
-            _opTable[0xb8] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xb9] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xba] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xbb] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xbc] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xbd] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
-            _opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xb0] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb1] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb2] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb3] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb4] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb5] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb6] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb7] = new OpCodeRecord(ExecuteMOV_Imm8);
+            //_opTable[0xb8] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xb9] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xba] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xbb] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xbc] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xbd] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
+            //_opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
             // GRP2 rm-8 imm-8 (80186)
             _opTable[0xc0] = new OpCodeRecord(Execute_RotateAndShift);
             // GRP2 rm-16 imm-16 (80186)
@@ -707,7 +761,7 @@ namespace KDS.e8086
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // undocumented SALC instruction
             _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
-            _opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
+            //_opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
 
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
             // these are unsupported but they use the address byte so this should read
@@ -755,49 +809,17 @@ namespace KDS.e8086
                 Bus.IP--;
                 Halted = true;
             }); 
-            _opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
+            //_opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
             _opTable[0xf6] = new OpCodeRecord(Execute_Group3);
             _opTable[0xf7] = new OpCodeRecord(Execute_Group3);
-            _opTable[0xf8] = new OpCodeRecord(() => { _creg.CarryFlag = false; });  // F8 CLC - clear carry flag
-            _opTable[0xf9] = new OpCodeRecord(() => { _creg.CarryFlag = true; });  // F9 STC - set carry flag
-            _opTable[0xfa] = new OpCodeRecord(() => { _creg.InterruptEnable = false; });  // FA CLI - clear interrupt flag
-            _opTable[0xfb] = new OpCodeRecord(() => { _creg.InterruptEnable = true; });  // FB STI - set interrupt flag
-            _opTable[0xfc] = new OpCodeRecord(() => { _creg.DirectionFlag = false; });  // FC CLD - clear direction flag
-            _opTable[0xfd] = new OpCodeRecord(() => { _creg.DirectionFlag = true; });  // FD STD - set direction flag
+            //_opTable[0xf8] = new OpCodeRecord(() => { _creg.CarryFlag = false; });  // F8 CLC - clear carry flag
+            //_opTable[0xf9] = new OpCodeRecord(() => { _creg.CarryFlag = true; });  // F9 STC - set carry flag
+            //_opTable[0xfa] = new OpCodeRecord(() => { _creg.InterruptEnable = false; });  // FA CLI - clear interrupt flag
+            //_opTable[0xfb] = new OpCodeRecord(() => { _creg.InterruptEnable = true; });  // FB STI - set interrupt flag
+            //_opTable[0xfc] = new OpCodeRecord(() => { _creg.DirectionFlag = false; });  // FC CLD - clear direction flag
+            //_opTable[0xfd] = new OpCodeRecord(() => { _creg.DirectionFlag = true; });  // FD STD - set direction flag
             _opTable[0xfe] = new OpCodeRecord(Execute_Group4);
             _opTable[0xff] = new OpCodeRecord(Execute_Group5);
-        }
-
-        private void Execute_XLAT()
-        {
-            // one byte instruction (0xd7)
-            // Store into AL the value located at a 256 byte lookup table
-            // BX is the beginning of the table and AL is the offset
-            Registers.AL = Bus.GetData8(Registers.BX + Registers.AL);
-        }
-
-        private void Execute_CBW()
-        {
-            if( (Registers.AL & 0x80) == 0x80 )
-            {
-                Registers.AH = 0xff;
-            }
-            else
-            {
-                Registers.AH = 0x00;
-            }
-        }
-
-        private void Execute_CWD()
-        {
-            if( (Registers.AX & 0x8000) == 0x8000 )
-            {
-                Registers.DX = 0xffff;
-            }
-            else
-            {
-                Registers.DX = 0;
-            }
         }
 
         private void Execute_Loop()
@@ -816,33 +838,6 @@ namespace KDS.e8086
         }
 
         #region Instructions 60-6F (80186)
-
-        private void Execute_PUSHA()
-        {
-            // Op 0x60
-            ushort old_sp = Registers.SP;
-            Push(Registers.AX);
-            Push(Registers.CX);
-            Push(Registers.DX);
-            Push(Registers.BX);
-            Push(old_sp);
-            Push(Registers.BP);
-            Push(Registers.SI);
-            Push(Registers.DI);
-        }
-
-        private void Execute_POPA()
-        {
-            // Op 0x61
-            Registers.DI = Pop();
-            Registers.SI = Pop();
-            Registers.BP = Pop();
-            ushort new_sp = Pop();
-            Registers.BX = Pop();
-            Registers.DX = Pop();
-            Registers.CX = Pop();
-            Registers.AX = Pop();
-        }
 
         private void Execute_Bound()
         {
@@ -1981,206 +1976,8 @@ namespace KDS.e8086
 
         #endregion
 
-        #region XCHG instructions
-        private void ExecuteXCHG_AX()
-        {
-            // Op Codes: 90-97
-            // note 90 is XCHG AX,AX and thus is a NOP
-
-            // Parse the op code, last 3 bits indicates register.
-            // All swaps are done with AX
-
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(_currentOP, ref mod, ref reg, ref rm);
-
-            int first = GetRegField16(rm);
-            SaveRegField16(rm, Registers.AX);
-            Registers.AX = (ushort)first;
-
-            // no flags are affected
-        }
-
-        private void ExecuteXCHG_General()
-        {
-            // Op Codes: 86-87
-            // no flags
-
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
-
-            int direction = GetDirection();
-            int word_size = GetWordSize();
-
-            int source = GetSourceData(direction, word_size, mod, reg, rm);
-            int dest = GetDestinationData(direction, word_size, mod, reg, rm);
-
-            SaveToDestination(source, direction, word_size, mod, reg, rm);
-
-            // flip destination so this is saved to the original source
-            direction ^= 1;
-
-            SaveToDestination(dest, direction, word_size, mod, reg, rm);
-        }
-        #endregion
-
         #region MOV instructions
-        private void ExecuteMOV_General()
-        {
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
-            int direction = GetDirection();
-            int word_size = GetWordSize();
-
-            int source = GetSourceData(direction, word_size, mod, reg, rm);
-            SaveToDestination(source, direction, word_size, mod, reg, rm);
-        }
-        private void ExecuteMOV_SReg()
-        {
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
-
-            int direction = GetDirection();
-            int word_size = GetWordSize();
-
-            int source = GetSourceData(direction, word_size, mod, reg, rm, true);
-            SaveToDestination(source, direction, word_size, mod, reg, rm, true);
-        }
-        private void ExecuteMOV_Mem()
-        {
-            // MOV MEM <-> IMM (8 and 16)
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
-            switch(_currentOP)
-            {
-                case 0xa0:
-                    {
-                        Registers.AL = Bus.GetData8(new DataRegister16(hi, lo));
-                        break;
-                    }
-                case 0xa1:
-                    {
-                        Registers.AX = Bus.GetData16(new DataRegister16(hi, lo));
-                        break;
-                    }
-                case 0xa2:
-                    {
-                        Bus.SaveData8(new DataRegister16(hi, lo), Registers.AL);
-                        break;
-                    }
-                case 0xa3:
-                    {
-                        Bus.SaveData16(new DataRegister16(hi, lo), Registers.AX);
-                        break;
-                    }
-            }
-        }
-        private void ExecuteMOV_Imm8()
-        {
-            // Covers op codes B0-B7
-            // MOV <reg>, IMM-8
-            byte mem = Bus.NextIP();
-            switch(_currentOP)
-            {
-                case 0xb0:
-                    {
-                        Registers.AL = mem;
-                        break;
-                    }
-                case 0xb1:
-                    {
-                        Registers.CL = mem;
-                        break;
-                    }
-                case 0xb2:
-                    {
-                        Registers.DL = mem;
-                        break;
-                    }
-                case 0xb3:
-                    {
-                        Registers.BL = mem;
-                        break;
-                    }
-                case 0xb4:
-                    {
-                        Registers.AH = mem;
-                        break;
-                    }
-                case 0xb5:
-                    {
-                        Registers.CH = mem;
-                        break;
-                    }
-                case 0xb6:
-                    {
-                        Registers.DH = mem;
-                        break;
-                    }
-                case 0xb7:
-                    {
-                        Registers.BH = mem;
-                        break;
-                    }
-                default:
-                    {
-                        throw new InvalidOperationException(string.Format("You should not be here! op={0:X2}", _currentOP));
-                    }
-            }
-        }
-        private void ExecuteMOV_Imm16()
-        {
-            // Covers op codes B8-BF
-            // MOV <reg>, IMM-16
-
-            switch (_currentOP)
-            {
-                case 0xb8:
-                    {
-                        Registers.AX = GetImmediate16();
-                        break;
-                    }
-                case 0xb9:
-                    {
-                        Registers.CX = GetImmediate16();
-                        break;
-                    }
-                case 0xba:
-                    {
-                        Registers.DX = GetImmediate16();
-                        break;
-                    }
-                case 0xbb:
-                    {
-                        Registers.BX = GetImmediate16();
-                        break;
-                    }
-                case 0xbc:
-                    {
-                        Registers.SP = GetImmediate16();
-                        break;
-                    }
-                case 0xbd:
-                    {
-                        Registers.BP = GetImmediate16();
-                        break;
-                    }
-                case 0xbe:
-                    {
-                        Registers.SI = GetImmediate16();
-                        break;
-                    }
-                case 0xbf:
-                    {
-                        Registers.DI = GetImmediate16();
-                        break;
-                    }
-                default:
-                    {
-                        throw new InvalidOperationException(string.Format("You should not be here! op={0:X2}", _currentOP));
-                    }
-            }
-        }
         private void ExecuteMOV_c6()
         {
             // MOV MEM-8, IMM-8
