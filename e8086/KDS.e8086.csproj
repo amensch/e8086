@@ -57,12 +57,16 @@
     <Compile Include="i8086\IBus.cs" />
     <Compile Include="i8086\IExecutionUnit.cs" />
     <Compile Include="i8086\IInputDevice.cs" />
+    <Compile Include="i8086\Instructions\AAA.cs" />
+    <Compile Include="i8086\Instructions\AAS.cs" />
     <Compile Include="i8086\Instructions\ADD.cs" />
     <Compile Include="i8086\Instructions\ADD_Immediate.cs" />
     <Compile Include="i8086\Instructions\AND.cs" />
     <Compile Include="i8086\Instructions\AND_Immediate.cs" />
     <Compile Include="i8086\Instructions\CBW.cs" />
     <Compile Include="i8086\Instructions\CWD.cs" />
+    <Compile Include="i8086\Instructions\DAA.cs" />
+    <Compile Include="i8086\Instructions\DAS.cs" />
     <Compile Include="i8086\Instructions\DEC.cs" />
     <Compile Include="i8086\Instructions\FlagInstructions.cs" />
     <Compile Include="i8086\Instructions\INC.cs" />

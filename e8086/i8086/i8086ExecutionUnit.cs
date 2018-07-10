@@ -196,10 +196,6 @@ namespace KDS.e8086
 
         private void InitOpCodeTable()
         {
-            // TODO
-            // Logical and Logical Immediate classes are written
-            // need to be inserted into the Dictionary
-
             instructions.Add(0x00, new ADD(0x00, this, Bus));
             instructions.Add(0x01, new ADD(0x01, this, Bus));
             instructions.Add(0x02, new ADD(0x02, this, Bus));
@@ -239,6 +235,7 @@ namespace KDS.e8086
             instructions.Add(0x24, new AND_Immediate(0x24, this, Bus));
             instructions.Add(0x25, new AND_Immediate(0x25, this, Bus));
 
+            instructions.Add(0x27, new DAA(0x27, this, Bus));
             instructions.Add(0x28, new SUB(0x28, this, Bus));
             instructions.Add(0x29, new SUB(0x29, this, Bus));
             instructions.Add(0x2a, new SUB(0x2a, this, Bus));
@@ -246,6 +243,7 @@ namespace KDS.e8086
             instructions.Add(0x2c, new SUB_Immediate(0x2c, this, Bus));
             instructions.Add(0x2d, new SUB_Immediate(0x2d, this, Bus));
 
+            instructions.Add(0x2f, new DAS(0x2f, this, Bus));
             instructions.Add(0x30, new XOR(0x30, this, Bus));
             instructions.Add(0x31, new XOR(0x31, this, Bus));
             instructions.Add(0x32, new XOR(0x32, this, Bus));
@@ -253,6 +251,7 @@ namespace KDS.e8086
             instructions.Add(0x34, new XOR_Immediate(0x34, this, Bus));
             instructions.Add(0x35, new XOR_Immediate(0x35, this, Bus));
 
+            instructions.Add(0x37, new AAA(0x37, this, Bus));
             instructions.Add(0x38, new SUB(0x38, this, Bus));
             instructions.Add(0x39, new SUB(0x39, this, Bus));
             instructions.Add(0x3a, new SUB(0x3a, this, Bus));
@@ -260,6 +259,7 @@ namespace KDS.e8086
             instructions.Add(0x3c, new SUB_Immediate(0x3c, this, Bus));
             instructions.Add(0x3d, new SUB_Immediate(0x3d, this, Bus));
 
+            instructions.Add(0x3f, new AAS(0x3f, this, Bus));
             instructions.Add(0x40, new INC(0x40, this, Bus));
             instructions.Add(0x41, new INC(0x41, this, Bus));
             instructions.Add(0x42, new INC(0x42, this, Bus));
@@ -268,7 +268,6 @@ namespace KDS.e8086
             instructions.Add(0x45, new INC(0x45, this, Bus));
             instructions.Add(0x46, new INC(0x46, this, Bus));
             instructions.Add(0x47, new INC(0x47, this, Bus));
-
             instructions.Add(0x48, new DEC(0x48, this, Bus));
             instructions.Add(0x49, new DEC(0x49, this, Bus));
             instructions.Add(0x4a, new DEC(0x4a, this, Bus));
@@ -277,7 +276,6 @@ namespace KDS.e8086
             instructions.Add(0x4d, new DEC(0x4d, this, Bus));
             instructions.Add(0x4e, new DEC(0x4e, this, Bus));
             instructions.Add(0x4f, new DEC(0x4f, this, Bus));
-
             instructions.Add(0x50, new PUSH(0x50, this, Bus));
             instructions.Add(0x51, new PUSH(0x51, this, Bus));
             instructions.Add(0x52, new PUSH(0x52, this, Bus));
@@ -286,7 +284,6 @@ namespace KDS.e8086
             instructions.Add(0x55, new PUSH(0x55, this, Bus));
             instructions.Add(0x56, new PUSH(0x56, this, Bus));
             instructions.Add(0x57, new PUSH(0x57, this, Bus));
-
             instructions.Add(0x58, new POP(0x58, this, Bus));
             instructions.Add(0x59, new POP(0x59, this, Bus));
             instructions.Add(0x5a, new POP(0x5a, this, Bus));
@@ -305,7 +302,6 @@ namespace KDS.e8086
             instructions.Add(0x85, new TEST(0x85, this, Bus));
             instructions.Add(0x86, new XCHG(0x86, this, Bus));
             instructions.Add(0x87, new XCHG(0x87, this, Bus));
-
             instructions.Add(0x88, new MOV(0x88, this, Bus));
             instructions.Add(0x89, new MOV(0x89, this, Bus));
             instructions.Add(0x8a, new MOV(0x8a, this, Bus));
@@ -404,7 +400,7 @@ namespace KDS.e8086
             //_opTable[0x24] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x25] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x26]  segment override is processed in the NextInstruction() method
-            _opTable[0x27] = new OpCodeRecord(Execute_DecimalAdjustADD);
+            //_opTable[0x27] = new OpCodeRecord(Execute_DecimalAdjustADD);
             //_opTable[0x28] = new OpCodeRecord(ExecuteSUB_General);
             //_opTable[0x29] = new OpCodeRecord(ExecuteSUB_General);
             //_opTable[0x2a] = new OpCodeRecord(ExecuteSUB_General);
@@ -412,7 +408,7 @@ namespace KDS.e8086
             //_opTable[0x2c] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x2d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x2e]  segment override is processed in the NextInstruction() method
-            _opTable[0x2f] = new OpCodeRecord(Execute_DecimalAdjustSUB);
+            //_opTable[0x2f] = new OpCodeRecord(Execute_DecimalAdjustSUB);
             //_opTable[0x30] = new OpCodeRecord(ExecuteLogical_General);  // XOR
             //_opTable[0x31] = new OpCodeRecord(ExecuteLogical_General);
             //_opTable[0x32] = new OpCodeRecord(ExecuteLogical_General);
@@ -420,7 +416,7 @@ namespace KDS.e8086
             //_opTable[0x34] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x35] = new OpCodeRecord(ExecuteLogical_Immediate);
             //_opTable[0x36]  segment override is processed in the NextInstruction() method
-            _opTable[0x37] = new OpCodeRecord(Execute_AsciiAdjustADD);
+            //_opTable[0x37] = new OpCodeRecord(Execute_AsciiAdjustADD);
             //_opTable[0x38] = new OpCodeRecord(ExecuteSUB_General);       // CMP 
             //_opTable[0x39] = new OpCodeRecord(ExecuteSUB_General);
             //_opTable[0x3a] = new OpCodeRecord(ExecuteSUB_General);
@@ -428,7 +424,7 @@ namespace KDS.e8086
             //_opTable[0x3c] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3d] = new OpCodeRecord(ExecuteSUB_Immediate);
             //_opTable[0x3e]  segment override is processed in the NextInstruction() method
-            _opTable[0x3f] = new OpCodeRecord(Execute_AsciiAdjustSUB);
+            //_opTable[0x3f] = new OpCodeRecord(Execute_AsciiAdjustSUB);
             //_opTable[0x40] = new OpCodeRecord(ExecuteINC);
             //_opTable[0x41] = new OpCodeRecord(ExecuteINC);
             //_opTable[0x42] = new OpCodeRecord(ExecuteINC);
@@ -1792,106 +1788,7 @@ namespace KDS.e8086
         #endregion
 
         #region BCD adjustment instructions
-        private void Execute_DecimalAdjustADD()
-        {
-            byte old_al = Registers.AL;
-            bool old_cf = _creg.CarryFlag;
 
-            if( ( Registers.AL & 0x0f ) > 9 || _creg.AuxCarryFlag )
-            {
-                _creg.CalcCarryFlag(0, Registers.AL+6);
-                _creg.CarryFlag = old_cf | _creg.CarryFlag;
-                _creg.AuxCarryFlag = true;
-
-                Registers.AL += 6;
-            }
-            else
-            {
-                _creg.AuxCarryFlag = false;
-            }
-
-            if ((old_al > 0x99) | old_cf)
-            {
-                Registers.AL += 0x60;
-                _creg.CarryFlag = true;
-            }
-            else
-            {
-                _creg.CarryFlag = false;
-            }
-
-            _creg.CalcSignFlag(0, Registers.AL);
-            _creg.CalcZeroFlag(0, Registers.AL);
-            _creg.CalcParityFlag(Registers.AL);
-        }
-        private void Execute_DecimalAdjustSUB()
-        {
-            byte old_al = Registers.AL;
-            bool old_cf = _creg.CarryFlag;
-
-            if ((Registers.AL & 0x0f) > 9 || _creg.AuxCarryFlag)
-            {
-                _creg.CalcCarryFlag(0, Registers.AL - 6);
-                _creg.CarryFlag = old_cf | _creg.CarryFlag;
-                _creg.AuxCarryFlag = true;
-
-                Registers.AL -= 6;
-            }
-            else
-            {
-                _creg.AuxCarryFlag = false;
-            }
-
-            if ((old_al > 0x99) | old_cf)
-            {
-                Registers.AL -= 0x60;
-                _creg.CarryFlag = true;
-            }
-            else
-            {
-                _creg.CarryFlag = false;
-            }
-
-            _creg.CalcSignFlag(0, Registers.AL);
-            _creg.CalcZeroFlag(0, Registers.AL);
-            _creg.CalcParityFlag(Registers.AL);
-        }
-        private void Execute_AsciiAdjustADD()
-        {
-            if ((Registers.AL > 9) | _creg.AuxCarryFlag)
-            {
-                Registers.AL += 6;
-                Registers.AH += 1;
-                _creg.AuxCarryFlag = true;
-                _creg.CarryFlag = true;
-            }
-            else
-            {
-                _creg.AuxCarryFlag = false;
-                _creg.CarryFlag = false;
-            }
-
-            // clear high nibble of AL
-            Registers.AL = (byte)(Registers.AL & 0x0f);
-        }
-        private void Execute_AsciiAdjustSUB()
-        {
-            if ((Registers.AL > 9) | _creg.AuxCarryFlag)
-            {
-                Registers.AL -= 6;
-                Registers.AH -= 1;
-                _creg.AuxCarryFlag = true;
-                _creg.CarryFlag = true;
-            }
-            else
-            {
-                _creg.AuxCarryFlag = false;
-                _creg.CarryFlag = false;
-            }
-
-            // clear high nibble of AL
-            Registers.AL = (byte)(Registers.AL & 0x0f);
-        }
         private void Execute_AsciiAdjustMUL()
         {
             Registers.AH = (byte)(Registers.AL / 10);
