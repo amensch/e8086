@@ -234,7 +234,7 @@ namespace KDS.e8086
             instructions.Add(0x23, new AND(0x23, this, Bus));
             instructions.Add(0x24, new AND_Immediate(0x24, this, Bus));
             instructions.Add(0x25, new AND_Immediate(0x25, this, Bus));
-
+            // 0x26: segment override instruction
             instructions.Add(0x27, new DAA(0x27, this, Bus));
             instructions.Add(0x28, new SUB(0x28, this, Bus));
             instructions.Add(0x29, new SUB(0x29, this, Bus));
@@ -242,7 +242,7 @@ namespace KDS.e8086
             instructions.Add(0x2b, new SUB(0x2b, this, Bus));
             instructions.Add(0x2c, new SUB_Immediate(0x2c, this, Bus));
             instructions.Add(0x2d, new SUB_Immediate(0x2d, this, Bus));
-
+            // 0x2e: segment override instruction
             instructions.Add(0x2f, new DAS(0x2f, this, Bus));
             instructions.Add(0x30, new XOR(0x30, this, Bus));
             instructions.Add(0x31, new XOR(0x31, this, Bus));
@@ -250,7 +250,7 @@ namespace KDS.e8086
             instructions.Add(0x33, new XOR(0x33, this, Bus));
             instructions.Add(0x34, new XOR_Immediate(0x34, this, Bus));
             instructions.Add(0x35, new XOR_Immediate(0x35, this, Bus));
-
+            // 0x36: segment override instruction
             instructions.Add(0x37, new AAA(0x37, this, Bus));
             instructions.Add(0x38, new SUB(0x38, this, Bus));
             instructions.Add(0x39, new SUB(0x39, this, Bus));
@@ -258,7 +258,7 @@ namespace KDS.e8086
             instructions.Add(0x3b, new SUB(0x3b, this, Bus));
             instructions.Add(0x3c, new SUB_Immediate(0x3c, this, Bus));
             instructions.Add(0x3d, new SUB_Immediate(0x3d, this, Bus));
-
+            // 0x3e, segment override instruction
             instructions.Add(0x3f, new AAS(0x3f, this, Bus));
             instructions.Add(0x40, new INC(0x40, this, Bus));
             instructions.Add(0x41, new INC(0x41, this, Bus));
@@ -294,9 +294,33 @@ namespace KDS.e8086
             instructions.Add(0x5f, new POP(0x5f, this, Bus));
             instructions.Add(0x60, new PUSHA(0x60, this, Bus));
             instructions.Add(0x61, new POPA(0x61, this, Bus));
-
+            instructions.Add(0x62, new NOOP_TwoByte(0x62, this, Bus));  // TODO (Bound Instruction)
+            instructions.Add(0x63, new InvalidInstruction(0x63, this, Bus));
+            instructions.Add(0x64, new InvalidInstruction(0x64, this, Bus));
+            instructions.Add(0x65, new InvalidInstruction(0x65, this, Bus));
+            instructions.Add(0x66, new InvalidInstruction(0x66, this, Bus));
+            instructions.Add(0x67, new InvalidInstruction(0x67, this, Bus));
             instructions.Add(0x68, new PUSH_ImmediateWord(0x68, this, Bus));
+            instructions.Add(0x69, new IMUL_ImmediateWord(0x69, this, Bus));
             instructions.Add(0x6a, new PUSH_ImmediateByte(0x6a, this, Bus));
+            instructions.Add(0x6b, new IMUL_ImmediateByte(0x6b, this, Bus));
+
+            instructions.Add(0x70, new JO(0x70, this, Bus));
+            instructions.Add(0x71, new JNO(0x71, this, Bus));
+            instructions.Add(0x72, new JC(0x72, this, Bus));
+            instructions.Add(0x73, new JNC(0x73, this, Bus));
+            instructions.Add(0x74, new JZ(0x74, this, Bus));
+            instructions.Add(0x75, new JNZ(0x75, this, Bus));
+            instructions.Add(0x76, new JNA(0x76, this, Bus));
+            instructions.Add(0x77, new JA(0x77, this, Bus));
+            instructions.Add(0x78, new JS(0x78, this, Bus));
+            instructions.Add(0x79, new JNS(0x79, this, Bus));
+            instructions.Add(0x7a, new JP(0x7a, this, Bus));
+            instructions.Add(0x7b, new JNP(0x7b, this, Bus));
+            instructions.Add(0x7c, new JL(0x7c, this, Bus));
+            instructions.Add(0x7d, new JNL(0x7d, this, Bus));
+            instructions.Add(0x7e, new JNG(0x7e, this, Bus));
+            instructions.Add(0x7f, new JG(0x7f, this, Bus));
 
             instructions.Add(0x84, new TEST(0x84, this, Bus));
             instructions.Add(0x85, new TEST(0x85, this, Bus));
@@ -307,7 +331,7 @@ namespace KDS.e8086
             instructions.Add(0x8a, new MOV(0x8a, this, Bus));
             instructions.Add(0x8b, new MOV(0x8b, this, Bus));
             instructions.Add(0x8c, new MOV_SReg(0x8c, this, Bus));
-
+            instructions.Add(0x8d, new LEA(0x8d, this, Bus));
             instructions.Add(0x8e, new MOV_SReg(0x8e, this, Bus));
             instructions.Add(0x8f, new POP_regmem(0x8f, this, Bus));
             instructions.Add(0x90, new XCHG_AX(0x90, this, Bus));
@@ -320,10 +344,12 @@ namespace KDS.e8086
             instructions.Add(0x97, new XCHG_AX(0x97, this, Bus));
             instructions.Add(0x98, new CBW(0x98, this, Bus));
             instructions.Add(0x99, new CWD(0x99, this, Bus));
-
+            instructions.Add(0x9a, new CALL_Far(0x9a, this, Bus));
+            instructions.Add(0x9b, new NOOP(0x9b, this, Bus));  // TODO: WAIT instruction
             instructions.Add(0x9c, new PUSHF(0x9c, this, Bus));
             instructions.Add(0x9d, new POPF(0x9d, this, Bus));
-
+            instructions.Add(0x9e, new SAHF(0x9e, this, Bus));
+            instructions.Add(0x9f, new LAHF(0x9f, this, Bus));
             instructions.Add(0xa0, new MOV_MemImmediate(0xa0, this, Bus));
             instructions.Add(0xa1, new MOV_MemImmediate(0xa1, this, Bus));
             instructions.Add(0xa2, new MOV_MemImmediate(0xa2, this, Bus));
@@ -349,7 +375,24 @@ namespace KDS.e8086
             instructions.Add(0xbe, new MOV_ImmediateWord(0xbe, this, Bus));
             instructions.Add(0xbf, new MOV_ImmediateWord(0xbf, this, Bus));
 
+            instructions.Add(0xd6, new SALC(0xd6, this, Bus));
             instructions.Add(0xd7, new XLAT(0xd7, this, Bus));
+            // D8-DF ESC OPCODE,SOURCE -- math coprocessor instructions
+            instructions.Add(0xd8, new NOOP_TwoByte(0xd8, this, Bus));
+            instructions.Add(0xd9, new NOOP_TwoByte(0xd9, this, Bus));
+            instructions.Add(0xda, new NOOP_TwoByte(0xda, this, Bus));
+            instructions.Add(0xdb, new NOOP_TwoByte(0xdb, this, Bus));
+            instructions.Add(0xdc, new NOOP_TwoByte(0xdc, this, Bus));
+            instructions.Add(0xdd, new NOOP_TwoByte(0xdd, this, Bus));
+            instructions.Add(0xde, new NOOP_TwoByte(0xde, this, Bus));
+            instructions.Add(0xdf, new NOOP_TwoByte(0xdf, this, Bus));
+
+            instructions.Add(0xe3, new JCXZ(0xe3, this, Bus));
+
+            instructions.Add(0xe8, new CALL_Near(0xe8, this, Bus));
+            instructions.Add(0xe9, new JMP_Near(0xe9, this, Bus));
+            instructions.Add(0xea, new JMP_Far(0xea, this, Bus));
+            instructions.Add(0xeb, new JMP(0xeb, this, Bus));
 
             instructions.Add(0xf5, new FlagInstructions(0xf5, this, Bus));
 
@@ -459,79 +502,79 @@ namespace KDS.e8086
             //_opTable[0x5f] = new OpCodeRecord(Execute_POP);
             //_opTable[0x60] = new OpCodeRecord(Execute_PUSHA);
             //_opTable[0x61] = new OpCodeRecord(Execute_POPA);
-            _opTable[0x62] = new OpCodeRecord(Execute_Bound);
-            _opTable[0x63] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x63 is not implemented"); });
-            _opTable[0x64] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x64 is not implemented"); });
-            _opTable[0x65] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x65 is not implemented"); });
-            _opTable[0x66] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x66 is not implemented"); });
-            _opTable[0x67] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x67 is not implemented"); });
+            //_opTable[0x62] = new OpCodeRecord(Execute_Bound);
+            //_opTable[0x63] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x63 is not implemented"); });
+            //_opTable[0x64] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x64 is not implemented"); });
+            //_opTable[0x65] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x65 is not implemented"); });
+            //_opTable[0x66] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x66 is not implemented"); });
+            //_opTable[0x67] = new OpCodeRecord(() => { throw new InvalidOperationException("Instruction 0x67 is not implemented"); });
             //_opTable[0x68] = new OpCodeRecord(() =>  // PUSH imm-16
             //{
             //    Push(GetImmediate16());
             //});
-            _opTable[0x69] = new OpCodeRecord(() => // IMUL REG-16, RM-16, Imm
-            {
-                byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
+            //_opTable[0x69] = new OpCodeRecord(() => // IMUL REG-16, RM-16, Imm
+            //{
+            //    byte mod = 0, reg = 0, rm = 0;
+            //    SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
-                int word_size = GetWordSize();
-                int direction = GetDirection();
+            //    int word_size = GetWordSize();
+            //    int direction = GetDirection();
 
-                ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
-                ushort oper2 = GetImmediate16();
+            //    ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
+            //    ushort oper2 = GetImmediate16();
 
-                uint oper1ext = SignExtend32(oper1);
-                uint oper2ext = SignExtend32(oper2);
+            //    uint oper1ext = SignExtend32(oper1);
+            //    uint oper2ext = SignExtend32(oper2);
 
-                uint result = oper1ext * oper2ext;
+            //    uint result = oper1ext * oper2ext;
 
-                SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
+            //    SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
 
-                if( (result & 0xffff0000) != 0 )
-                {
-                    _creg.CarryFlag = true;
-                    _creg.OverflowFlag = true;
-                }
-                else
-                {
-                    _creg.CarryFlag = false;
-                    _creg.OverflowFlag = false;
-                }
+            //    if( (result & 0xffff0000) != 0 )
+            //    {
+            //        _creg.CarryFlag = true;
+            //        _creg.OverflowFlag = true;
+            //    }
+            //    else
+            //    {
+            //        _creg.CarryFlag = false;
+            //        _creg.OverflowFlag = false;
+            //    }
 
-            });
+            //});
             //_opTable[0x6a] = new OpCodeRecord(() =>  // PUSH imm-8
             //{
             //    Push(Bus.NextIP());
             //});
-            _opTable[0x6b] = new OpCodeRecord(() => 
-            {
-                byte mod = 0, reg = 0, rm = 0;
-                SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
+            //_opTable[0x6b] = new OpCodeRecord(() => 
+            //{
+            //    byte mod = 0, reg = 0, rm = 0;
+            //    SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
 
-                int word_size = GetWordSize();
-                int direction = GetDirection();
+            //    int word_size = GetWordSize();
+            //    int direction = GetDirection();
 
-                ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
-                ushort oper2 = Bus.NextIP();
+            //    ushort oper1 = (ushort)GetSourceData(direction, word_size, mod, reg, rm);
+            //    ushort oper2 = Bus.NextIP();
 
-                uint oper1ext = SignExtend32(oper1);
-                uint oper2ext = SignExtend32(oper2);
+            //    uint oper1ext = SignExtend32(oper1);
+            //    uint oper2ext = SignExtend32(oper2);
 
-                uint result = oper1ext * oper2ext;
+            //    uint result = oper1ext * oper2ext;
 
-                SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
+            //    SaveToDestination((ushort)(result & 0xffff), direction, word_size, mod, reg, rm);
 
-                if ((result & 0xffff0000) != 0)
-                {
-                    _creg.CarryFlag = true;
-                    _creg.OverflowFlag = true;
-                }
-                else
-                {
-                    _creg.CarryFlag = false;
-                    _creg.OverflowFlag = false;
-                }
-            });
+            //    if ((result & 0xffff0000) != 0)
+            //    {
+            //        _creg.CarryFlag = true;
+            //        _creg.OverflowFlag = true;
+            //    }
+            //    else
+            //    {
+            //        _creg.CarryFlag = false;
+            //        _creg.OverflowFlag = false;
+            //    }
+            //});
 
             _opTable[0x6c] = new OpCodeRecord(() => // INSB
             {
@@ -625,22 +668,22 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x70] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x71] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x72] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x73] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x74] = new OpCodeRecord(Execute_CondJump);  
-            _opTable[0x75] = new OpCodeRecord(Execute_CondJump);  
-            _opTable[0x76] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x77] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x78] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x79] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7a] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7b] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7c] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7d] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7e] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x7f] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x70] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x71] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x72] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x73] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x74] = new OpCodeRecord(Execute_CondJump);  
+            //_opTable[0x75] = new OpCodeRecord(Execute_CondJump);  
+            //_opTable[0x76] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x77] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x78] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x79] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7a] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7b] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7c] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7d] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7e] = new OpCodeRecord(Execute_CondJump);
+            //_opTable[0x7f] = new OpCodeRecord(Execute_CondJump);
             _opTable[0x80] = new OpCodeRecord(Execute_Group1);
             _opTable[0x81] = new OpCodeRecord(Execute_Group1);
             _opTable[0x82] = new OpCodeRecord(Execute_Group1);
@@ -654,7 +697,7 @@ namespace KDS.e8086
             //_opTable[0x8a] = new OpCodeRecord(ExecuteMOV_General);
             //_opTable[0x8b] = new OpCodeRecord(ExecuteMOV_General);
             //_opTable[0x8c] = new OpCodeRecord(ExecuteMOV_SReg);
-            _opTable[0x8d] = new OpCodeRecord(Execute_LEA);
+            //_opTable[0x8d] = new OpCodeRecord(Execute_LEA);
             //_opTable[0x8e] = new OpCodeRecord(ExecuteMOV_SReg);  // MOV CS - this should never be used in practice
             //_opTable[0x8f] = new OpCodeRecord(Execute_POP);
             //_opTable[0x90] = new OpCodeRecord(ExecuteXCHG_AX);
@@ -667,14 +710,14 @@ namespace KDS.e8086
             //_opTable[0x97] = new OpCodeRecord(ExecuteXCHG_AX);
             //_opTable[0x98] = new OpCodeRecord(Execute_CBW);
             //_opTable[0x99] = new OpCodeRecord(Execute_CWD);
-            _opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
-            _opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
+            //_opTable[0x9a] = new OpCodeRecord(Execute_CallFar);
+            //_opTable[0x9b] = new OpCodeRecord(() => { }); // WAIT (for now NOP)
             //_opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             //_opTable[0x9d] = new OpCodeRecord(Execute_POP);
             // SAHF - Store SH to flags
-            _opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), Registers.AH); });
+            //_opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), Registers.AH); });
             // LAHF - Load AH from flags
-            _opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(_creg.Register & 0x00ff); });
+            //_opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(_creg.Register & 0x00ff); });
             //_opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             //_opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             //_opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -756,32 +799,32 @@ namespace KDS.e8086
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // undocumented SALC instruction
-            _opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
+            //_opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
             //_opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
 
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
             // these are unsupported but they use the address byte so this should read
-            _opTable[0xd8] = new OpCodeRecord(() => { Bus.NextIP(); } );
-            _opTable[0xd9] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xda] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xdb] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xdc] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xdd] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xde] = new OpCodeRecord(() => { Bus.NextIP(); });
-            _opTable[0xdf] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xd8] = new OpCodeRecord(() => { Bus.NextIP(); } );
+            //_opTable[0xd9] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xda] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xdb] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xdc] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xdd] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xde] = new OpCodeRecord(() => { Bus.NextIP(); });
+            //_opTable[0xdf] = new OpCodeRecord(() => { Bus.NextIP(); });
 
             _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
             _opTable[0xe2] = new OpCodeRecord(Execute_Loop);
-            _opTable[0xe3] = new OpCodeRecord(Execute_JumpCXZ);
+            //_opTable[0xe3] = new OpCodeRecord(Execute_JumpCXZ);
             _opTable[0xe4] = new OpCodeRecord(Execute_IN);
             _opTable[0xe5] = new OpCodeRecord(Execute_IN);
             _opTable[0xe6] = new OpCodeRecord(Execute_OUT);
             _opTable[0xe7] = new OpCodeRecord(Execute_OUT);
-            _opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
-            _opTable[0xe9] = new OpCodeRecord(Execute_JumpNear);
-            _opTable[0xea] = new OpCodeRecord(Execute_JumpFar);
-            _opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
+            //_opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
+            //_opTable[0xe9] = new OpCodeRecord(Execute_JumpNear);
+            //_opTable[0xea] = new OpCodeRecord(Execute_JumpFar);
+            //_opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
             _opTable[0xec] = new OpCodeRecord(Execute_IN);
             _opTable[0xed] = new OpCodeRecord(Execute_IN);
             _opTable[0xee] = new OpCodeRecord(Execute_OUT);
@@ -1853,22 +1896,6 @@ namespace KDS.e8086
                 Bus.ES = Bus.GetData16(offset + 2);
             else
                 Bus.DS = Bus.GetData16(offset + 2);
-        }
-
-        private void Execute_LEA()
-        {
-            // (0x8d) LEA MODREGR/M REG-16, MEM-16, (DISP-LO), (DISP-HI)
-            // no flags
-            // loads the offset of the source (rather than its value) and stores it in the destination
-
-            byte mod = 0, reg = 0, rm = 0;
-            SplitAddrByte(Bus.NextIP(), ref mod, ref reg, ref rm);
-            int direction = GetDirection();
-            int word_size = GetWordSize();
-
-            int offset = GetSourceData(direction, word_size, mod, reg, rm);
-            int source = Bus.GetData(word_size, offset);
-            SaveToDestination(source, direction, word_size, mod, reg, rm);
         }
 
         #endregion
