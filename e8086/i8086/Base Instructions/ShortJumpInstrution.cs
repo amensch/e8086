@@ -21,7 +21,8 @@ namespace KDS.e8086
         {
             if (JumpDecision())
             {
-                Bus.IP += SignExtend(Bus.NextIP());
+                ushort oper = SignExtend(Bus.NextIP());
+                Bus.IP += oper;
             }
             else
             {

@@ -101,36 +101,36 @@ namespace KDS.e8086UnitTests
             Assert.AreEqual(false, cpu.EU.CondReg.OverflowFlag, "POST 6: overflow flag failed");
         }
 
-        //[TestMethod]
-        //public void Test_POST_2()
-        //{
-        //    // writes into each register
+        [TestMethod]
+        public void Test_POST_2()
+        {
+            // writes into each register
 
-        //    i8086CPU cpu = GetCPU(new byte[] {
-        //                                0xb8, 0xff, 0xff,   // mov ax,0xffff
-        //                                0xf9,               // stc
-        //           /* C8 */             0x8e, 0xd8,         // mov ds, ax
-        //                                0x8c, 0xdb,         // mov bx, ds
-        //                                0x8e, 0xc3,         // mov es, bx
-        //                                0x8c, 0xc1,
-        //                                0x8e, 0xd1,
-        //                                0x8c, 0xd2,
-        //                                0x8b, 0xe2,
-        //                                0x8b, 0xec,
-        //                                0x8b, 0xf5,
-        //                                0x8b, 0xfe,
-        //                                0x73, 0x07,         // jnc c9
-        //                                0x33, 0xc7,
-        //                                0x75, 0x07,         // jnz err
-        //                                0xf8,               // clc
-        //                                0xeb, 0xe3,         // jmp c8
-        //          /* C9 */              0x0b, 0xc7,
-        //                                0xf4 //hlt
-        //    });
+            i8086CPU cpu = GetCPU(new byte[] {
+                                        0xb8, 0xff, 0xff,   // mov ax,0xffff
+                                        0xf9,               // stc
+                   /* C8 */             0x8e, 0xd8,         // mov ds, ax
+                                        0x8c, 0xdb,         // mov bx, ds
+                                        0x8e, 0xc3,         // mov es, bx
+                                        0x8c, 0xc1,         // mov cx, es
+                                        0x8e, 0xd1,         // mov ss, cx
+                                        0x8c, 0xd2,         // mov dx, ss
+                                        0x8b, 0xe2,         // mov sp, dx
+                                        0x8b, 0xec,         // mov bp, sp
+                                        0x8b, 0xf5,         // mov si, bp
+                                        0x8b, 0xfe,         // mov di, si
+                                        0x73, 0x07,         // jnc c9
+                                        0x33, 0xc7,         // xor ax, di
+                                        0x75, 0x07,         // jnz err
+                                        0xf8,               // clc
+                                        0xeb, 0xe3,         // jmp c8
+                  /* C9 */              0x0b, 0xc7,         // or
+                                        0xf4 //hlt
+            });
 
-        //    cpu.Run();
-        //    Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "POST 2: zero flag failed");
+            cpu.Run();
+            Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "POST 2: zero flag failed");
 
-        //}
+        }
     }
 }

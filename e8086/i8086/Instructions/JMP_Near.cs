@@ -12,7 +12,8 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            Bus.IP += GetImmediate16();
+            ushort oper = GetImmediate16();
+            Bus.IP += oper;
         }
     }
 }
