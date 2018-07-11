@@ -13,9 +13,11 @@ namespace KDS.e8086
     /// </summary>
     public class ADD : TwoByteInstruction
     {
+        protected bool AddWithCarry;
+
         public ADD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
-
+            AddWithCarry = false;
         }
 
         protected override void ExecuteInstruction()
@@ -31,10 +33,9 @@ namespace KDS.e8086
             int offset;
             int dest = 0;
             int carry = 0;
-            bool with_carry = (OpCode & 0x10) == 0x10;
 
             // Include carry flag if necessary
-            if (with_carry && EU.CondReg.CarryFlag)
+            if (AddWithCarry && EU.CondReg.CarryFlag)
             {
                 carry = 1;
             }

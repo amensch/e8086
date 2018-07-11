@@ -212,12 +212,12 @@ namespace KDS.e8086
             instructions.Add(0x0d, new OR_Immediate(0x0d, this, Bus));
             instructions.Add(0x0e, new PUSH(0x0e, this, Bus));
             instructions.Add(0x0f, new NOOP(0x0f, this, Bus)); // POP CS is not a valid instruction
-            instructions.Add(0x10, new ADD(0x10, this, Bus));
-            instructions.Add(0x11, new ADD(0x11, this, Bus));
-            instructions.Add(0x12, new ADD(0x12, this, Bus));
-            instructions.Add(0x13, new ADD(0x13, this, Bus));
-            instructions.Add(0x14, new ADD_Immediate(0x14, this, Bus));
-            instructions.Add(0x15, new ADD_Immediate(0x15, this, Bus));
+            instructions.Add(0x10, new ADC(0x10, this, Bus));
+            instructions.Add(0x11, new ADC(0x11, this, Bus));
+            instructions.Add(0x12, new ADC(0x12, this, Bus));
+            instructions.Add(0x13, new ADC(0x13, this, Bus));
+            instructions.Add(0x14, new ADC_Immediate(0x14, this, Bus));
+            instructions.Add(0x15, new ADC_Immediate(0x15, this, Bus));
             instructions.Add(0x16, new PUSH(0x16, this, Bus));
             instructions.Add(0x17, new POP(0x17, this, Bus));
             instructions.Add(0x18, new SUB(0x18, this, Bus));

@@ -60,6 +60,8 @@
     <Compile Include="i8086\IInputDevice.cs" />
     <Compile Include="i8086\Instructions\AAA.cs" />
     <Compile Include="i8086\Instructions\AAS.cs" />
+    <Compile Include="i8086\Instructions\ADC.cs" />
+    <Compile Include="i8086\Instructions\ADC_Immediate.cs" />
     <Compile Include="i8086\Instructions\ADD.cs" />
     <Compile Include="i8086\Instructions\ADD_Immediate.cs" />
     <Compile Include="i8086\Instructions\AND.cs" />
