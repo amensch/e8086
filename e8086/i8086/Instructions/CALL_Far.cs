@@ -12,8 +12,8 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            ushort nextIP = GetImmediate16();
-            ushort nextCS = GetImmediate16();
+            ushort nextIP = GetImmediateWord();
+            ushort nextCS = GetImmediateWord();
             Push(Bus.CS);
             Push(Bus.IP);
             Bus.IP = nextIP;

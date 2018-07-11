@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class IMUL : TwoByteInstruction
+    public abstract class MultiplyInstruction : TwoByteInstruction
     {
-        public IMUL(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
+        public MultiplyInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
         protected abstract ushort GetOperand();
 
@@ -18,8 +18,8 @@ namespace KDS.e8086
             ushort oper1 = (ushort)GetSourceData(direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             ushort oper2 = GetOperand();
 
-            uint oper1ext = SignExtend32(oper1);
-            uint oper2ext = SignExtend32(oper2);
+            uint oper1ext = SignExtendWordToDW(oper1);
+            uint oper2ext = SignExtendWordToDW(oper2);
 
             uint result = oper1ext * oper2ext;
 

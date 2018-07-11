@@ -14,7 +14,7 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            EU.CondReg.Register = new DataRegister16((byte)(EU.CondReg.Register >> 8), EU.Registers.AH);
+            EU.CondReg.Value = new WordRegister((byte)(EU.CondReg.Value >> 8), EU.Registers.AH);
         }
     }
 }

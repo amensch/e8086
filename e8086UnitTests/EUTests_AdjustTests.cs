@@ -7,9 +7,9 @@ namespace e8086UnitTests
     [TestClass]
     public class EUTests_AdjustTests
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -20,7 +20,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_DAA()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0xd8, /* ADD AL,BL */
+            CPU cpu = GetCPU(new byte[] { 0x00, 0xd8, /* ADD AL,BL */
                                       0x27 /* DAA */ });
 
             cpu.EU.Registers.AL = 0x79;
@@ -48,7 +48,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_DAS()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x2f });
+            CPU cpu = GetCPU(new byte[] { 0x2f });
 
             cpu.EU.Registers.AL = 0xff;
 
@@ -66,7 +66,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_AAA()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x37 });
+            CPU cpu = GetCPU(new byte[] { 0x37 });
 
             cpu.EU.Registers.AX = 0x0f;
 
@@ -80,7 +80,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_AAS()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x3f });
+            CPU cpu = GetCPU(new byte[] { 0x3f });
 
             cpu.EU.Registers.AX = 0x2ff;
 
@@ -94,7 +94,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_AAM()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd4 });
+            CPU cpu = GetCPU(new byte[] { 0xd4 });
 
             cpu.EU.Registers.AL = 0x0f;
 
@@ -109,7 +109,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_AAD()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd5 });
+            CPU cpu = GetCPU(new byte[] { 0xd5 });
 
             cpu.EU.Registers.AX = 0x0105;
 
@@ -124,7 +124,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_CBW()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x98 });
+            CPU cpu = GetCPU(new byte[] { 0x98 });
 
             cpu.EU.Registers.AX = 0x00fb;
             cpu.NextInstruction();
@@ -134,7 +134,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_CWD()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x99 });
+            CPU cpu = GetCPU(new byte[] { 0x99 });
 
             cpu.EU.Registers.AX = 0xfffb;
             cpu.NextInstruction();
@@ -145,17 +145,17 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_LoadAndStoreFlags()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x9f, 0x9e });
+            CPU cpu = GetCPU(new byte[] { 0x9f, 0x9e });
 
-            cpu.EU.CondReg.Register = 0x14d7;
+            cpu.EU.CondReg.Value = 0x14d7;
             cpu.NextInstruction();
             Assert.AreEqual(0xd7, cpu.EU.Registers.AH, "LAHF result failed");
-            Assert.AreEqual(0x14d7, cpu.EU.CondReg.Register, "LAHF result failed");
+            Assert.AreEqual(0x14d7, cpu.EU.CondReg.Value, "LAHF result failed");
 
-            cpu.EU.CondReg.Register = 0xf82e;
+            cpu.EU.CondReg.Value = 0xf82e;
             cpu.NextInstruction();
             Assert.AreEqual(0xd7, cpu.EU.Registers.AH, "SAHF result failed");
-            Assert.AreEqual(0xf8d7, cpu.EU.CondReg.Register, "SAHF result failed");
+            Assert.AreEqual(0xf8d7, cpu.EU.CondReg.Value, "SAHF result failed");
         }
     }
 }

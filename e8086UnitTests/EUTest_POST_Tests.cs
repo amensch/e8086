@@ -12,9 +12,9 @@ namespace KDS.e8086UnitTests
     [TestClass]
     public class EUTest_POST_Tests
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x0000;
             cpu.Bus.SS = 0x0000;
@@ -47,7 +47,7 @@ namespace KDS.e8086UnitTests
         [TestMethod]
         public void Test_POST_1()
         {
-            i8086CPU cpu = GetCPU(new byte[] {
+            CPU cpu = GetCPU(new byte[] {
                                         // Test 1
                                         0xb4, 0xd5,  /* MOV AH, 0xD5 */
                                         0x9e,         /* SAHF */
@@ -106,7 +106,7 @@ namespace KDS.e8086UnitTests
         {
             // writes into each register
 
-            i8086CPU cpu = GetCPU(new byte[] {
+            CPU cpu = GetCPU(new byte[] {
                                         0xb8, 0xff, 0xff,   // mov ax,0xffff
                                         0xf9,               // stc
                    /* C8 */             0x8e, 0xd8,         // mov ds, ax

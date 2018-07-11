@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class i8086ConditionalRegister
+    public class ConditionalRegister
     {
 
         public enum Flags : ushort
@@ -22,15 +22,15 @@ namespace KDS.e8086
             OVERFLOW_FLAG = 0x800
         };
         
-        public ushort Register
+        public ushort Value
         {
             get;
             set;
         }
 
-        public i8086ConditionalRegister()
+        public ConditionalRegister()
         {
-            Register = 0x0000;
+            Value = 0x0000;
         }
 
         public bool CarryFlag
@@ -200,15 +200,15 @@ namespace KDS.e8086
 
         private bool GetBit(Flags bit)
         {
-            return ((Register & (ushort)bit) == (ushort)bit);
+            return ((Value & (ushort)bit) == (ushort)bit);
         }
 
         private void SetBit(Flags bit, bool set)
         {
             if (set)
-                Register = (ushort)(Register | (ushort)bit);
+                Value = (ushort)(Value | (ushort)bit);
             else
-                Register = (ushort)(Register & ~(ushort)bit);
+                Value = (ushort)(Value & ~(ushort)bit);
         }
     }
 }

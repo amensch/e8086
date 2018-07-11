@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class i8086ExecutionUnit : IExecutionUnit
+    public class ExecutionUnit : IExecutionUnit
     {
         /*
 
@@ -36,7 +36,7 @@ namespace KDS.e8086
          */
 
         // Statistics
-        private Statistics _stats = new Statistics();
+        public Statistics Stats { get; private set; } = new Statistics();
         public long InstructionCount { get; set; } = 0;
         private long _RMTableLookupCount = 0;
         private ushort _RMTableLastLookup = 0;
@@ -49,13 +49,13 @@ namespace KDS.e8086
         private Dictionary<int, Instruction> instructions = new Dictionary<int, Instruction>();
 
         // General Registers: AX, BX, CX, DX and SP, BP, SI, DI
-        private i8086Registers _reg = new i8086Registers();
+        public Registers Registers { get; private set; } = new Registers();
 
         // Flags
-        private i8086ConditionalRegister _creg = new i8086ConditionalRegister();
+        public ConditionalRegister CondReg { get; private set; } = new ConditionalRegister();
 
         // Bus Interface Unit
-        public IBus Bus { get; set; }
+        public IBus Bus { get; private set; }
 
         // I/O Ports
         private Dictionary<int, IInputDevice> _inputDevices;
@@ -68,7 +68,7 @@ namespace KDS.e8086
         // Property to indicate a halt has been encountered
         public bool Halted { get; set; }
 
-        public i8086ExecutionUnit(IBus bus)
+        public ExecutionUnit(IBus bus)
         {
             Bus = bus;
             Halted = false;
@@ -79,28 +79,11 @@ namespace KDS.e8086
             InitOpCodeTable();
         }
 
-        // Internal components are exposed for debugging and testing purposes
-
-        public i8086Registers Registers
-        {
-            get { return _reg; }
-        }
-
-        public i8086ConditionalRegister CondReg
-        {
-            get { return _creg; }
-        }
-
-        public Statistics Stats
-        {
-            get { return _stats; }
-        }
-
         public void Tick()
         {
 
             // If the trap flag is set, trigger interrupt 1
-            if (_creg.TrapFlag)
+            if (CondReg.TrapFlag)
             {
                 Interrupt(1);
             }
@@ -108,7 +91,7 @@ namespace KDS.e8086
             // If interrupts are enabled and there is an interrupt waiting,
             // trigger the next interrupt.  Only one interrupt is processed per
             // tick if multiple are waiting.
-            if( _creg.InterruptEnable ) // && i8259 has an interrupt waiting
+            if( CondReg.InterruptEnable ) // && i8259 has an interrupt waiting
             {
                 // Interrupt( i8259 next interrupt ) ;
             }
@@ -116,7 +99,7 @@ namespace KDS.e8086
             // Retrieve the next instruction and count stats
             InstructionCount++;
             _currentOP = Bus.NextIP();
-            _stats.AddOpCode(_currentOP);
+            Stats.AddOpCode(_currentOP);
 
             // If segment override then process that right here.
             // Process the next instruction immediately after.  Cannot allow an interrupt here or
@@ -126,28 +109,28 @@ namespace KDS.e8086
                 Bus.SegmentOverride = SegmentOverrideState.UseES;
                 InstructionCount++;
                 _currentOP = Bus.NextIP();
-                _stats.AddOpCode(_currentOP);
+                Stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x2e)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseCS;
                 InstructionCount++;
                 _currentOP = Bus.NextIP();
-                _stats.AddOpCode(_currentOP);
+                Stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x36)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseSS;
                 InstructionCount++;
                 _currentOP = Bus.NextIP();
-                _stats.AddOpCode(_currentOP);
+                Stats.AddOpCode(_currentOP);
             }
             else if (_currentOP == 0x3e)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseDS;
                 InstructionCount++;
                 _currentOP = Bus.NextIP();
-                _stats.AddOpCode(_currentOP);
+                Stats.AddOpCode(_currentOP);
             }
 
             // If this is in the dictionary of op codes call it, otherwise
@@ -532,13 +515,13 @@ namespace KDS.e8086
 
             //    if( (result & 0xffff0000) != 0 )
             //    {
-            //        _creg.CarryFlag = true;
-            //        _creg.OverflowFlag = true;
+            //        CondReg.CarryFlag = true;
+            //        CondReg.OverflowFlag = true;
             //    }
             //    else
             //    {
-            //        _creg.CarryFlag = false;
-            //        _creg.OverflowFlag = false;
+            //        CondReg.CarryFlag = false;
+            //        CondReg.OverflowFlag = false;
             //    }
 
             //});
@@ -566,13 +549,13 @@ namespace KDS.e8086
 
             //    if ((result & 0xffff0000) != 0)
             //    {
-            //        _creg.CarryFlag = true;
-            //        _creg.OverflowFlag = true;
+            //        CondReg.CarryFlag = true;
+            //        CondReg.OverflowFlag = true;
             //    }
             //    else
             //    {
-            //        _creg.CarryFlag = false;
-            //        _creg.OverflowFlag = false;
+            //        CondReg.CarryFlag = false;
+            //        CondReg.OverflowFlag = false;
             //    }
             //});
 
@@ -588,7 +571,7 @@ namespace KDS.e8086
                     {
                         Execute_IN_String();
 
-                        if (_creg.DirectionFlag)
+                        if (CondReg.DirectionFlag)
                             Registers.DI--;
                         else
                             Registers.DI++;
@@ -611,7 +594,7 @@ namespace KDS.e8086
                     {
                         Execute_IN_String();
 
-                            if (_creg.DirectionFlag)
+                            if (CondReg.DirectionFlag)
                                 Registers.DI -= 2;
                             else
                                 Registers.DI += 2;
@@ -634,7 +617,7 @@ namespace KDS.e8086
                     {
                         Execute_OUT_String();
 
-                        if (_creg.DirectionFlag)
+                        if (CondReg.DirectionFlag)
                             Registers.SI -= 1;
                         else
                             Registers.SI += 1;
@@ -657,7 +640,7 @@ namespace KDS.e8086
                     {
                         Execute_OUT_String();
 
-                        if (_creg.DirectionFlag)
+                        if (CondReg.DirectionFlag)
                             Registers.SI -= 2;
                         else
                             Registers.SI += 2;
@@ -715,9 +698,9 @@ namespace KDS.e8086
             //_opTable[0x9c] = new OpCodeRecord(Execute_PUSH);
             //_opTable[0x9d] = new OpCodeRecord(Execute_POP);
             // SAHF - Store SH to flags
-            //_opTable[0x9e] = new OpCodeRecord(() => { _creg.Register = new DataRegister16((byte)(_creg.Register >> 8), Registers.AH); });
+            //_opTable[0x9e] = new OpCodeRecord(() => { CondReg.Register = new DataRegister16((byte)(CondReg.Register >> 8), Registers.AH); });
             // LAHF - Load AH from flags
-            //_opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(_creg.Register & 0x00ff); });
+            //_opTable[0x9f] = new OpCodeRecord( () => { Registers.AH = (byte)(CondReg.Register & 0x00ff); });
             //_opTable[0xa0] = new OpCodeRecord(ExecuteMOV_Mem);
             //_opTable[0xa1] = new OpCodeRecord(ExecuteMOV_Mem);
             //_opTable[0xa2] = new OpCodeRecord(ExecuteMOV_Mem);
@@ -785,12 +768,12 @@ namespace KDS.e8086
             });
             _opTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
             _opTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
-            _opTable[0xce] = new OpCodeRecord(() => { if (_creg.OverflowFlag) Interrupt(4); });
+            _opTable[0xce] = new OpCodeRecord(() => { if (CondReg.OverflowFlag) Interrupt(4); });
             _opTable[0xcf] = new OpCodeRecord(() => // iret
             {
                 Bus.IP = Pop();
                 Bus.CS = Pop();
-                _creg.Register = Pop();
+                CondReg.Value = Pop();
             });
             _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
@@ -799,7 +782,7 @@ namespace KDS.e8086
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // undocumented SALC instruction
-            //_opTable[0xd6] = new OpCodeRecord(() => { if (_creg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
+            //_opTable[0xd6] = new OpCodeRecord(() => { if (CondReg.CarryFlag) Registers.AL = 0xff; else Registers.AL = 0x00; });
             //_opTable[0xd7] = new OpCodeRecord(Execute_XLAT);
 
             // D8-DF ESC OPCODE,SOURCE (to math co-processor)
@@ -848,15 +831,15 @@ namespace KDS.e8086
                 Bus.IP--;
                 Halted = true;
             }); 
-            //_opTable[0xf5] = new OpCodeRecord(() => { _creg.CarryFlag = !_creg.CarryFlag; });  // CMC - complement carry flag
+            //_opTable[0xf5] = new OpCodeRecord(() => { CondReg.CarryFlag = !CondReg.CarryFlag; });  // CMC - complement carry flag
             _opTable[0xf6] = new OpCodeRecord(Execute_Group3);
             _opTable[0xf7] = new OpCodeRecord(Execute_Group3);
-            //_opTable[0xf8] = new OpCodeRecord(() => { _creg.CarryFlag = false; });  // F8 CLC - clear carry flag
-            //_opTable[0xf9] = new OpCodeRecord(() => { _creg.CarryFlag = true; });  // F9 STC - set carry flag
-            //_opTable[0xfa] = new OpCodeRecord(() => { _creg.InterruptEnable = false; });  // FA CLI - clear interrupt flag
-            //_opTable[0xfb] = new OpCodeRecord(() => { _creg.InterruptEnable = true; });  // FB STI - set interrupt flag
-            //_opTable[0xfc] = new OpCodeRecord(() => { _creg.DirectionFlag = false; });  // FC CLD - clear direction flag
-            //_opTable[0xfd] = new OpCodeRecord(() => { _creg.DirectionFlag = true; });  // FD STD - set direction flag
+            //_opTable[0xf8] = new OpCodeRecord(() => { CondReg.CarryFlag = false; });  // F8 CLC - clear carry flag
+            //_opTable[0xf9] = new OpCodeRecord(() => { CondReg.CarryFlag = true; });  // F9 STC - set carry flag
+            //_opTable[0xfa] = new OpCodeRecord(() => { CondReg.InterruptEnable = false; });  // FA CLI - clear interrupt flag
+            //_opTable[0xfb] = new OpCodeRecord(() => { CondReg.InterruptEnable = true; });  // FB STI - set interrupt flag
+            //_opTable[0xfc] = new OpCodeRecord(() => { CondReg.DirectionFlag = false; });  // FC CLD - clear direction flag
+            //_opTable[0xfd] = new OpCodeRecord(() => { CondReg.DirectionFlag = true; });  // FD STD - set direction flag
             _opTable[0xfe] = new OpCodeRecord(Execute_Group4);
             _opTable[0xff] = new OpCodeRecord(Execute_Group5);
         }
@@ -867,8 +850,8 @@ namespace KDS.e8086
             Registers.CX--;
             if( Registers.CX != 0)
             {
-                if ((_currentOP == 0xe0 && !_creg.ZeroFlag) ||  // LOOPNZ
-                    (_currentOP == 0xe1 && _creg.ZeroFlag) ||   // LOOPZ
+                if ((_currentOP == 0xe0 && !CondReg.ZeroFlag) ||  // LOOPNZ
+                    (_currentOP == 0xe1 && CondReg.ZeroFlag) ||   // LOOPZ
                     (_currentOP == 0xe2))                       // LOOP
                 {
                     Bus.IP += tmp;
@@ -943,16 +926,16 @@ namespace KDS.e8086
             if (_inputDevices.TryGetValue(Registers.DX, out device))
             {
                 if (word_size == 0)
-                    Bus.StoreString8(Registers.DI, device.Read());
+                    Bus.SaveByteString(Registers.DI, device.Read());
                 else
-                    Bus.StoreString16(Registers.DI, device.Read16());
+                    Bus.SaveWordString(Registers.DI, device.Read16());
             }
             else
             {
                 if (word_size == 0)
-                    Bus.StoreString8(Registers.DI, 0);
+                    Bus.SaveByteString(Registers.DI, 0);
                 else
-                    Bus.StoreString16(Registers.DI, 0);
+                    Bus.SaveWordString(Registers.DI, 0);
             }
         }   
 
@@ -964,9 +947,9 @@ namespace KDS.e8086
             if(_outputDevices.TryGetValue(Registers.DX, out device))
             {
                 if (word_size == 0)
-                    device.Write(Bus.GetDestString8(Registers.SI));
+                    device.Write(Bus.GetByteDestString(Registers.SI));
                 else
-                    device.Write(Bus.GetDestString16(Registers.SI));
+                    device.Write(Bus.GetWordDestString(Registers.SI));
             }
         }
 
@@ -1221,11 +1204,11 @@ namespace KDS.e8086
                         result = source & dest;
                         // Flags: O S Z A P C
                         //        0 x x ? x 0
-                        _creg.OverflowFlag = false;
-                        _creg.CarryFlag = false;
-                        _creg.CalcSignFlag(word_size, result);
-                        _creg.CalcZeroFlag(word_size, result);
-                        _creg.CalcParityFlag(result);
+                        CondReg.OverflowFlag = false;
+                        CondReg.CarryFlag = false;
+                        CondReg.CalcSignFlag(word_size, result);
+                        CondReg.CalcZeroFlag(word_size, result);
+                        CondReg.CalcParityFlag(result);
                         break;
                     }
                 case 0x01: // NOT USED
@@ -1242,12 +1225,12 @@ namespace KDS.e8086
                         result = (~source) + 1;
                         SaveToDestination(result, 0, word_size, mod, reg, rm);
 
-                        _creg.CalcOverflowFlag(word_size, 0, result);
-                        _creg.CalcSignFlag(word_size, result);
-                        _creg.CalcZeroFlag(word_size, result);
-                        _creg.CalcAuxCarryFlag(source, dest);
-                        _creg.CalcParityFlag(result);
-                        _creg.CalcCarryFlag(word_size, result);
+                        CondReg.CalcOverflowFlag(word_size, 0, result);
+                        CondReg.CalcSignFlag(word_size, result);
+                        CondReg.CalcZeroFlag(word_size, result);
+                        CondReg.CalcAuxCarryFlag(source, dest);
+                        CondReg.CalcParityFlag(result);
+                        CondReg.CalcCarryFlag(word_size, result);
                         break;
                     }
                 case 0x04: // MUL
@@ -1257,8 +1240,8 @@ namespace KDS.e8086
                             result = source * Registers.AL;
                             Registers.AX = (ushort)result;
 
-                            _creg.CarryFlag = (Registers.AH != 0);
-                            _creg.OverflowFlag = _creg.CarryFlag;
+                            CondReg.CarryFlag = (Registers.AH != 0);
+                            CondReg.OverflowFlag = CondReg.CarryFlag;
                         }
                         else
                         {
@@ -1266,8 +1249,8 @@ namespace KDS.e8086
                             Registers.DX = (ushort)(result >> 16);
                             Registers.AX = (ushort)(result);
 
-                            _creg.CarryFlag = (Registers.DX != 0);
-                            _creg.OverflowFlag = _creg.CarryFlag;
+                            CondReg.CarryFlag = (Registers.DX != 0);
+                            CondReg.OverflowFlag = CondReg.CarryFlag;
                         }
                         break;
                     }
@@ -1278,11 +1261,11 @@ namespace KDS.e8086
                             Registers.AX = (ushort)(SignExtend((byte)source) * SignExtend(Registers.AL));
 
                             if ((Registers.AL & 0x80) == 0x80)
-                                _creg.CarryFlag = (Registers.AH != 0xff);
+                                CondReg.CarryFlag = (Registers.AH != 0xff);
                             else
-                                _creg.CarryFlag = (Registers.AH != 0x00);
+                                CondReg.CarryFlag = (Registers.AH != 0x00);
 
-                            _creg.OverflowFlag = _creg.CarryFlag;
+                            CondReg.OverflowFlag = CondReg.CarryFlag;
                         }
                         else
                         {
@@ -1291,11 +1274,11 @@ namespace KDS.e8086
                             Registers.AX = (ushort)(result);
 
                             if ((Registers.AX & 0x8000) == 0x8000)
-                                _creg.CarryFlag = (Registers.DX != 0xffff);
+                                CondReg.CarryFlag = (Registers.DX != 0xffff);
                             else
-                                _creg.CarryFlag = (Registers.DX != 0x0000);
+                                CondReg.CarryFlag = (Registers.DX != 0x0000);
 
-                            _creg.OverflowFlag = _creg.CarryFlag;
+                            CondReg.OverflowFlag = CondReg.CarryFlag;
                         }
                         break;
                     }
@@ -1437,8 +1420,8 @@ namespace KDS.e8086
                         // CALL mem-16 (intersegment)
                         Push(Bus.CS);
                         Push(Bus.IP);
-                        Bus.IP = Bus.GetData16(oper);
-                        Bus.CS = Bus.GetData16(oper + 2);
+                        Bus.IP = Bus.GetWord(oper);
+                        Bus.CS = Bus.GetWord(oper + 2);
                         break;
                     }
                 case 0x04:
@@ -1450,8 +1433,8 @@ namespace KDS.e8086
                 case 0x05:
                     {
                         // JMP mem-16 (intersegment)
-                        Bus.IP = Bus.GetData16(oper);
-                        Bus.CS = Bus.GetData16(oper + 2);
+                        Bus.IP = Bus.GetWord(oper);
+                        Bus.CS = Bus.GetWord(oper + 2);
                         break;
                     }
                 case 0x06:
@@ -1495,82 +1478,82 @@ namespace KDS.e8086
             {
                 case 0x70:
                     {
-                        jumping = _creg.OverflowFlag;
+                        jumping = CondReg.OverflowFlag;
                         break;
                     }
                 case 0x71:
                     {
-                        jumping = !_creg.OverflowFlag;
+                        jumping = !CondReg.OverflowFlag;
                         break;
                     }
                 case 0x72:
                     {
-                        jumping = _creg.CarryFlag;
+                        jumping = CondReg.CarryFlag;
                         break;
                     }
                 case 0x73:
                     {
-                        jumping = !_creg.CarryFlag;
+                        jumping = !CondReg.CarryFlag;
                         break;
                     }
                 case 0x74:
                     {
-                        jumping = _creg.ZeroFlag;
+                        jumping = CondReg.ZeroFlag;
                         break;
                     }
                 case 0x75:
                     {
-                        jumping = !_creg.ZeroFlag;
+                        jumping = !CondReg.ZeroFlag;
                         break;
                     }
                 case 0x76:
                     {
-                        jumping = (_creg.CarryFlag | _creg.ZeroFlag);
+                        jumping = (CondReg.CarryFlag | CondReg.ZeroFlag);
                         break;
                     }
                 case 0x77:
                     {
-                        jumping = !(_creg.CarryFlag | _creg.ZeroFlag);
+                        jumping = !(CondReg.CarryFlag | CondReg.ZeroFlag);
                         break;
                     }
                 case 0x78:
                     {
-                        jumping = _creg.SignFlag;
+                        jumping = CondReg.SignFlag;
                         break;
                     }
                 case 0x79:
                     {
-                        jumping = !_creg.SignFlag;
+                        jumping = !CondReg.SignFlag;
                         break;
                     }
                 case 0x7a:
                     {
-                        jumping = _creg.ParityFlag;
+                        jumping = CondReg.ParityFlag;
                         break;
                     }
                 case 0x7b:
                     {
-                        jumping = !_creg.ParityFlag;
+                        jumping = !CondReg.ParityFlag;
                         break;
                     }
                 case 0x7c:
                     {
-                        jumping = (_creg.SignFlag ^ _creg.OverflowFlag);
+                        jumping = (CondReg.SignFlag ^ CondReg.OverflowFlag);
                         break;
                     }
                 case 0x7d:
                     {
-                        jumping = !(_creg.SignFlag ^ _creg.OverflowFlag);
+                        jumping = !(CondReg.SignFlag ^ CondReg.OverflowFlag);
                         break;
                     }
                 case 0x7e:
                     {
-                        jumping = ((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        jumping = ((CondReg.SignFlag ^ CondReg.OverflowFlag) | CondReg.ZeroFlag);
                         break;
                     }
                 case 0x7f:
                     {
-                        jumping = !((_creg.SignFlag ^ _creg.OverflowFlag) | _creg.ZeroFlag);
+                        jumping = !((CondReg.SignFlag ^ CondReg.OverflowFlag) | CondReg.ZeroFlag);
                         break;
                     }
             }
@@ -1615,8 +1598,8 @@ namespace KDS.e8086
                 int word_size = GetWordSize();
                 if (word_size == 0)
                 {
-                    Bus.MoveString8(Registers.SI, Registers.DI);
-                    if (_creg.DirectionFlag)
+                    Bus.MoveByteString(Registers.SI, Registers.DI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI--;
                         Registers.DI--;
@@ -1629,8 +1612,8 @@ namespace KDS.e8086
                 }
                 else
                 {
-                    Bus.MoveString16(Registers.SI, Registers.DI);
-                    if (_creg.DirectionFlag)
+                    Bus.MoveWordString(Registers.SI, Registers.DI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI -= 2;
                         Registers.DI -= 2;
@@ -1643,9 +1626,9 @@ namespace KDS.e8086
                 }
                 if (_repeat) Registers.CX--;
 
-                if (_repeatType == 1 && !_creg.ZeroFlag)
+                if (_repeatType == 1 && !CondReg.ZeroFlag)
                     _repeat = false;
-                if (_repeatType == 2 && _creg.ZeroFlag)
+                if (_repeatType == 2 && CondReg.ZeroFlag)
                     _repeat = false;
 
             } while (_repeat && Registers.CX != 0);
@@ -1664,8 +1647,8 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    source = Bus.GetDestString8(Registers.DI);
-                    if (_creg.DirectionFlag)
+                    source = Bus.GetByteDestString(Registers.DI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI--;
                         Registers.DI--;
@@ -1678,8 +1661,8 @@ namespace KDS.e8086
                 }
                 else
                 {
-                    source = Bus.GetDestString16(Registers.DI);
-                    if (_creg.DirectionFlag)
+                    source = Bus.GetWordDestString(Registers.DI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI -= 2;
                         Registers.DI -= 2;
@@ -1692,17 +1675,17 @@ namespace KDS.e8086
                 }
 
                 result = dest - source;
-                _creg.CalcOverflowFlag(word_size, source, dest);
-                _creg.CalcSignFlag(word_size, result);
-                _creg.CalcZeroFlag(word_size, result);
-                _creg.CalcAuxCarryFlag(source, dest);
-                _creg.CalcParityFlag(result);
-                _creg.CalcCarryFlag(word_size, result);
+                CondReg.CalcOverflowFlag(word_size, source, dest);
+                CondReg.CalcSignFlag(word_size, result);
+                CondReg.CalcZeroFlag(word_size, result);
+                CondReg.CalcAuxCarryFlag(source, dest);
+                CondReg.CalcParityFlag(result);
+                CondReg.CalcCarryFlag(word_size, result);
                 if (_repeat) Registers.CX--;
 
-                if (_repeatType == 1 && !_creg.ZeroFlag)
+                if (_repeatType == 1 && !CondReg.ZeroFlag)
                     _repeat = false;
-                if (_repeatType == 2 && _creg.ZeroFlag)
+                if (_repeatType == 2 && CondReg.ZeroFlag)
                     _repeat = false;
 
             } while (_repeat && Registers.CX != 0);
@@ -1719,9 +1702,9 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    dest = Bus.GetDestString8(Registers.DI);
+                    dest = Bus.GetByteDestString(Registers.DI);
                     source = Registers.AL;
-                    if (_creg.DirectionFlag)
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.DI--;
                     }
@@ -1732,9 +1715,9 @@ namespace KDS.e8086
                 }
                 else
                 {
-                    dest = Bus.GetDestString16(Registers.DI);
+                    dest = Bus.GetWordDestString(Registers.DI);
                     source = Registers.AX;
-                    if (_creg.DirectionFlag)
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.DI -= 2;
                     }
@@ -1745,18 +1728,18 @@ namespace KDS.e8086
                 }
 
                 result = dest - source;
-                _creg.CalcOverflowFlag(word_size, source, dest);
-                _creg.CalcSignFlag(word_size, result);
-                _creg.CalcZeroFlag(word_size, result);
-                _creg.CalcAuxCarryFlag(source, dest);
-                _creg.CalcParityFlag(result);
-                _creg.CalcCarryFlag(word_size, result);
+                CondReg.CalcOverflowFlag(word_size, source, dest);
+                CondReg.CalcSignFlag(word_size, result);
+                CondReg.CalcZeroFlag(word_size, result);
+                CondReg.CalcAuxCarryFlag(source, dest);
+                CondReg.CalcParityFlag(result);
+                CondReg.CalcCarryFlag(word_size, result);
 
                 if (_repeat) Registers.CX--;
 
-                if (_repeatType == 1 && !_creg.ZeroFlag)
+                if (_repeatType == 1 && !CondReg.ZeroFlag)
                     _repeat = false;
-                if (_repeatType == 2 && _creg.ZeroFlag)
+                if (_repeatType == 2 && CondReg.ZeroFlag)
                     _repeat = false;
 
             } while (_repeat && Registers.CX != 0);
@@ -1769,8 +1752,8 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    Bus.StoreString8(Registers.DI, Registers.AL);
-                    if (_creg.DirectionFlag)
+                    Bus.SaveByteString(Registers.DI, Registers.AL);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.DI--;
                     }
@@ -1781,8 +1764,8 @@ namespace KDS.e8086
                 }
                 else
                 {
-                    Bus.StoreString16(Registers.DI, Registers.AX);
-                    if (_creg.DirectionFlag)
+                    Bus.SaveWordString(Registers.DI, Registers.AX);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.DI -= 2;
                     }
@@ -1802,8 +1785,8 @@ namespace KDS.e8086
             {
                 if (word_size == 0)
                 {
-                    Registers.AL = Bus.GetData8(Registers.SI);
-                    if (_creg.DirectionFlag)
+                    Registers.AL = Bus.GetByte(Registers.SI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI--;
                     }
@@ -1814,8 +1797,8 @@ namespace KDS.e8086
                 }
                 else
                 {
-                    Registers.AX = Bus.GetData16(Registers.SI);
-                    if (_creg.DirectionFlag)
+                    Registers.AX = Bus.GetWord(Registers.SI);
+                    if (CondReg.DirectionFlag)
                     {
                         Registers.SI -= 2;
                     }
@@ -1836,17 +1819,17 @@ namespace KDS.e8086
         {
             Registers.AH = (byte)(Registers.AL / 10);
             Registers.AL = (byte)(Registers.AL % 10);
-            _creg.CalcParityFlag(Registers.AX);
-            _creg.CalcSignFlag(1, Registers.AX);
-            _creg.CalcZeroFlag(1, Registers.AX);
+            CondReg.CalcParityFlag(Registers.AX);
+            CondReg.CalcSignFlag(1, Registers.AX);
+            CondReg.CalcZeroFlag(1, Registers.AX);
         }
         private void Execute_AsciiAdjustDIV()
         {
             Registers.AL += (byte)(Registers.AH * 10);
             Registers.AH = 0;
-            _creg.CalcParityFlag(Registers.AX);
-            _creg.CalcSignFlag(1, Registers.AX);
-            _creg.CalcZeroFlag(1, Registers.AX);
+            CondReg.CalcParityFlag(Registers.AX);
+            CondReg.CalcSignFlag(1, Registers.AX);
+            CondReg.CalcZeroFlag(1, Registers.AX);
         }
         #endregion
 
@@ -1875,13 +1858,13 @@ namespace KDS.e8086
             {
                 case 0x00:
                     {
-                        offset = Bus.GetData16(GetRMTable1(rm));
+                        offset = Bus.GetWord(GetRMTable1(rm));
                         break;
                     }
                 case 0x01:
                 case 0x02:   // difference is processed in the GetRMTable2 function
                     {
-                        offset = Bus.GetData16(GetRMTable2(mod, rm));
+                        offset = Bus.GetWord(GetRMTable2(mod, rm));
                         break;
                     }
                 case 0x03:
@@ -1890,12 +1873,12 @@ namespace KDS.e8086
                     }
             }
 
-            SaveRegField16(reg, Bus.GetData16(offset));
+            SaveRegField16(reg, Bus.GetWord(offset));
 
             if (_currentOP == 0xc4)
-                Bus.ES = Bus.GetData16(offset + 2);
+                Bus.ES = Bus.GetWord(offset + 2);
             else
-                Bus.DS = Bus.GetData16(offset + 2);
+                Bus.DS = Bus.GetWord(offset + 2);
         }
 
         #endregion
@@ -1917,19 +1900,19 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         dest = GetRMTable1(rm);
-                        Bus.SaveData8(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextIP());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(mod, rm);
-                        Bus.SaveData8(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextIP());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(mod, rm);
-                        Bus.SaveData8(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextIP());
                         break;
                     }
                 case 0x03:
@@ -1954,19 +1937,19 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         dest = GetRMTable1(rm);
-                        Bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveWord(dest, GetImmediate16());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(mod, rm);
-                        Bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveWord(dest, GetImmediate16());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(mod, rm);
-                        Bus.SaveData16(dest, GetImmediate16());
+                        Bus.SaveWord(dest, GetImmediate16());
                         break;
                     }
                 case 0x03:
@@ -2016,11 +1999,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = Bus.GetData8(GetRMTable1(rm));
+                                result = Bus.GetByte(GetRMTable1(rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = Bus.GetData16(GetRMTable1(rm));
+                                result = Bus.GetWord(GetRMTable1(rm));
                             }
                             break;
                         }
@@ -2029,11 +2012,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = Bus.GetData8(GetRMTable2(mod, rm));
+                                result = Bus.GetByte(GetRMTable2(mod, rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = Bus.GetData16(GetRMTable2(mod, rm));
+                                result = Bus.GetWord(GetRMTable2(mod, rm));
                             }
                             break;
                         }
@@ -2103,11 +2086,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                Bus.SaveData8(GetRMTable1(rm), (byte)data);
+                                Bus.SaveByte(GetRMTable1(rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                Bus.SaveData16(GetRMTable1(rm), (ushort)data);
+                                Bus.SaveWord(GetRMTable1(rm), (ushort)data);
                             }
                             break;
                         }
@@ -2116,11 +2099,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                Bus.SaveData8(GetRMTable2(mod, rm), (byte)data);
+                                Bus.SaveByte(GetRMTable2(mod, rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                Bus.SaveData16(GetRMTable2(mod, rm), (ushort)data);
+                                Bus.SaveWord(GetRMTable2(mod, rm), (ushort)data);
                             }
                             break;
                         }
@@ -2148,23 +2131,23 @@ namespace KDS.e8086
             ushort int_ptr = (ushort)(interrupt_num * 4);
 
             // push flags
-            Push(_creg.Register);
+            Push(CondReg.Value);
 
             // push CS and IP
             Push(Bus.CS);
             Push(Bus.IP);
             
             // clear trap flag
-            _creg.TrapFlag = false;
+            CondReg.TrapFlag = false;
 
             // clear interrupt enable
-            _creg.InterruptEnable = false;
+            CondReg.InterruptEnable = false;
 
             // the second word of the interrupt pointer replaces CS
-            Bus.CS = Bus.GetData16(0, int_ptr + 2);
+            Bus.CS = Bus.GetWord(0, int_ptr + 2);
 
             // replace IP by first word of interrupt pointer
-            Bus.IP = Bus.GetData16(0, int_ptr);
+            Bus.IP = Bus.GetWord(0, int_ptr);
         }
         #endregion
 
@@ -2181,11 +2164,11 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD or SUB instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowFlag(1, source, dest);
-            _creg.CalcSignFlag(1, result);
-            _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
+            CondReg.CalcOverflowFlag(1, source, dest);
+            CondReg.CalcSignFlag(1, result);
+            CondReg.CalcZeroFlag(1, result);
+            CondReg.CalcAuxCarryFlag(source, dest);
+            CondReg.CalcParityFlag(result);
         }
 
         private void Execute_Decrement(int word_size, byte mod, byte reg, byte rm)
@@ -2199,11 +2182,11 @@ namespace KDS.e8086
             // Flags: O S Z A P
             // Flags are set as if ADD or SUB instruction was used with operand2 = 1
             // Carry flag is not affected by increment
-            _creg.CalcOverflowSubtract(1, source, dest);
-            _creg.CalcSignFlag(1, result);
-            _creg.CalcZeroFlag(1, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
+            CondReg.CalcOverflowSubtract(1, source, dest);
+            CondReg.CalcSignFlag(1, result);
+            CondReg.CalcZeroFlag(1, result);
+            CondReg.CalcAuxCarryFlag(source, dest);
+            CondReg.CalcParityFlag(result);
         }
 
         private void ADD_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry)
@@ -2215,7 +2198,7 @@ namespace KDS.e8086
             int carry = 0;
 
             // Include carry flag if necessary
-            if (with_carry && _creg.CarryFlag)
+            if (with_carry && CondReg.CarryFlag)
             {
                 carry = 1;
             }
@@ -2278,12 +2261,12 @@ namespace KDS.e8086
 
 
             // Flags: O S Z A P C
-            _creg.CalcOverflowFlag(word_size, source, dest);
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
-            _creg.CalcCarryFlag(word_size, result);
+            CondReg.CalcOverflowFlag(word_size, source, dest);
+            CondReg.CalcSignFlag(word_size, result);
+            CondReg.CalcZeroFlag(word_size, result);
+            CondReg.CalcAuxCarryFlag(source, dest);
+            CondReg.CalcParityFlag(result);
+            CondReg.CalcCarryFlag(word_size, result);
         }
 
         private void SUB_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool with_carry, bool comp_only)
@@ -2295,7 +2278,7 @@ namespace KDS.e8086
             int carry = 0;
 
             // Include carry flag if necessary
-            if (with_carry && _creg.CarryFlag)
+            if (with_carry && CondReg.CarryFlag)
             {
                 carry = 1;
             }
@@ -2357,12 +2340,12 @@ namespace KDS.e8086
             }
 
             // Flags: O S Z A P C
-            _creg.CalcOverflowSubtract(word_size, source + carry, dest);
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcAuxCarryFlag(source, dest);
-            _creg.CalcParityFlag(result);
-            _creg.CalcCarryFlag(word_size, result);
+            CondReg.CalcOverflowSubtract(word_size, source + carry, dest);
+            CondReg.CalcSignFlag(word_size, result);
+            CondReg.CalcZeroFlag(word_size, result);
+            CondReg.CalcAuxCarryFlag(source, dest);
+            CondReg.CalcParityFlag(result);
+            CondReg.CalcCarryFlag(word_size, result);
         }
 
         private void AND_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool test_only)
@@ -2430,11 +2413,11 @@ namespace KDS.e8086
 
             // Flags: O S Z A P C
             //        0 x x ? x 0
-            _creg.OverflowFlag = false;
-            _creg.CarryFlag = false;
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcParityFlag(result);
+            CondReg.OverflowFlag = false;
+            CondReg.CarryFlag = false;
+            CondReg.CalcSignFlag(word_size, result);
+            CondReg.CalcZeroFlag(word_size, result);
+            CondReg.CalcParityFlag(result);
         }
 
         private void OR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
@@ -2502,11 +2485,11 @@ namespace KDS.e8086
 
             // Flags: O S Z A P C
             //        0 x x ? x 0
-            _creg.OverflowFlag = false;
-            _creg.CarryFlag = false;
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcParityFlag(result);
+            CondReg.OverflowFlag = false;
+            CondReg.CarryFlag = false;
+            CondReg.CalcSignFlag(word_size, result);
+            CondReg.CalcZeroFlag(word_size, result);
+            CondReg.CalcParityFlag(result);
         }
 
         private void XOR_Destination(int source, int direction, int word_size, byte mod, byte reg, byte rm)
@@ -2574,11 +2557,11 @@ namespace KDS.e8086
 
             // Flags: O S Z A P C
             //        0 x x ? x 0
-            _creg.OverflowFlag = false;
-            _creg.CarryFlag = false;
-            _creg.CalcSignFlag(word_size, result);
-            _creg.CalcZeroFlag(word_size, result);
-            _creg.CalcParityFlag(result);
+            CondReg.OverflowFlag = false;
+            CondReg.CarryFlag = false;
+            CondReg.CalcSignFlag(word_size, result);
+            CondReg.CalcZeroFlag(word_size, result);
+            CondReg.CalcParityFlag(result);
         }
 
         private void RotateLeft(int word_size, int source, byte mod, byte rm, bool through_carry, bool shift_only)
@@ -2609,14 +2592,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetData8(offset);
+                        original = Bus.GetByte(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetData8(offset);
+                        original = Bus.GetByte(offset);
                         break;
                     }
                 case 0x03:
@@ -2633,10 +2616,10 @@ namespace KDS.e8086
             for (int ii = 1; ii <= source; ii++)
             {
                 // if through carry, then original CF value becomes low bit
-                old_CF = _creg.CarryFlag;
+                old_CF = CondReg.CarryFlag;
 
                 // carry bit equal to high bit
-                _creg.CarryFlag = ((result & 0x80) == 0x80);
+                CondReg.CarryFlag = ((result & 0x80) == 0x80);
 
                 // shift left
                 result = (byte)((result << 1) & 0xff);
@@ -2652,7 +2635,7 @@ namespace KDS.e8086
                     }
                     else
                     {
-                        if (_creg.CarryFlag)
+                        if (CondReg.CarryFlag)
                             result = (byte)(result | 0x01);
                     }
                 }
@@ -2667,12 +2650,12 @@ namespace KDS.e8086
                 // when shifting 1, if the two high order bits changed, set OF
                 if( shift_only )
                 {
-                    _creg.OverflowFlag = ((original & 0xc0) != (result & 0xc0));
+                    CondReg.OverflowFlag = ((original & 0xc0) != (result & 0xc0));
         }
                 else
                 {
                     // when rotating 1, if the sign changes as a result of the rotate, set OF
-                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                    CondReg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
                 }
             }
         }
@@ -2689,14 +2672,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetData16(offset);
+                        original = Bus.GetWord(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetData16(offset);
+                        original = Bus.GetWord(offset);
                         break;
                     }
                 case 0x03:
@@ -2713,10 +2696,10 @@ namespace KDS.e8086
             for (int ii = 1; ii <= source; ii++)
             {
                 // if through carry, then original CF value becomes low bit
-                old_CF = _creg.CarryFlag;
+                old_CF = CondReg.CarryFlag;
 
                 // carry bit equal to high bit
-                _creg.CarryFlag = ((result & 0x8000) == 0x8000);
+                CondReg.CarryFlag = ((result & 0x8000) == 0x8000);
 
                 // shift left
                 result = (ushort)(result << 1);
@@ -2732,7 +2715,7 @@ namespace KDS.e8086
                     }
                     else
                     {
-                        if (_creg.CarryFlag)
+                        if (CondReg.CarryFlag)
                             result = (ushort)(result | 0x0001);
                     }
                 }
@@ -2747,12 +2730,12 @@ namespace KDS.e8086
                 // when shifting 1, if the two high order bits changed, set OF
                 if (shift_only)
                 {
-                    _creg.OverflowFlag = ((original & 0xc000) != (result & 0xc000));
+                    CondReg.OverflowFlag = ((original & 0xc000) != (result & 0xc000));
                 }
                 else
                 {
                     // when rotating 1, if the sign changes as a result of the rotate, set OF
-                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                    CondReg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
                 }
             }
         }
@@ -2769,14 +2752,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetData8(offset);
+                        original = Bus.GetByte(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetData8(offset) ;
+                        original = Bus.GetByte(offset) ;
                         break;
                     }
                 case 0x03:
@@ -2793,10 +2776,10 @@ namespace KDS.e8086
             for (int ii = 1; ii <= source; ii++)
             {
                 // if through carry, then original CF value becomes low bit
-                old_CF = _creg.CarryFlag;
+                old_CF = CondReg.CarryFlag;
 
                 // carry bit equal to low bit
-                _creg.CarryFlag = ((result & 0x01) == 0x01);
+                CondReg.CarryFlag = ((result & 0x01) == 0x01);
 
                 // shift right
                 result = (byte)(result >> 1);
@@ -2812,7 +2795,7 @@ namespace KDS.e8086
                     }
                     else
                     {
-                        if (_creg.CarryFlag)
+                        if (CondReg.CarryFlag)
                             result = (byte)(result | 0x80);
                     }
                 }
@@ -2822,9 +2805,9 @@ namespace KDS.e8086
                 if( arithmetic_shift )
                 {
                     result = (byte)(result | (byte)(original & 0x80));
-                    _creg.CalcSignFlag(0, result);
-                    _creg.CalcZeroFlag(0, result);
-                    _creg.CalcParityFlag(result);
+                    CondReg.CalcSignFlag(0, result);
+                    CondReg.CalcZeroFlag(0, result);
+                    CondReg.CalcParityFlag(result);
                 }
             }
 
@@ -2837,17 +2820,17 @@ namespace KDS.e8086
                 // arithmetic shift always clears OF
                 if(arithmetic_shift)
                 {
-                    _creg.OverflowFlag = false;
+                    CondReg.OverflowFlag = false;
                 }
                 // if shift, set OF if the sign has changed
                 else if (shift_only)
                 {
-                    _creg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
+                    CondReg.OverflowFlag = ((original ^ result) & 0x80) == 0x80;
                 }
                 // if rotate through carry, set OF if high order bit and carry flags have changed
                 else if( !shift_only & through_carry )
                 {
-                    _creg.OverflowFlag = (((original ^ result) & 0x80) == 0x80) & (old_CF == _creg.CarryFlag);
+                    CondReg.OverflowFlag = (((original ^ result) & 0x80) == 0x80) & (old_CF == CondReg.CarryFlag);
                 }
             }
         }
@@ -2864,14 +2847,14 @@ namespace KDS.e8086
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetData16(offset);
+                        original = Bus.GetWord(offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetData16(offset);
+                        original = Bus.GetWord(offset);
                         break;
                     }
                 case 0x03:
@@ -2888,10 +2871,10 @@ namespace KDS.e8086
             for (int ii = 1; ii <= source; ii++)
             {
                 // if through carry, then original CF value becomes low bit
-                old_CF = _creg.CarryFlag;
+                old_CF = CondReg.CarryFlag;
 
                 // carry bit equal to low bit
-                _creg.CarryFlag = ((result & 0x0001) == 0x0001);
+                CondReg.CarryFlag = ((result & 0x0001) == 0x0001);
 
                 // shift right
                 result = (ushort)(result >> 1);
@@ -2907,7 +2890,7 @@ namespace KDS.e8086
                     }
                     else
                     {
-                        if (_creg.CarryFlag)
+                        if (CondReg.CarryFlag)
                             result = (ushort)(result | 0x8000);
                     }
                 }
@@ -2916,9 +2899,9 @@ namespace KDS.e8086
                 if (arithmetic_shift)
                 {
                     result = (byte)(result | (byte)(original & 0x80));
-                    _creg.CalcSignFlag(1, result);
-                    _creg.CalcZeroFlag(1, result);
-                    _creg.CalcParityFlag(result);
+                    CondReg.CalcSignFlag(1, result);
+                    CondReg.CalcZeroFlag(1, result);
+                    CondReg.CalcParityFlag(result);
                 }
             }
 
@@ -2931,17 +2914,17 @@ namespace KDS.e8086
                 // arithmetic shift always clears OF
                 if (arithmetic_shift)
                 {
-                    _creg.OverflowFlag = false;
+                    CondReg.OverflowFlag = false;
                 }
                 // if shift, set OF if the sign has changed
                 else if (shift_only)
                 {
-                    _creg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
+                    CondReg.OverflowFlag = ((original ^ result) & 0x8000) == 0x8000;
                 }
                 // if rotate through carry, set OF if high order bit and carry flags have changed
                 else if (!shift_only & through_carry)
                 {
-                    _creg.OverflowFlag = (((original ^ result) & 0x8000) == 0x8000) & (old_CF == _creg.CarryFlag);
+                    CondReg.OverflowFlag = (((original ^ result) & 0x8000) == 0x8000) & (old_CF == CondReg.CarryFlag);
                 }
             }
         }
@@ -3398,7 +3381,7 @@ namespace KDS.e8086
         {
             byte lo = Bus.NextIP();
             byte hi = Bus.NextIP();
-            return new DataRegister16(hi, lo);
+            return new WordRegister(hi, lo);
         }
 
         private void SplitAddrByte(byte addr, ref byte mod, ref byte reg, ref byte rm)
@@ -3460,7 +3443,7 @@ namespace KDS.e8086
             if (num < 0x80)
                 return num;
             else
-                return new DataRegister16(0xff, num);
+                return new WordRegister(0xff, num);
         }
 
         // Sign extend 16 bits to 32 bits

@@ -11,7 +11,7 @@ namespace KDS.e8086
 {
 
 
-    public class i8086CPU
+    public class CPU
     {
         // List of Ports Read on Startup
         /*
@@ -75,8 +75,8 @@ namespace KDS.e8086
         public delegate void InterruptFunc(byte int_number);
         
         // CPU Components
-        private i8086ExecutionUnit _eu;
-        private i8086BusInterfaceUnit _bus;
+        private ExecutionUnit _eu;
+        private BusInterface _bus;
 
         // External chips
         private i8259 _i8259;  // interrupts (PIC)
@@ -86,7 +86,7 @@ namespace KDS.e8086
         private ConcurrentQueue<byte> _interrupts;
 
 
-        public i8086CPU()
+        public CPU()
         {
             Reset();
         }
@@ -94,13 +94,13 @@ namespace KDS.e8086
         public void Reset()
         {
             _interrupts = new ConcurrentQueue<byte>();
-            _bus = new i8086BusInterfaceUnit();
+            _bus = new BusInterface();
             _bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\rombasic.bin"), 0xf6000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\videorom.bin"), 0xc0000);
 
-            _eu = new i8086ExecutionUnit(_bus);
+            _eu = new ExecutionUnit(_bus);
 
             // 0x00 - 0x0f: DMA Chip 8237A-5
 
@@ -160,8 +160,8 @@ namespace KDS.e8086
         public void Boot(byte[] program)
         {
             // For now we will hard code the BIOS to start at a particular code segment.
-            _bus = new i8086BusInterfaceUnit(0x0000, 0x0100, program);
-            _eu = new i8086ExecutionUnit(_bus);
+            _bus = new BusInterface(0x0000, 0x0100, program);
+            _eu = new ExecutionUnit(_bus);
         }
 
         public void AddInterrupt(byte int_number)
@@ -198,24 +198,24 @@ namespace KDS.e8086
 
         public void NextInstruction(out string dasm)
         {
-            Disassemble8086.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
+            Disassembler.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
             NextInstruction();
         }
 
         public void NextInstructionDebug()
         {
             string dasm;
-            Disassemble8086.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
+            Disassembler.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
             Debug.WriteLine(_bus.CS.ToString("X4") + ":" + _bus.IP.ToString("X4") + " " + dasm);
             NextInstruction();
         }
 
-        public i8086ExecutionUnit EU
+        public ExecutionUnit EU
         {
             get { return _eu; }
         }
 
-        public i8086BusInterfaceUnit Bus
+        public BusInterface Bus
         {
             get { return _bus; }
         }

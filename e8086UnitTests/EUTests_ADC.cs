@@ -7,9 +7,9 @@ namespace e8086UnitTests
     [TestClass]
     public class EUTests_ADC
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         public void Test10()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x10, 0xd8, /* ADC AL,BL */
+            CPU cpu = GetCPU(new byte[] { 0x10, 0xd8, /* ADC AL,BL */
                                       0x10, 0xd1, /* ADC CL,DL */
                                       0x10, 0xe7, /* ADC BH,AH */
                                       0x10, 0x36, 0x15, 0x01 /* ADC [0115],DH */
@@ -61,9 +61,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x00, cpu.Bus.GetData8(0x0115), "ADC (4) result failed");
+            Assert.AreEqual(0x00, cpu.Bus.GetByte(0x0115), "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADC (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADC (4) zero flag failed");
@@ -77,7 +77,7 @@ namespace e8086UnitTests
         public void Test11()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x11, 0xd8, /* ADC AX,BX */
+            CPU cpu = GetCPU(new byte[] { 0x11, 0xd8, /* ADC AX,BX */
                                       0x11, 0xd1, /* ADC CX,DD */
                                       0x11, 0xe7, /* ADC DI,SP */
                                       0x11, 0x36, 0x15, 0x01 /* ADC [0115],SI */
@@ -117,9 +117,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x0000, cpu.Bus.GetData16(0x0115), "ADC (4) result failed");
+            Assert.AreEqual(0x0000, cpu.Bus.GetWord(0x0115), "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADC (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADC (4) zero flag failed");
@@ -133,7 +133,7 @@ namespace e8086UnitTests
         public void Test12()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x12, 0xd8, /* ADC BL,AL */
+            CPU cpu = GetCPU(new byte[] { 0x12, 0xd8, /* ADC BL,AL */
                                       0x12, 0xd1, /* ADC DL,CL */
                                       0x12, 0xe7, /* ADC AH,BH */
                                       0x12, 0x36, 0x15, 0x01 /* ADC DH,[0115] */
@@ -173,7 +173,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.DH, "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
@@ -189,7 +189,7 @@ namespace e8086UnitTests
         public void Test13()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x13, 0xd8, /* ADC BX,AX */
+            CPU cpu = GetCPU(new byte[] { 0x13, 0xd8, /* ADC BX,AX */
                                       0x13, 0xd1, /* ADC DX,CX */
                                       0x13, 0xe7, /* ADC SP,DI */
                                       0x13, 0x36, 0x15, 0x01 /* ADC SI,[0115] */
@@ -229,7 +229,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.EU.Registers.SI, "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
@@ -246,7 +246,7 @@ namespace e8086UnitTests
         public void Test14()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x14, 0x28, /* ADC AL,28H */
+            CPU cpu = GetCPU(new byte[] { 0x14, 0x28, /* ADC AL,28H */
                                       0x14, 0x80, /* ADC AL,80H */
                                       0x14, 0x40 /* ADC BH,40H */
                         });
@@ -286,7 +286,7 @@ namespace e8086UnitTests
         public void Test15()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x15, 0x00, 0x28, /* ADC AX,2800H */
+            CPU cpu = GetCPU(new byte[] { 0x15, 0x00, 0x28, /* ADC AX,2800H */
                                       0x15, 0x00, 0x80, /* ADC AX,8000H */
                                       0x15, 0x00, 0x40 /* ADC AX,4000H */
                         });

@@ -21,22 +21,22 @@ namespace KDS.e8086
             {
                 case 0xa0:
                     {
-                        EU.Registers.AL = Bus.GetData8(new DataRegister16(hi, lo));
+                        EU.Registers.AL = Bus.GetByte(new WordRegister(hi, lo));
                         break;
                     }
                 case 0xa1:
                     {
-                        EU.Registers.AX = Bus.GetData16(new DataRegister16(hi, lo));
+                        EU.Registers.AX = Bus.GetWord(new WordRegister(hi, lo));
                         break;
                     }
                 case 0xa2:
                     {
-                        Bus.SaveData8(new DataRegister16(hi, lo), EU.Registers.AL);
+                        Bus.SaveByte(new WordRegister(hi, lo), EU.Registers.AL);
                         break;
                     }
                 case 0xa3:
                     {
-                        Bus.SaveData16(new DataRegister16(hi, lo), EU.Registers.AX);
+                        Bus.SaveWord(new WordRegister(hi, lo), EU.Registers.AX);
                         break;
                     }
             }

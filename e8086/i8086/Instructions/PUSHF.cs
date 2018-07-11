@@ -16,7 +16,7 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            Push(EU.CondReg.Register);
+            Push(EU.CondReg.Value);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            Push(GetImmediate16());
+            Push(GetImmediateWord());
         }
     }
 }

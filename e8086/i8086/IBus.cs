@@ -21,26 +21,26 @@ namespace KDS.e8086
         bool UsingBasePointer { get; set; }
         RAM ram { get; set; }
 
-        void StoreString8(int offset, byte data);
-        void StoreString16(int offset, ushort data);
+        void SaveByteString(int offset, byte data);
+        void SaveWordString(int offset, ushort data);
         void SaveData(int word_size, int offset, int value);
-        void SaveData8(int offset, byte value);
-        void SaveData16(int offset, ushort value);
+        void SaveByte(int offset, byte value);
+        void SaveWord(int offset, ushort value);
 
         ushort PopStack(int offset);
         void PushStack(int offset, ushort value);
 
         byte NextIP();
 
-        void MoveString8(int src_offset, int dst_offset);
-        void MoveString16(int src_offset, int dst_offset);
+        void MoveByteString(int src_offset, int dst_offset);
+        void MoveWordString(int src_offset, int dst_offset);
 
-        byte GetDestString8(int offset);
-        ushort GetDestString16(int offset);
+        byte GetByteDestString(int offset);
+        ushort GetWordDestString(int offset);
 
         int GetData(int word_size, int offset);
-        byte GetData8(int offset);
-        ushort GetData16(int offset);
-        ushort GetData16(int segment, int offset);
+        byte GetByte(int offset);
+        ushort GetWord(int offset);
+        ushort GetWord(int segment, int offset);
     }
 }

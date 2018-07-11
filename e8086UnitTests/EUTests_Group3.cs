@@ -8,9 +8,9 @@ namespace e8086UnitTests
     public class EUTests_Group3
     {
 
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestMUL()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xf6, 0xe3 }); /* MUL BL */
+            CPU cpu = GetCPU(new byte[] { 0xf6, 0xe3 }); /* MUL BL */
 
             cpu.EU.Registers.AL = 0xc8;
             cpu.EU.Registers.BL = 0x04;
@@ -42,7 +42,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestIMUL()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xf6, 0xeb }); /* IMUL BL */
+            CPU cpu = GetCPU(new byte[] { 0xf6, 0xeb }); /* IMUL BL */
 
             cpu.EU.Registers.AL = 0xfe;
             cpu.EU.Registers.BL = 0xfc;
@@ -79,7 +79,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestDIV()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xf6, 0xf3 }); /* DIV BL */
+            CPU cpu = GetCPU(new byte[] { 0xf6, 0xf3 }); /* DIV BL */
 
             cpu.EU.Registers.AX = 0xcb;
             cpu.EU.Registers.BL = 0x04;  
@@ -101,7 +101,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void TestIDIV()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xf6, 0xfb }); /* IDIV BL */
+            CPU cpu = GetCPU(new byte[] { 0xf6, 0xfb }); /* IDIV BL */
 
             cpu.EU.Registers.AX = 0xffd0; // -48
             cpu.EU.Registers.BL = 0x05;   // 5

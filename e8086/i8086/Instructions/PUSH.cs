@@ -18,12 +18,12 @@ namespace KDS.e8086
             // for segment register ops, use the reg field
             if (OpCode < 0x50)
             {
-                Push(GetSegRegField(OpCodeMode.REG));
+                Push(GetWordFromSegReg(OpCodeMode.REG));
             }
             // else use rm field to determine the register
             else
             {
-                Push(GetRegField16(OpCodeMode.RM));
+                Push(GetWordFromRegisters(OpCodeMode.RM));
             }
         }
 

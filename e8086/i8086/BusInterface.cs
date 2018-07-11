@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace KDS.e8086
 {
-    public class i8086BusInterfaceUnit : IBus
+    public class BusInterface : IBus
     {
         public const int MAX_MEMORY = 0x100000;
 
@@ -35,7 +35,7 @@ namespace KDS.e8086
 
         public RAM ram { get; set; }
 
-        public i8086BusInterfaceUnit()
+        public BusInterface()
         {
             CS = 0xffff;
             DS = 0x0000;
@@ -59,7 +59,7 @@ namespace KDS.e8086
         }
 
         // this is for testing
-        public i8086BusInterfaceUnit(ushort startupCS, ushort startupIP, byte[] program)
+        public BusInterface(ushort startupCS, ushort startupIP, byte[] program)
         {
             CS = 0xffff;
             DS = 0x0000;
@@ -115,21 +115,21 @@ namespace KDS.e8086
         public int GetData(int word_size, int offset)
         {
             if (word_size == 0)
-                return GetData8(offset);
+                return GetByte(offset);
             else
-                return GetData16(offset);
+                return GetWord(offset);
         }
 
         public void SaveData(int word_size, int offset, int value)
         {
             if (word_size == 0)
-                SaveData8(offset, (byte)value);
+                SaveByte(offset, (byte)value);
             else
-                SaveData16(offset, (ushort)value);
+                SaveWord(offset, (ushort)value);
         }
 
         // fetch the 8 bit value at the requested offset
-        public byte GetData8(int offset)
+        public byte GetByte(int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -140,7 +140,7 @@ namespace KDS.e8086
         }
 
         // save the 8 bit value to the requested offset
-        public void SaveData8(int offset, byte value)
+        public void SaveByte(int offset, byte value)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -151,36 +151,36 @@ namespace KDS.e8086
         }
 
         // fetch the 16 bit value at the requested offset
-        public ushort GetData16(int offset)
+        public ushort GetWord(int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return new DataRegister16(ram[addr + 1], ram[addr]);
+            return new WordRegister(ram[addr + 1], ram[addr]);
         }
 
         // fetch the 16 bit value at the requested offset while forcing a segment address
-        public ushort GetData16(int segment, int offset)
+        public ushort GetWord(int segment, int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            return new DataRegister16(ram[addr + 1], ram[addr]);
+            return new WordRegister(ram[addr + 1], ram[addr]);
         }
 
         // save the 16 bit value to the requested offset
-        public void SaveData16(int offset, ushort value)
+        public void SaveWord(int offset, ushort value)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));
             }
-            DataRegister16 data = new DataRegister16(value);
+            WordRegister data = new WordRegister(value);
             ram[addr + 1] = data.HI;
             ram[addr] = data.LO;
         }
@@ -191,40 +191,40 @@ namespace KDS.e8086
         // move string instruction
         // the source string segment can be overridden
         // the dest string segment is always ES
-        public void MoveString8(int src_offset, int dst_offset)
+        public void MoveByteString(int src_offset, int dst_offset)
         {
-            ram[(ES << 4) + dst_offset] = GetData8(src_offset);
+            ram[(ES << 4) + dst_offset] = GetByte(src_offset);
         }
 
-        public void MoveString16(int src_offset, int dst_offset)
+        public void MoveWordString(int src_offset, int dst_offset)
         {
             int dst_addr = (ES << 4) + dst_offset;
 
-            DataRegister16 data = new DataRegister16(GetData16(src_offset));
+            WordRegister data = new WordRegister(GetWord(src_offset));
             ram[dst_addr + 1] = data.HI;
             ram[dst_addr] = data.LO;
         }
 
-        public byte GetDestString8(int offset)
+        public byte GetByteDestString(int offset)
         {
             return ram[(ES << 4) + offset];
         }
 
-        public ushort GetDestString16(int offset)
+        public ushort GetWordDestString(int offset)
         {
             int addr = (ES << 4) + offset;
-            return new DataRegister16(ram[addr + 1], ram[addr]);
+            return new WordRegister(ram[addr + 1], ram[addr]);
         }
 
-        public void StoreString8(int offset, byte data)
+        public void SaveByteString(int offset, byte data)
         {
             ram[(ES << 4) + offset] = data;
         }
 
-        public void StoreString16(int offset, ushort data)
+        public void SaveWordString(int offset, ushort data)
         {
             int addr = (ES << 4) + offset;
-            DataRegister16 reg = new DataRegister16(data);
+            WordRegister reg = new WordRegister(data);
             ram[addr + 1] = reg.HI;
             ram[addr] = reg.LO;
         }
@@ -240,7 +240,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
 
-            return new DataRegister16(ram[addr + 1], ram[addr]); 
+            return new WordRegister(ram[addr + 1], ram[addr]); 
         }
 
         public void PushStack(int offset, ushort value)
@@ -251,7 +251,7 @@ namespace KDS.e8086
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. SS={0:X4} offset={1:X4}", SS, offset));
             }
 
-            DataRegister16 reg = new DataRegister16(value);
+            WordRegister reg = new WordRegister(value);
             ram[addr + 1] = reg.HI;
             ram[addr] = reg.LO;
         }

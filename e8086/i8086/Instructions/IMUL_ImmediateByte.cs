@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class IMUL_ImmediateByte : IMUL
+    public class IMUL_ImmediateByte : MultiplyInstruction
     {
         public IMUL_ImmediateByte(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

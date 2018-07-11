@@ -46,15 +46,15 @@ namespace KDS.e8086
             {
                 if (wordSize == 0)
                 {
-                    dest = GetRegField8(reg);
+                    dest = GetByteFromRegisters(reg);
                     result = dest - (source + carry);
-                    if (!comp_only) SaveRegField8(reg, (byte)result);
+                    if (!comp_only) SaveByteToRegisters(reg, (byte)result);
                 }
                 else
                 {
-                    dest = GetRegField16(reg);
+                    dest = GetWordFromRegisters(reg);
                     result = dest - (source + carry);
-                    if (!comp_only) SaveRegField16(reg, (ushort)result);
+                    if (!comp_only) SaveWordToRegisters(reg, (ushort)result);
                 }
             }
             else
@@ -82,15 +82,15 @@ namespace KDS.e8086
                         {
                             if (wordSize == 0)
                             {
-                                dest = GetRegField8(rm);
+                                dest = GetByteFromRegisters(rm);
                                 result = dest - (source + carry);
-                                if (!comp_only) SaveRegField8(rm, (byte)result);
+                                if (!comp_only) SaveByteToRegisters(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (wordSize == 1))
                             {
-                                dest = GetRegField16(rm);
+                                dest = GetWordFromRegisters(rm);
                                 result = dest - (source + carry);
-                                if (!comp_only) SaveRegField16(rm, (ushort)result);
+                                if (!comp_only) SaveWordToRegisters(rm, (ushort)result);
                             }
                             break;
                         }

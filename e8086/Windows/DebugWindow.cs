@@ -9,10 +9,10 @@ namespace KDS.e8086
     public partial class DebugWindow : Form
     {
 
-        i8086CPU _cpu;
+        CPU _cpu;
         string _lastEntry;
 
-        public DebugWindow(i8086CPU cpu)
+        public DebugWindow(CPU cpu)
         {
             InitializeComponent();
 
@@ -48,7 +48,7 @@ namespace KDS.e8086
             lblCF.BackColor = FlagToColor(_cpu.EU.CondReg.CarryFlag);
 
             string dasm;
-            int bytes = (int)Disassemble8086.DisassembleNext(_cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            int bytes = (int)Disassembler.DisassembleNext(_cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
             lblDasm.Text = dasm;
 
             lblNext.Text = "";

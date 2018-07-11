@@ -29,7 +29,7 @@ namespace KDS.e8086
             {
                 byte lo = secondByte.Value;
                 byte hi = Bus.NextIP();
-                source = new DataRegister16(hi, lo);
+                source = new WordRegister(hi, lo);
             }
 
             // override calculated values

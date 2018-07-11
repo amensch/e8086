@@ -2,29 +2,29 @@
 
 namespace KDS.e8086
 {
-    public class DataRegister16
+    public class WordRegister
     {
         public byte HI { get; set; }
         public byte LO { get; set; }
 
-        public DataRegister16()
+        public WordRegister()
         {
             HI = 0;
             LO = 0;
         }
 
-        public DataRegister16(ushort _data)
+        public WordRegister(ushort data)
         {
-            Register = _data;
+            Value = data;
         }
 
-        public DataRegister16(byte _hi, byte _lo)
+        public WordRegister(byte hi, byte lo)
         {
-            HI = _hi;
-            LO = _lo;
+            HI = hi;
+            LO = lo;
         }
 
-        public ushort Register
+        public ushort Value
         {
             get
             {
@@ -39,18 +39,18 @@ namespace KDS.e8086
 
         public override string ToString()
         {
-            return Register.ToString("X4");
+            return Value.ToString("X4");
         }
 
         // Implicit type conversion
-        public static implicit operator ushort(DataRegister16 reg)
+        public static implicit operator ushort(WordRegister reg)
         {
-            return reg.Register;
+            return reg.Value;
         }
 
-        public static implicit operator uint(DataRegister16 reg)
+        public static implicit operator uint(WordRegister reg)
         {
-            return reg.Register;
+            return reg.Value;
         }
 
     }

@@ -17,8 +17,8 @@ namespace KDS.e8086
         {
             // use op code like the reg field to define the register
             byte reg = (byte)(OpCode & 0x07);
-            ushort value = GetImmediate16();
-            SaveRegField16(reg, value);
+            ushort value = GetImmediateWord();
+            SaveWordToRegisters(reg, value);
         }
 
     }

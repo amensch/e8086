@@ -13,7 +13,7 @@ namespace e8086UnitTests
             string output = "";
             uint bytes_read;
 
-            bytes_read = Disassemble8086.DisassembleNext(buffer, 0x00, 0, out output);
+            bytes_read = Disassembler.DisassembleNext(buffer, 0x00, 0, out output);
 
             Assert.AreEqual(expected_result, output, expected_result + " failed");
             Assert.AreEqual(expected_bytes_read, (int)bytes_read, expected_result + " size failed");

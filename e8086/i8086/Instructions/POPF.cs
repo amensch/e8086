@@ -16,7 +16,7 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            EU.CondReg.Register = Pop();
+            EU.CondReg.Value = Pop();
         }
 
     }

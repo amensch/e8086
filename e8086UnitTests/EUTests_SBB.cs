@@ -7,9 +7,9 @@ namespace e8086UnitTests
     [TestClass]
     public class EUTests_SBB
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         public void Test18()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x10, 0xd8, /* SBB AL,BL */
+            CPU cpu = GetCPU(new byte[] { 0x10, 0xd8, /* SBB AL,BL */
                                       0x10, 0xd1, /* SBB CL,DL */
                                       0x10, 0xe7, /* SBB BH,AH */
                                       0x10, 0x36, 0x15, 0x01 /* SBB [0115],DH */
@@ -61,9 +61,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SBB (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x00, cpu.Bus.GetData8(0x0115), "SBB (4) result failed");
+            Assert.AreEqual(0x00, cpu.Bus.GetByte(0x0115), "SBB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SBB (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SBB (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SBB (4) zero flag failed");
@@ -77,7 +77,7 @@ namespace e8086UnitTests
         public void Test19()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x11, 0xd8, /* SBB AX,BX */
+            CPU cpu = GetCPU(new byte[] { 0x11, 0xd8, /* SBB AX,BX */
                                       0x11, 0xd1, /* SBB CX,DD */
                                       0x11, 0xe7, /* SBB DI,SP */
                                       0x11, 0x36, 0x15, 0x01 /* SBB [0115],SI */
@@ -117,9 +117,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SBB (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x0000, cpu.Bus.GetData16(0x0115), "SBB (4) result failed");
+            Assert.AreEqual(0x0000, cpu.Bus.GetWord(0x0115), "SBB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SBB (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "SBB (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "SBB (4) zero flag failed");
@@ -133,7 +133,7 @@ namespace e8086UnitTests
         public void Test1a()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x12, 0xd8, /* SBB BL,AL */
+            CPU cpu = GetCPU(new byte[] { 0x12, 0xd8, /* SBB BL,AL */
                                       0x12, 0xd1, /* SBB DL,CL */
                                       0x12, 0xe7, /* SBB AH,BH */
                                       0x12, 0x36, 0x15, 0x01 /* SBB DH,[0115] */
@@ -173,7 +173,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SBB (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.DH, "SBB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SBB (4) carry flag failed");
@@ -189,7 +189,7 @@ namespace e8086UnitTests
         public void Test1b()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x13, 0xd8, /* SBB BX,AX */
+            CPU cpu = GetCPU(new byte[] { 0x13, 0xd8, /* SBB BX,AX */
                                       0x13, 0xd1, /* SBB DX,CX */
                                       0x13, 0xe7, /* SBB SP,DI */
                                       0x13, 0x36, 0x15, 0x01 /* SBB SI,[0115] */
@@ -229,7 +229,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "SBB (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.EU.Registers.SI, "SBB (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "SBB (4) carry flag failed");
@@ -246,7 +246,7 @@ namespace e8086UnitTests
         public void Test1c()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x14, 0x28, /* SBB AL,28H */
+            CPU cpu = GetCPU(new byte[] { 0x14, 0x28, /* SBB AL,28H */
                                       0x14, 0x80, /* SBB AL,80H */
                                       0x14, 0x40 /* SBB BH,40H */
                         });
@@ -286,7 +286,7 @@ namespace e8086UnitTests
         public void Test1d()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x15, 0x00, 0x28, /* SBB AX,2800H */
+            CPU cpu = GetCPU(new byte[] { 0x15, 0x00, 0x28, /* SBB AX,2800H */
                                       0x15, 0x00, 0x80, /* SBB AX,8000H */
                                       0x15, 0x00, 0x40 /* SBB AX,4000H */
                         });

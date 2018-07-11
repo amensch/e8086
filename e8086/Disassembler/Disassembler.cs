@@ -3,7 +3,7 @@ using System.Text;
 
 namespace KDS.e8086
 {
-    public class Disassemble8086 
+    public class Disassembler 
     {
         // RegField[reg][w]
         public static string[,] RegField = new string[,]
@@ -113,7 +113,7 @@ namespace KDS.e8086
             // A-LO: 2nd & 3rd bytes point to data at a memory location
             else if (op_table.addr_byte == "A-LO")
             {
-                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+                WordRegister reg21 = new WordRegister(buffer[pc + 2], buffer[pc + 1]);
                 bytes_read += 2;
                 if (op_table.op_fmt_1.StartsWith("M-"))
                 {
@@ -154,7 +154,7 @@ namespace KDS.e8086
             // D-LO: 2nd & 3rd bytes are 16 bit immediate data
             else if (op_table.addr_byte == "D-LO")
             {
-                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+                WordRegister reg21 = new WordRegister(buffer[pc + 2], buffer[pc + 1]);
 
                 bytes_read += 2; // these are three byte instructions
 
@@ -166,7 +166,7 @@ namespace KDS.e8086
                 }
                 else if (op_table.op_fmt_1 == "FAR")
                 {
-                    DataRegister16 reg43 = new DataRegister16(buffer[pc + 4], buffer[pc + 3]);
+                    WordRegister reg43 = new WordRegister(buffer[pc + 4], buffer[pc + 3]);
 
                     output = string.Format("{0} {1}:{2}", op_table.op_name,
                                             reg43.ToString(),
@@ -193,7 +193,7 @@ namespace KDS.e8086
             // next instruction
             else if (op_table.addr_byte == "IP-INC-LO")
             {
-                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
+                WordRegister reg21 = new WordRegister(buffer[pc + 2], buffer[pc + 1]);
 
                 uint immediate = (pc + 3) + reg21;
                 bytes_read += 2; // three byte instruction
@@ -205,8 +205,8 @@ namespace KDS.e8086
             else if (op_table.addr_byte == "IP-LO")
             {
                 bytes_read += 4; // five byte instruction
-                DataRegister16 reg21 = new DataRegister16(buffer[pc + 2], buffer[pc + 1]);
-                DataRegister16 reg43 = new DataRegister16(buffer[pc + 4], buffer[pc + 3]);
+                WordRegister reg21 = new WordRegister(buffer[pc + 2], buffer[pc + 1]);
+                WordRegister reg43 = new WordRegister(buffer[pc + 4], buffer[pc + 3]);
 
                 output = string.Format("{0} {1}:{2}", op_table.op_name, reg43.ToString(), reg21.ToString());
 

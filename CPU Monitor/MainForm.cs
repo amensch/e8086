@@ -14,7 +14,7 @@ namespace CPU_Monitor
     public partial class MainForm : Form
     {
 
-        i8086CPU _cpu;
+        CPU _cpu;
 
         public MainForm()
         {
@@ -27,7 +27,7 @@ namespace CPU_Monitor
 
         private void Boot()
         {
-            _cpu = new i8086CPU();
+            _cpu = new CPU();
             RefreshData();
         }
 
@@ -95,7 +95,7 @@ namespace CPU_Monitor
         {
             StringBuilder sb = new StringBuilder();
 
-            for ( int ii=0; ii < i8086BusInterfaceUnit.MAX_MEMORY; ii++ )
+            for ( int ii=0; ii < BusInterface.MAX_MEMORY; ii++ )
             {
                 sb.Append(string.Format("{0:X2} ", _cpu.Bus.GetDataByPhysical(ii)));
                 if ((ii+1) % 16 == 0)

@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class i8086Registers
+    public class Registers
     {
-        private DataRegister16 _ax = new DataRegister16();
-        private DataRegister16 _bx = new DataRegister16();
-        private DataRegister16 _cx = new DataRegister16();
-        private DataRegister16 _dx = new DataRegister16();
+        private WordRegister _ax = new WordRegister();
+        private WordRegister _bx = new WordRegister();
+        private WordRegister _cx = new WordRegister();
+        private WordRegister _dx = new WordRegister();
 
         public ushort SP { get; set; }
         public ushort BP { get; set; }
         public ushort SI { get; set; }
         public ushort DI { get; set; }
 
-        public i8086Registers()
+        public Registers()
         {
             SP = 0;
             BP = 0;
@@ -28,23 +28,23 @@ namespace KDS.e8086
 
         public ushort AX
         {
-            get { return _ax.Register; }
-            set { _ax.Register = value; }
+            get { return _ax.Value; }
+            set { _ax.Value = value; }
         }
         public ushort BX
         {
-            get { return _bx.Register; }
-            set { _bx.Register = value; }
+            get { return _bx.Value; }
+            set { _bx.Value = value; }
         }
         public ushort CX
         {
-            get { return _cx.Register; }
-            set { _cx.Register = value; }
+            get { return _cx.Value; }
+            set { _cx.Value = value; }
         }
         public ushort DX
         {
-            get { return _dx.Register; }
-            set { _dx.Register = value; }
+            get { return _dx.Value; }
+            set { _dx.Value = value; }
         }
         public byte AH
         {

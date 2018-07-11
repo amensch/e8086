@@ -7,9 +7,9 @@ namespace e8086UnitTests
     [TestClass]
     public class EUTests_INCDECXCHG
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         public void TestINC()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x40, 0x41, 0x42, 0x43 });
+            CPU cpu = GetCPU(new byte[] { 0x40, 0x41, 0x42, 0x43 });
 
             cpu.EU.Registers.AX = 0x000f;
             cpu.NextInstruction();
@@ -56,7 +56,7 @@ namespace e8086UnitTests
         public void TestDEC()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x4c, 0x4d, 0x4e, 0x4f });
+            CPU cpu = GetCPU(new byte[] { 0x4c, 0x4d, 0x4e, 0x4f });
 
             cpu.EU.Registers.SP = 0x000f;
             cpu.NextInstruction();
@@ -91,7 +91,7 @@ namespace e8086UnitTests
         {
 
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x86, 0xd1 });  // XCHG CL,DL
+            CPU cpu = GetCPU(new byte[] { 0x86, 0xd1 });  // XCHG CL,DL
 
             cpu.EU.Registers.CL = 0x57;
             cpu.EU.Registers.DL = 0xf3;
@@ -103,11 +103,11 @@ namespace e8086UnitTests
             cpu = GetCPU(new byte[] { 0x86, 0x36, 0x15, 0x01 }); /* XCHG [0115],DH */
             
             cpu.EU.Registers.DH = 0x57;
-            cpu.Bus.SaveData8(0x0115, 0xf3);
+            cpu.Bus.SaveByte(0x0115, 0xf3);
 
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x57, cpu.Bus.GetData8(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0x57, cpu.Bus.GetByte(0x0115), "XCHG (2) [0115] failed");
             Assert.AreEqual(0xf3, cpu.EU.Registers.DH, "XCHG (2) DH failed");
 
         }
@@ -117,7 +117,7 @@ namespace e8086UnitTests
         {
 
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x87, 0xd1 });  // XCHG CX,DX
+            CPU cpu = GetCPU(new byte[] { 0x87, 0xd1 });  // XCHG CX,DX
 
             cpu.EU.Registers.CX = 0x1057;
             cpu.EU.Registers.DX = 0x23f3;
@@ -129,11 +129,11 @@ namespace e8086UnitTests
             cpu = GetCPU(new byte[] { 0x87, 0x36, 0x15, 0x01 }); /* XCHG [0115],SI */
 
             cpu.EU.Registers.SI = 0x1057;
-            cpu.Bus.SaveData16(0x0115, 0x23f3);
+            cpu.Bus.SaveWord(0x0115, 0x23f3);
 
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x1057, cpu.Bus.GetData16(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0x1057, cpu.Bus.GetWord(0x0115), "XCHG (2) [0115] failed");
             Assert.AreEqual(0x23f3, cpu.EU.Registers.SI, "XCHG (2) SI failed");
 
         }

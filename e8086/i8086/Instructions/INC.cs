@@ -17,9 +17,9 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            ushort dest = GetRegField16(OpCodeMode.RM);
+            ushort dest = GetWordFromRegisters(OpCodeMode.RM);
             ushort result = (ushort)(dest + 1);
-            SaveRegField16(OpCodeMode.RM, result);
+            SaveWordToRegisters(OpCodeMode.RM, result);
 
             // Flags: O S Z A P
             // Flags are set as if ADD instruction was used with operand2 = 1

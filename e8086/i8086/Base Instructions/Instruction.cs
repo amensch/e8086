@@ -41,24 +41,24 @@ namespace KDS.e8086
         #region Helper and Utility functions
 
         // Gets the immediate 16 bit value
-        protected ushort GetImmediate16()
+        protected ushort GetImmediateWord()
         {
             byte lo = Bus.NextIP();
             byte hi = Bus.NextIP();
-            return new DataRegister16(hi, lo);
+            return new WordRegister(hi, lo);
         }
 
         // Sign extend 8 bits to 16 bits
-        protected ushort SignExtend(byte num)
+        protected ushort SignExtendByteToWord(byte num)
         {
             if (num < 0x80)
                 return num;
             else
-                return new DataRegister16(0xff, num);
+                return new WordRegister(0xff, num);
         }
 
         // Sign extend 16 bits to 32 bits
-        protected uint SignExtend32(ushort num)
+        protected uint SignExtendWordToDW(ushort num)
         {
             if (num < 0x8000)
                 return num;
@@ -123,7 +123,7 @@ namespace KDS.e8086
 
         #region Get and Set registers
         // Get 8 bit REG result (or R/M mod=11)
-        protected byte GetRegField8(byte reg)
+        protected byte GetByteFromRegisters(byte reg)
         {
             byte result = 0;
             AssertREG(reg);
@@ -174,7 +174,7 @@ namespace KDS.e8086
         }
 
         // Save 8 bit value in register indicated by REG
-        protected void SaveRegField8(byte reg, byte value)
+        protected void SaveByteToRegisters(byte reg, byte value)
         {
             AssertREG(reg);
             switch (reg)
@@ -224,7 +224,7 @@ namespace KDS.e8086
         }
 
         // Get 16 bit REG result (or R/M mod=11)
-        protected ushort GetRegField16(byte reg)
+        protected ushort GetWordFromRegisters(byte reg)
         {
             ushort result = 0;
             AssertREG(reg);
@@ -275,7 +275,7 @@ namespace KDS.e8086
         }
 
         // Save 16 bit value in register indicated by REG
-        protected void SaveRegField16(byte reg, ushort value)
+        protected void SaveWordToRegisters(byte reg, ushort value)
         {
             AssertREG(reg);
             switch (reg)
@@ -325,7 +325,7 @@ namespace KDS.e8086
         }
 
         // Get 16 bit SREG result
-        protected ushort GetSegRegField(byte reg)
+        protected ushort GetWordFromSegReg(byte reg)
         {
             ushort result = 0;
             AssertSREG(reg);
@@ -356,7 +356,7 @@ namespace KDS.e8086
         }
 
         // Save 16 bit value into a Seg Reg
-        protected void SaveSegRegField(byte reg, ushort value)
+        protected void SaveWordToSegReg(byte reg, ushort value)
         {
             AssertSREG(reg);
             switch (reg)
@@ -400,17 +400,17 @@ namespace KDS.e8086
             {
                 if (useSREG)
                 {
-                    result = GetSegRegField(reg);
+                    result = GetWordFromSegReg(reg);
                 }
                 else
                 {
                     if (word_size == 0)
                     {
-                        result = GetRegField8(reg);
+                        result = GetByteFromRegisters(reg);
                     }
                     else
                     {
-                        result = GetRegField16(reg);
+                        result = GetWordFromRegisters(reg);
                     }
                 }
             }
@@ -423,11 +423,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = Bus.GetData8(GetRMTable1(rm));
+                                result = Bus.GetByte(GetRMTable1(rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = Bus.GetData16(GetRMTable1(rm));
+                                result = Bus.GetWord(GetRMTable1(rm));
                             }
                             break;
                         }
@@ -436,11 +436,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = Bus.GetData8(GetRMTable2(mod, rm));
+                                result = Bus.GetByte(GetRMTable2(mod, rm));
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = Bus.GetData16(GetRMTable2(mod, rm));
+                                result = Bus.GetWord(GetRMTable2(mod, rm));
                             }
                             break;
                         }
@@ -448,11 +448,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                result = GetRegField8(rm);
+                                result = GetByteFromRegisters(rm);
                             }
                             else //if ((direction == 1) && (word_size == 1))
                             {
-                                result = GetRegField16(rm);
+                                result = GetWordFromRegisters(rm);
                             }
                             break;
                         }
@@ -488,17 +488,17 @@ namespace KDS.e8086
             {
                 if (useSREG)
                 {
-                    SaveSegRegField(reg, (ushort)data);
+                    SaveWordToSegReg(reg, (ushort)data);
                 }
                 else
                 {
                     if (word_size == 0)
                     {
-                        SaveRegField8(reg, (byte)data);
+                        SaveByteToRegisters(reg, (byte)data);
                     }
                     else
                     {
-                        SaveRegField16(reg, (ushort)data);
+                        SaveWordToRegisters(reg, (ushort)data);
                     }
                 }
             }
@@ -510,11 +510,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                Bus.SaveData8(GetRMTable1(rm), (byte)data);
+                                Bus.SaveByte(GetRMTable1(rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                Bus.SaveData16(GetRMTable1(rm), (ushort)data);
+                                Bus.SaveWord(GetRMTable1(rm), (ushort)data);
                             }
                             break;
                         }
@@ -523,11 +523,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                Bus.SaveData8(GetRMTable2(mod, rm), (byte)data);
+                                Bus.SaveByte(GetRMTable2(mod, rm), (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                Bus.SaveData16(GetRMTable2(mod, rm), (ushort)data);
+                                Bus.SaveWord(GetRMTable2(mod, rm), (ushort)data);
                             }
                             break;
                         }
@@ -535,11 +535,11 @@ namespace KDS.e8086
                         {
                             if ((word_size == 0) && !useSREG)
                             {
-                                SaveRegField8(rm, (byte)data);
+                                SaveByteToRegisters(rm, (byte)data);
                             }
                             else // if ((direction == 0) && (word_size == 1))
                             {
-                                SaveRegField16(rm, (ushort)data);
+                                SaveWordToRegisters(rm, (ushort)data);
                             }
                             break;
                         }
@@ -598,7 +598,7 @@ namespace KDS.e8086
                         }
                         else
                         {
-                            result = GetImmediate16();
+                            result = GetImmediateWord();
                             LastLookupValue = result;
                             LastLookupCount = EU.InstructionCount;
 
@@ -698,7 +698,7 @@ namespace KDS.e8086
                         }
                         else
                         {
-                            disp = GetImmediate16();
+                            disp = GetImmediateWord();
                             LastLookupValue = disp;
                             LastLookupCount = EU.InstructionCount;
                         }

@@ -14,7 +14,7 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            EU.Registers.AH = (byte)(EU.CondReg.Register & 0x00ff);
+            EU.Registers.AH = (byte)(EU.CondReg.Value & 0x00ff);
         }
     }
 }
