@@ -154,23 +154,7 @@ namespace KDS.e8086
             // use the "old" array
             if (instructions.ContainsKey(_currentOP))
             {
-                if (_currentOP == 0x73)
-                {
-                    Debug.WriteLine("before 0x73 - AX=" + Registers.AX.ToString("X4") + "; Carry=" + CondReg.CarryFlag.ToString());
-                }
-                if (_currentOP == 0x33)
-                {
-                    Debug.WriteLine("before 0x33 - AX=" + Registers.AX.ToString("X4") + "; Carry=" + CondReg.CarryFlag.ToString());
-                }
                 instructions[_currentOP].Execute();
-                if (_currentOP == 0x73)
-                {
-                    Debug.WriteLine("after 0x73 - AX=" + Registers.AX.ToString("X4") + "; Carry=" + CondReg.CarryFlag.ToString());
-                }
-                if (_currentOP == 0x33)
-                {
-                    Debug.WriteLine("after 0x33 - AX=" + Registers.AX.ToString("X4") + "; Carry=" + CondReg.CarryFlag.ToString());
-                }
             }
             else
             {
@@ -837,7 +821,7 @@ namespace KDS.e8086
             _opTable[0xe5] = new OpCodeRecord(Execute_IN);
             _opTable[0xe6] = new OpCodeRecord(Execute_OUT);
             _opTable[0xe7] = new OpCodeRecord(Execute_OUT);
-            _opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
+            //_opTable[0xe8] = new OpCodeRecord(Execute_CallNear);
             //_opTable[0xe9] = new OpCodeRecord(Execute_JumpNear);
             //_opTable[0xea] = new OpCodeRecord(Execute_JumpFar);
             //_opTable[0xeb] = new OpCodeRecord(Execute_JumpShort);
