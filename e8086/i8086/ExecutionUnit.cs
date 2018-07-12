@@ -377,14 +377,14 @@ namespace KDS.e8086
             instructions.Add(0xea, new JMP_Far(0xea, this, Bus));
             instructions.Add(0xeb, new JMP(0xeb, this, Bus));
 
-            instructions.Add(0xf5, new FlagInstructions(0xf5, this, Bus));
+            instructions.Add(0xf5, new CMC(0xf5, this, Bus));
 
-            instructions.Add(0xf8, new FlagInstructions(0xf8, this, Bus));
-            instructions.Add(0xf9, new FlagInstructions(0xf9, this, Bus));
-            instructions.Add(0xfa, new FlagInstructions(0xfa, this, Bus));
-            instructions.Add(0xfb, new FlagInstructions(0xfb, this, Bus));
-            instructions.Add(0xfc, new FlagInstructions(0xfc, this, Bus));
-            instructions.Add(0xfd, new FlagInstructions(0xfd, this, Bus));
+            instructions.Add(0xf8, new CLC(0xf8, this, Bus));
+            instructions.Add(0xf9, new STC(0xf9, this, Bus));
+            instructions.Add(0xfa, new CLI(0xfa, this, Bus));
+            instructions.Add(0xfb, new STI(0xfb, this, Bus));
+            instructions.Add(0xfc, new CLD(0xfc, this, Bus));
+            instructions.Add(0xfd, new STD(0xfd, this, Bus));
 
             //_opTable[0x00] = new OpCodeRecord(ExecuteADD_General);
             //_opTable[0x01] = new OpCodeRecord(ExecuteADD_General);
