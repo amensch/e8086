@@ -203,12 +203,12 @@ namespace KDS.e8086
             instructions.Add(0x15, new ADC_Immediate(0x15, this, Bus));
             instructions.Add(0x16, new PUSH(0x16, this, Bus));
             instructions.Add(0x17, new POP(0x17, this, Bus));
-            instructions.Add(0x18, new SUB(0x18, this, Bus));
-            instructions.Add(0x19, new SUB(0x19, this, Bus));
-            instructions.Add(0x1a, new SUB(0x1a, this, Bus));
-            instructions.Add(0x1b, new SUB(0x1b, this, Bus));
-            instructions.Add(0x1c, new SUB_Immediate(0x1c, this, Bus));
-            instructions.Add(0x1d, new SUB_Immediate(0x1d, this, Bus));
+            instructions.Add(0x18, new SBB(0x18, this, Bus));
+            instructions.Add(0x19, new SBB(0x19, this, Bus));
+            instructions.Add(0x1a, new SBB(0x1a, this, Bus));
+            instructions.Add(0x1b, new SBB(0x1b, this, Bus));
+            instructions.Add(0x1c, new SBB_Immediate(0x1c, this, Bus));
+            instructions.Add(0x1d, new SBB_Immediate(0x1d, this, Bus));
             instructions.Add(0x1e, new PUSH(0x1e, this, Bus));
             instructions.Add(0x1f, new POP(0x1f, this, Bus));
             instructions.Add(0x20, new AND(0x20, this, Bus));
@@ -235,12 +235,12 @@ namespace KDS.e8086
             instructions.Add(0x35, new XOR_Immediate(0x35, this, Bus));
             // 0x36: segment override instruction
             instructions.Add(0x37, new AAA(0x37, this, Bus));
-            instructions.Add(0x38, new SUB(0x38, this, Bus));
-            instructions.Add(0x39, new SUB(0x39, this, Bus));
-            instructions.Add(0x3a, new SUB(0x3a, this, Bus));
-            instructions.Add(0x3b, new SUB(0x3b, this, Bus));
-            instructions.Add(0x3c, new SUB_Immediate(0x3c, this, Bus));
-            instructions.Add(0x3d, new SUB_Immediate(0x3d, this, Bus));
+            instructions.Add(0x38, new CMP(0x38, this, Bus));
+            instructions.Add(0x39, new CMP(0x39, this, Bus));
+            instructions.Add(0x3a, new CMP(0x3a, this, Bus));
+            instructions.Add(0x3b, new CMP(0x3b, this, Bus));
+            instructions.Add(0x3c, new CMP_Immediate(0x3c, this, Bus));
+            instructions.Add(0x3d, new CMP_Immediate(0x3d, this, Bus));
             // 0x3e, segment override instruction
             instructions.Add(0x3f, new AAS(0x3f, this, Bus));
             instructions.Add(0x40, new INC(0x40, this, Bus));

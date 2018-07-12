@@ -14,9 +14,13 @@ namespace KDS.e8086
     /// </summary>
     public class SUB : TwoByteInstruction
     {
+        protected bool SubWithBorrow;
+        protected bool CompareOnly;
+
         public SUB(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
-
+            SubWithBorrow = false;
+            CompareOnly = false;
         }
 
         protected override void ExecuteInstruction()
@@ -32,11 +36,9 @@ namespace KDS.e8086
             int offset;
             int dest = 0;
             int carry = 0;
-            bool with_carry = (OpCode & 0x10) == 0x10;
-            bool comp_only = (OpCode & 0x30) == 0x30;
 
             // Include carry flag if necessary
-            if (with_carry && EU.CondReg.CarryFlag)
+            if (SubWithBorrow && EU.CondReg.CarryFlag)
             {
                 carry = 1;
             }
@@ -48,13 +50,13 @@ namespace KDS.e8086
                 {
                     dest = GetByteFromRegisters(reg);
                     result = dest - (source + carry);
-                    if (!comp_only) SaveByteToRegisters(reg, (byte)result);
+                    if (!CompareOnly) SaveByteToRegisters(reg, (byte)result);
                 }
                 else
                 {
                     dest = GetWordFromRegisters(reg);
                     result = dest - (source + carry);
-                    if (!comp_only) SaveWordToRegisters(reg, (ushort)result);
+                    if (!CompareOnly) SaveWordToRegisters(reg, (ushort)result);
                 }
             }
             else
@@ -66,7 +68,7 @@ namespace KDS.e8086
                             offset = GetRMTable1(rm);
                             dest = Bus.GetData(wordSize, offset);
                             result = dest - (source + carry);
-                            if (!comp_only) Bus.SaveData(wordSize, offset, result);
+                            if (!CompareOnly) Bus.SaveData(wordSize, offset, result);
                             break;
                         }
                     case 0x01:
@@ -75,7 +77,7 @@ namespace KDS.e8086
                             offset = GetRMTable2(mod, rm);
                             dest = Bus.GetData(wordSize, offset);
                             result = dest - (source + carry);
-                            if (!comp_only) Bus.SaveData(wordSize, offset, result);
+                            if (!CompareOnly) Bus.SaveData(wordSize, offset, result);
                             break;
                         }
                     case 0x03:
@@ -84,13 +86,13 @@ namespace KDS.e8086
                             {
                                 dest = GetByteFromRegisters(rm);
                                 result = dest - (source + carry);
-                                if (!comp_only) SaveByteToRegisters(rm, (byte)result);
+                                if (!CompareOnly) SaveByteToRegisters(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (wordSize == 1))
                             {
                                 dest = GetWordFromRegisters(rm);
                                 result = dest - (source + carry);
-                                if (!comp_only) SaveWordToRegisters(rm, (ushort)result);
+                                if (!CompareOnly) SaveWordToRegisters(rm, (ushort)result);
                             }
                             break;
                         }
