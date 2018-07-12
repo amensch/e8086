@@ -54,6 +54,7 @@
     <Compile Include="Chipset\i8259.cs" />
     <Compile Include="Chipset\InputDevice.cs" />
     <Compile Include="Chipset\OutputDevice.cs" />
+    <Compile Include="i8086\Base Instructions\GroupInstruction.cs" />
     <Compile Include="i8086\Base Instructions\ShortJumpInstruction.cs" />
     <Compile Include="i8086\IBus.cs" />
     <Compile Include="i8086\IExecutionUnit.cs" />
