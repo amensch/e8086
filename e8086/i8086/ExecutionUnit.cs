@@ -304,7 +304,10 @@ namespace KDS.e8086
             instructions.Add(0x7d, new JNL(0x7d, this, Bus));
             instructions.Add(0x7e, new JNG(0x7e, this, Bus));
             instructions.Add(0x7f, new JG(0x7f, this, Bus));
-
+            instructions.Add(0x80, new GRP1(0x80, this, Bus));
+            instructions.Add(0x81, new GRP1(0x81, this, Bus));
+            instructions.Add(0x82, new GRP1(0x82, this, Bus));
+            instructions.Add(0x83, new GRP1(0x83, this, Bus));
             instructions.Add(0x84, new TEST(0x84, this, Bus));
             instructions.Add(0x85, new TEST(0x85, this, Bus));
             instructions.Add(0x86, new XCHG(0x86, this, Bus));
@@ -667,10 +670,10 @@ namespace KDS.e8086
             //_opTable[0x7d] = new OpCodeRecord(Execute_CondJump);
             //_opTable[0x7e] = new OpCodeRecord(Execute_CondJump);
             //_opTable[0x7f] = new OpCodeRecord(Execute_CondJump);
-            _opTable[0x80] = new OpCodeRecord(Execute_Group1);
-            _opTable[0x81] = new OpCodeRecord(Execute_Group1);
-            _opTable[0x82] = new OpCodeRecord(Execute_Group1);
-            _opTable[0x83] = new OpCodeRecord(Execute_Group1);
+            //_opTable[0x80] = new OpCodeRecord(Execute_Group1);
+            //_opTable[0x81] = new OpCodeRecord(Execute_Group1);
+            //_opTable[0x82] = new OpCodeRecord(Execute_Group1);
+            //_opTable[0x83] = new OpCodeRecord(Execute_Group1);
             //_opTable[0x84] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             //_opTable[0x85] = new OpCodeRecord(ExecuteLogical_General);  // TEST
             //_opTable[0x86] = new OpCodeRecord(ExecuteXCHG_General);

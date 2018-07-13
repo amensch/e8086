@@ -8,9 +8,8 @@ namespace KDS.e8086
 {
     public abstract class TwoByteInstruction : Instruction
     {
+        private bool FetchSecondByte = true;
         protected AddressMode secondByte;
-
-
 
         public TwoByteInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
@@ -19,10 +18,16 @@ namespace KDS.e8086
         protected override void PreProcessing()
         {
             base.PreProcessing();
-            secondByte = new AddressMode(Bus.NextIP());
+            if (FetchSecondByte)
+            {
+                secondByte = new AddressMode(Bus.NextIP());
+            }
         }
 
-
- 
+        public void SetSecondByte(byte second)
+        {
+            FetchSecondByte = false;
+            secondByte = new AddressMode(second);
+        }
     }
 }

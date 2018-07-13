@@ -8,14 +8,22 @@ namespace KDS.e8086
 {
     public abstract class GroupInstruction : TwoByteInstruction
     {
-        public GroupInstruction(byte opCode, byte SecondByte, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)
+        protected int source;
+        protected Dictionary<int, TwoByteInstruction> instructions;
+
+        public GroupInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)
         {
-            secondByte = new AddressMode(SecondByte);
+            instructions = new Dictionary<int, TwoByteInstruction>();
+            LoadInstructionList();
         }
 
-        protected override void PreProcessing()
+        protected abstract void LoadInstructionList();
+
+        protected override void ExecuteInstruction()
         {
-            // do nothing - base class calls Bus.NextIP() which we don't want!
+            var instruction = instructions[secondByte.REG];
+            instruction.SetSecondByte(secondByte.Value);
+            instruction.Execute();
         }
     }
 }
