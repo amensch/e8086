@@ -114,6 +114,9 @@
     <Compile Include="i8086\Instructions\PUSHF.cs" />
     <Compile Include="i8086\Instructions\PUSH_ImmediateByte.cs" />
     <Compile Include="i8086\Instructions\PUSH_ImmediateWord.cs" />
+    <Compile Include="i8086\Instructions\RotateAndShift.cs" />
+    <Compile Include="i8086\Instructions\RotateAndShiftCL.cs" />
+    <Compile Include="i8086\Instructions\RotateAndShiftImmediate.cs" />
     <Compile Include="i8086\Instructions\SAHF.cs" />
     <Compile Include="i8086\Instructions\SALC.cs" />
     <Compile Include="i8086\Instructions\SBB.cs" />

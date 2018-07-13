@@ -361,6 +361,17 @@ namespace KDS.e8086
             instructions.Add(0xbe, new MOV_ImmediateWord(0xbe, this, Bus));
             instructions.Add(0xbf, new MOV_ImmediateWord(0xbf, this, Bus));
 
+            // GRP2 rm-8 imm-8 (80186)
+            instructions.Add(0xc0, new RotateAndShiftImmediate(0xc0, this, Bus));
+            // GRP2 rm-16 imm-16 (80186)
+            instructions.Add(0xc1, new RotateAndShiftImmediate(0xc1, this, Bus));
+
+            instructions.Add(0xd0, new RotateAndShift(0xd0, this, Bus));
+            instructions.Add(0xd1, new RotateAndShift(0xd1, this, Bus));
+            instructions.Add(0xd2, new RotateAndShiftCL(0xd2, this, Bus));
+            instructions.Add(0xd3, new RotateAndShiftCL(0xd3, this, Bus));
+
+
             instructions.Add(0xd6, new SALC(0xd6, this, Bus));
             instructions.Add(0xd7, new XLAT(0xd7, this, Bus));
             // D8-DF ESC OPCODE,SOURCE -- math coprocessor instructions
@@ -737,9 +748,9 @@ namespace KDS.e8086
             //_opTable[0xbe] = new OpCodeRecord(ExecuteMOV_Imm16);
             //_opTable[0xbf] = new OpCodeRecord(ExecuteMOV_Imm16);
             // GRP2 rm-8 imm-8 (80186)
-            _opTable[0xc0] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xc0] = new OpCodeRecord(Execute_RotateAndShift);
             // GRP2 rm-16 imm-16 (80186)
-            _opTable[0xc1] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xc1] = new OpCodeRecord(Execute_RotateAndShift);
 
             _opTable[0xc2] = new OpCodeRecord(() => // ret imm-16
             {
@@ -778,10 +789,10 @@ namespace KDS.e8086
                 Bus.CS = Pop();
                 CondReg.Value = Pop();
             });
-            _opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
-            _opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
-            _opTable[0xd2] = new OpCodeRecord(Execute_RotateAndShift);
-            _opTable[0xd3] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xd0] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xd1] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xd2] = new OpCodeRecord(Execute_RotateAndShift);
+            //_opTable[0xd3] = new OpCodeRecord(Execute_RotateAndShift);
             _opTable[0xd4] = new OpCodeRecord(Execute_AsciiAdjustMUL);
             _opTable[0xd5] = new OpCodeRecord(Execute_AsciiAdjustDIV);
             // undocumented SALC instruction
