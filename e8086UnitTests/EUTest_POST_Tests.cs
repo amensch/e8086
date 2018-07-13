@@ -132,5 +132,40 @@ namespace KDS.e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "POST 2: zero flag failed");
 
         }
+
+        [TestMethod]
+        public void Test_SumDigitsTestProgram()
+        {
+            Test_SumDigitsTest2(0x54, 0x9);
+            Test_SumDigitsTest2(0x60, 0x6);
+            Test_SumDigitsTest2(0x50, 0x5);
+            Test_SumDigitsTest2(0x55, 0x0a);
+            Test_SumDigitsTest2(0x2,  0x2);
+            Test_SumDigitsTest2(0x45, 0x9);
+            Test_SumDigitsTest2(0x12, 0x3);
+            Test_SumDigitsTest2(0x99, 0x12);
+            Test_SumDigitsTest2(0x75, 0x0c);
+        }
+
+        public void Test_SumDigitsTest2(byte src, byte dest)
+        {
+            // take the number in memory 2050, find the sum of the digits and store in 2051
+
+            CPU cpu = GetCPU(new byte[] {
+                                        0xa0, 0x02, 0x08, //0x00, 0x00,       // mov al,[2050]
+                                        0x88, 0xc4,                         // mov ah, al
+                                        0xb1, 0x04,                         // mov cl, 4
+                                        0x24, 0x0f,                         // and al, 0x0f
+                                        0xd2, 0xc4,                         // rol ah, cl
+                                        0x80, 0xe4, 0x0f,                   // and ah, 0x0f
+                                        0x00, 0xe0,                         // add al, ah
+                                        0xa2, 0x03, 0x08, 0x00, 0x00,       // mov [2051], al
+                                        0xf4 //hlt
+            });
+
+            cpu.Bus.ram[2050] = src;
+            cpu.Run();
+            Assert.AreEqual(dest, cpu.Bus.ram[2051], "Sum test failed " + src.ToString() + " expected answer " + dest.ToString() + " actual answer " + cpu.Bus.ram[2051].ToString());
+        }
     }
 }
