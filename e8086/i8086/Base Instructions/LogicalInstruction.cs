@@ -75,7 +75,7 @@ namespace KDS.e8086
                             if (word_size == 0)
                             {
                                 dest = GetByteFromRegisters(rm);
-                                result = dest & source;
+                                result = Operand(source, dest);
                                 if (!test_only) SaveByteToRegisters(rm, (byte)result);
                             }
                             else // if ((direction == 0) && (word_size == 1))

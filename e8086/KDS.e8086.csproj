@@ -100,8 +100,11 @@
     <Compile Include="i8086\Instructions\MOV_ImmediateWord.cs" />
     <Compile Include="i8086\Instructions\MOV_MemImmediate.cs" />
     <Compile Include="i8086\Instructions\MOV_SReg.cs" />
+    <Compile Include="i8086\Instructions\MUL.cs" />
+    <Compile Include="i8086\Instructions\NEG.cs" />
     <Compile Include="i8086\Instructions\NOOP.cs" />
     <Compile Include="i8086\Instructions\NOOP_TwoByte.cs" />
+    <Compile Include="i8086\Instructions\NOT_Immediate.cs" />
     <Compile Include="i8086\Instructions\OR.cs" />
     <Compile Include="i8086\Instructions\OR_Immediate.cs" />
     <Compile Include="i8086\Instructions\OR_ImmediateToReg.cs" />
@@ -128,6 +131,7 @@
     <Compile Include="i8086\Instructions\TEST.cs" />
     <Compile Include="i8086\Instructions\TEST_Immediate.cs" />
     <Compile Include="i8086\Base Instructions\TwoByteInstruction.cs" />
+    <Compile Include="i8086\Instructions\TEST_ImmediateToReg.cs" />
     <Compile Include="i8086\Instructions\XCHG.cs" />
     <Compile Include="i8086\Instructions\XCHG_AX.cs" />
     <Compile Include="i8086\Instructions\XLAT.cs" />
