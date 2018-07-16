@@ -9,7 +9,7 @@ namespace KDS.e8086
     public interface IExecutionUnit
     {
         IBus Bus { get; }
-        bool Halted { get; }
+        bool Halted { get; set; }
         Registers Registers { get; }
         ConditionalRegister CondReg { get; }
         long InstructionCount { get; } 
