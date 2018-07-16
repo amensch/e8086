@@ -123,6 +123,8 @@
     <Compile Include="i8086\Instructions\PUSHF.cs" />
     <Compile Include="i8086\Instructions\PUSH_ImmediateByte.cs" />
     <Compile Include="i8086\Instructions\PUSH_ImmediateWord.cs" />
+    <Compile Include="i8086\Instructions\REP.cs" />
+    <Compile Include="i8086\Instructions\REPNZ.cs" />
     <Compile Include="i8086\Instructions\ReturnInstructions.cs" />
     <Compile Include="i8086\Instructions\RotateAndShift.cs" />
     <Compile Include="i8086\Instructions\RotateAndShiftCL.cs" />

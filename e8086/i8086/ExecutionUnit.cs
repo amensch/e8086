@@ -38,14 +38,14 @@ namespace KDS.e8086
         // Statistics
         public Statistics Stats { get; private set; } = new Statistics();
         public long InstructionCount { get; set; } = 0;
-        private long _RMTableLookupCount = 0;
-        private ushort _RMTableLastLookup = 0;
+        private long RMTableLookupCount = 0;
+        private ushort RMTableLastLookup = 0;
 
         // Preserve the current OP code
-        private byte _currentOP;
+        private byte CurrentOpCode;
 
         // Table of OpCodes
-        private OpCodeTable _opTable = new OpCodeTable();
+        private OpCodeTable OpTable = new OpCodeTable();
         private Dictionary<int, Instruction> instructions = new Dictionary<int, Instruction>();
 
         // General Registers: AX, BX, CX, DX and SP, BP, SI, DI
@@ -64,6 +64,7 @@ namespace KDS.e8086
         // Repeat flag
         private bool _repeat = false;
         private int _repeatType = 0;
+        public RepeatModeEnum RepeatMode { get; set; }
 
         // Property to indicate a halt has been encountered
         public bool Halted { get; set; }
@@ -72,6 +73,7 @@ namespace KDS.e8086
         {
             Bus = bus;
             Halted = false;
+            RepeatMode = RepeatModeEnum.NoRepeat;
 
             _inputDevices = new Dictionary<int, IInputDevice>();
             _outputDevices = new Dictionary<int, IOutputDevice>();
@@ -98,52 +100,52 @@ namespace KDS.e8086
 
             // Retrieve the next instruction and count stats
             InstructionCount++;
-            _currentOP = Bus.NextIP();
-            Stats.AddOpCode(_currentOP);
+            CurrentOpCode = Bus.NextIP();
+            Stats.AddOpCode(CurrentOpCode);
 
             // If segment override then process that right here.
             // Process the next instruction immediately after.  Cannot allow an interrupt here or
             // the segment override will be lost after the interrupt.
-            if (_currentOP == 0x26)
+            if (CurrentOpCode == 0x26)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseES;
                 InstructionCount++;
-                _currentOP = Bus.NextIP();
-                Stats.AddOpCode(_currentOP);
+                CurrentOpCode = Bus.NextIP();
+                Stats.AddOpCode(CurrentOpCode);
             }
-            else if (_currentOP == 0x2e)
+            else if (CurrentOpCode == 0x2e)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseCS;
                 InstructionCount++;
-                _currentOP = Bus.NextIP();
-                Stats.AddOpCode(_currentOP);
+                CurrentOpCode = Bus.NextIP();
+                Stats.AddOpCode(CurrentOpCode);
             }
-            else if (_currentOP == 0x36)
+            else if (CurrentOpCode == 0x36)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseSS;
                 InstructionCount++;
-                _currentOP = Bus.NextIP();
-                Stats.AddOpCode(_currentOP);
+                CurrentOpCode = Bus.NextIP();
+                Stats.AddOpCode(CurrentOpCode);
             }
-            else if (_currentOP == 0x3e)
+            else if (CurrentOpCode == 0x3e)
             {
                 Bus.SegmentOverride = SegmentOverrideState.UseDS;
                 InstructionCount++;
-                _currentOP = Bus.NextIP();
-                Stats.AddOpCode(_currentOP);
+                CurrentOpCode = Bus.NextIP();
+                Stats.AddOpCode(CurrentOpCode);
             }
 
             // If this is in the dictionary of op codes call it, otherwise
             // use the "old" array
-            if (instructions.ContainsKey(_currentOP))
+            if (instructions.ContainsKey(CurrentOpCode))
             {
-                instructions[_currentOP].Execute();
+                instructions[CurrentOpCode].Execute();
             }
             else
             {
 
                 // Call method to execute this instruction
-                _opTable[_currentOP].opAction();
+                OpTable[CurrentOpCode].opAction();
             }
 
             // NOTE: a current minor flaw here is if there is a repeat instruction because the entire loop
@@ -418,7 +420,7 @@ namespace KDS.e8086
 
 
 
-            _opTable[0x6c] = new OpCodeRecord(() => // INSB
+            OpTable[0x6c] = new OpCodeRecord(() => // INSB
             {
                 // if repetition is on but CX is 0 then do nothing
                 if( ( _repeat ) && ( Registers.CX == 0 ) )
@@ -441,7 +443,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6d] = new OpCodeRecord(() => // INSW
+            OpTable[0x6d] = new OpCodeRecord(() => // INSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (Registers.CX == 0))
@@ -464,7 +466,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6e] = new OpCodeRecord(() => // OUTSB
+            OpTable[0x6e] = new OpCodeRecord(() => // OUTSB
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (Registers.CX == 0))
@@ -487,7 +489,7 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-            _opTable[0x6f] = new OpCodeRecord(() => // OUTSW
+            OpTable[0x6f] = new OpCodeRecord(() => // OUTSW
             {
                 // if repetition is on but CX is 0 then do nothing
                 if ((_repeat) && (Registers.CX == 0))
@@ -511,49 +513,49 @@ namespace KDS.e8086
                 }
             });
 
-            _opTable[0xa4] = new OpCodeRecord(Execute_MoveString);
-            _opTable[0xa5] = new OpCodeRecord(Execute_MoveString);
-            _opTable[0xa6] = new OpCodeRecord(Execute_CompareString);
-            _opTable[0xa7] = new OpCodeRecord(Execute_CompareString);
+            OpTable[0xa4] = new OpCodeRecord(Execute_MoveString);
+            OpTable[0xa5] = new OpCodeRecord(Execute_MoveString);
+            OpTable[0xa6] = new OpCodeRecord(Execute_CompareString);
+            OpTable[0xa7] = new OpCodeRecord(Execute_CompareString);
 
-            _opTable[0xaa] = new OpCodeRecord(Execute_StoreString);
-            _opTable[0xab] = new OpCodeRecord(Execute_StoreString);
-            _opTable[0xac] = new OpCodeRecord(Execute_LoadString);
-            _opTable[0xad] = new OpCodeRecord(Execute_LoadString);
-            _opTable[0xae] = new OpCodeRecord(Execute_ScanString);
-            _opTable[0xaf] = new OpCodeRecord(Execute_ScanString);
+            OpTable[0xaa] = new OpCodeRecord(Execute_StoreString);
+            OpTable[0xab] = new OpCodeRecord(Execute_StoreString);
+            OpTable[0xac] = new OpCodeRecord(Execute_LoadString);
+            OpTable[0xad] = new OpCodeRecord(Execute_LoadString);
+            OpTable[0xae] = new OpCodeRecord(Execute_ScanString);
+            OpTable[0xaf] = new OpCodeRecord(Execute_ScanString);
 
-            _opTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
-            _opTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
-            _opTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
-            _opTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
+            OpTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
+            OpTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
+            OpTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
+            OpTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
 
-            _opTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
-            _opTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
-            _opTable[0xce] = new OpCodeRecord(() => { if (CondReg.OverflowFlag) Interrupt(4); });
+            OpTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
+            OpTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
+            OpTable[0xce] = new OpCodeRecord(() => { if (CondReg.OverflowFlag) Interrupt(4); });
 
-            _opTable[0xe0] = new OpCodeRecord(Execute_Loop);
-            _opTable[0xe1] = new OpCodeRecord(Execute_Loop);
-            _opTable[0xe2] = new OpCodeRecord(Execute_Loop);
+            OpTable[0xe0] = new OpCodeRecord(Execute_Loop);
+            OpTable[0xe1] = new OpCodeRecord(Execute_Loop);
+            OpTable[0xe2] = new OpCodeRecord(Execute_Loop);
 
-            _opTable[0xe4] = new OpCodeRecord(Execute_IN);
-            _opTable[0xe5] = new OpCodeRecord(Execute_IN);
-            _opTable[0xe6] = new OpCodeRecord(Execute_OUT);
-            _opTable[0xe7] = new OpCodeRecord(Execute_OUT);
+            OpTable[0xe4] = new OpCodeRecord(Execute_IN);
+            OpTable[0xe5] = new OpCodeRecord(Execute_IN);
+            OpTable[0xe6] = new OpCodeRecord(Execute_OUT);
+            OpTable[0xe7] = new OpCodeRecord(Execute_OUT);
 
-            _opTable[0xec] = new OpCodeRecord(Execute_IN);
-            _opTable[0xed] = new OpCodeRecord(Execute_IN);
-            _opTable[0xee] = new OpCodeRecord(Execute_OUT);
-            _opTable[0xef] = new OpCodeRecord(Execute_OUT);
+            OpTable[0xec] = new OpCodeRecord(Execute_IN);
+            OpTable[0xed] = new OpCodeRecord(Execute_IN);
+            OpTable[0xee] = new OpCodeRecord(Execute_OUT);
+            OpTable[0xef] = new OpCodeRecord(Execute_OUT);
 
             // F2 REPNE/REPNZ
-            _opTable[0xf2] = new OpCodeRecord(() =>
+            OpTable[0xf2] = new OpCodeRecord(() =>
             {
                 _repeat = true;
                 _repeatType = 1;
             });
             // F3 REP/E/Z
-            _opTable[0xf3] = new OpCodeRecord(() =>
+            OpTable[0xf3] = new OpCodeRecord(() =>
             {
                 _repeat = true;
                 _repeatType = 2;
@@ -566,9 +568,9 @@ namespace KDS.e8086
             Registers.CX--;
             if( Registers.CX != 0)
             {
-                if ((_currentOP == 0xe0 && !CondReg.ZeroFlag) ||  // LOOPNZ
-                    (_currentOP == 0xe1 && CondReg.ZeroFlag) ||   // LOOPZ
-                    (_currentOP == 0xe2))                       // LOOP
+                if ((CurrentOpCode == 0xe0 && !CondReg.ZeroFlag) ||  // LOOPNZ
+                    (CurrentOpCode == 0xe1 && CondReg.ZeroFlag) ||   // LOOPZ
+                    (CurrentOpCode == 0xe2))                       // LOOP
                 {
                     Bus.IP += tmp;
                 }
@@ -608,7 +610,7 @@ namespace KDS.e8086
             IInputDevice device;
 
             ushort port;
-            if (_currentOP == 0xec || _currentOP == 0xed)
+            if (CurrentOpCode == 0xec || CurrentOpCode == 0xed)
                 port = Registers.DX;
             else
                 port = Bus.NextIP();
@@ -675,7 +677,7 @@ namespace KDS.e8086
             IOutputDevice device;
 
             ushort port;
-            if (_currentOP == 0xee || _currentOP == 0xef)
+            if (CurrentOpCode == 0xee || CurrentOpCode == 0xef)
                 port = Registers.DX;
             else
                 port = Bus.NextIP();
@@ -704,7 +706,7 @@ namespace KDS.e8086
             // 0x83 uses sign extention for the 8 bit immediate data
 
             int word_size = 0;
-            if (_currentOP == 0x81 || _currentOP == 0x83)
+            if (CurrentOpCode == 0x81 || CurrentOpCode == 0x83)
             {
                 word_size = 1;
             }
@@ -732,7 +734,7 @@ namespace KDS.e8086
             // Get immediate data
             int source = 0;
 
-            if (_currentOP == 0x83)
+            if (CurrentOpCode == 0x83)
             {
                 source = SignExtend(Bus.NextIP());
             }
@@ -835,9 +837,9 @@ namespace KDS.e8086
             int word_size = GetWordSize();
 
             int operand2 = 1;
-            if (_currentOP == 0xd2 || _currentOP == 0xd3)
+            if (CurrentOpCode == 0xd2 || CurrentOpCode == 0xd3)
                 operand2 = Registers.CL;
-            else if (_currentOP == 0xc0 || _currentOP == 0xc1)
+            else if (CurrentOpCode == 0xc0 || CurrentOpCode == 0xc1)
             {
                 // in this case we need to read the RM data first in the case there
                 // is displacement data to read before the immediate data
@@ -1092,7 +1094,7 @@ namespace KDS.e8086
                 Execute_Decrement(word_size, mod, reg, rm);
             }
             else
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value {0} in opcode={1:X2}", reg, _currentOP));
+                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value {0} in opcode={1:X2}", reg, CurrentOpCode));
         }
 
         private void Execute_Group5()
@@ -1190,7 +1192,7 @@ namespace KDS.e8086
 
             // JMP IP-INC8  8 bit signed increment to the instruction pointer
             bool jumping = false;
-            switch (_currentOP)
+            switch (CurrentOpCode)
             {
                 case 0x70:
                     {
@@ -1585,13 +1587,13 @@ namespace KDS.e8086
                     }
                 case 0x03:
                     {
-                        throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", _currentOP));
+                        throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", CurrentOpCode));
                     }
             }
 
             SaveRegField16(reg, Bus.GetWord(offset));
 
-            if (_currentOP == 0xc4)
+            if (CurrentOpCode == 0xc4)
                 Bus.ES = Bus.GetWord(offset + 2);
             else
                 Bus.DS = Bus.GetWord(offset + 2);
@@ -2968,15 +2970,15 @@ namespace KDS.e8086
                         // direct address
                         // There is only one RM table lookup per instruction but this may be invoked more than once
                         // for certain instructions.  For this reason we preserve the offset in case it is needed again.
-                        if (_RMTableLookupCount == InstructionCount)
+                        if (RMTableLookupCount == InstructionCount)
                         {
-                            result = _RMTableLastLookup;
+                            result = RMTableLastLookup;
                         }
                         else
                         {
                             result = GetImmediate16();
-                            _RMTableLastLookup = result;
-                            _RMTableLookupCount = InstructionCount;
+                            RMTableLastLookup = result;
+                            RMTableLookupCount = InstructionCount;
                             
                         }
                         break;
@@ -3053,36 +3055,36 @@ namespace KDS.e8086
                 case 0x01:
                     {
                         // 8 bit displacement
-                        if (_RMTableLookupCount == InstructionCount)
+                        if (RMTableLookupCount == InstructionCount)
                         {
-                            disp = _RMTableLastLookup;
+                            disp = RMTableLastLookup;
                         }
                         else
                         {
                             disp = Bus.NextIP();
-                            _RMTableLastLookup = disp;
-                            _RMTableLookupCount = InstructionCount;
+                            RMTableLastLookup = disp;
+                            RMTableLookupCount = InstructionCount;
                         }
                         break;
                     }
                 case 0x02:
                     {
                         // 16 bit displacement
-                        if (_RMTableLookupCount == InstructionCount)
+                        if (RMTableLookupCount == InstructionCount)
                         {
-                            disp = _RMTableLastLookup;
+                            disp = RMTableLastLookup;
                         }
                         else
                         {
                             disp = GetImmediate16();
-                            _RMTableLastLookup = disp;
-                            _RMTableLookupCount = InstructionCount;
+                            RMTableLastLookup = disp;
+                            RMTableLookupCount = InstructionCount;
                         }
                         break;
                     }
                 default:
                     {
-                        throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", _currentOP));
+                        throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", CurrentOpCode));
                     }
             }
             return (ushort)(result + disp);
@@ -3109,12 +3111,12 @@ namespace KDS.e8086
 
         private int GetDirection()
         {
-            return (_currentOP >> 1) & 0x01;
+            return (CurrentOpCode >> 1) & 0x01;
         }
 
         private int GetWordSize()
         {
-            return (_currentOP & 0x01);
+            return (CurrentOpCode & 0x01);
         }
 
         // Assert a proper mod value
@@ -3122,7 +3124,7 @@ namespace KDS.e8086
         {
             if( mod > 0x03 )
             {
-                throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", _currentOP));
+                throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", CurrentOpCode));
             }
         }
 
@@ -3131,7 +3133,7 @@ namespace KDS.e8086
         {
             if (reg > 0x07)
             {
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", _currentOP));
+                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", CurrentOpCode));
             }
         }
 
@@ -3140,7 +3142,7 @@ namespace KDS.e8086
         {
             if (reg > 0x03)
             {
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid sreg value in opcode={0:X2}", _currentOP));
+                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid sreg value in opcode={0:X2}", CurrentOpCode));
             }
         }
         
@@ -3149,7 +3151,7 @@ namespace KDS.e8086
         {
             if (rm > 0x07)
             {
-                throw new ArgumentOutOfRangeException("rm", rm, string.Format("Invalid rm value in opcode={0:X2}", _currentOP));
+                throw new ArgumentOutOfRangeException("rm", rm, string.Format("Invalid rm value in opcode={0:X2}", CurrentOpCode));
             }
         }
 

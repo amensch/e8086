@@ -6,12 +6,27 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
+    public enum RepeatModeEnum
+    {
+        NoRepeat,
+        RepeatWhileZero,
+        RepeatWhileNotZero
+    }
     public interface IExecutionUnit
     {
         IBus Bus { get; }
-        bool Halted { get; set; }
         Registers Registers { get; }
         ConditionalRegister CondReg { get; }
+
+        bool Halted { get; set; }
+
+        /// <summary>
+        /// Mode Value
+        /// 0 = no repeat is in effect
+        /// 1 = repeat until zero flag is false
+        /// 2 = repeat until zero flag is true
+        /// </summary>
+        RepeatModeEnum RepeatMode { get; set; }
         long InstructionCount { get; } 
     }
 }
