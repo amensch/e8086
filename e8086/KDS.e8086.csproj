@@ -55,6 +55,7 @@
     <Compile Include="Chipset\InputDevice.cs" />
     <Compile Include="Chipset\OutputDevice.cs" />
     <Compile Include="i8086\Base Instructions\GroupInstruction.cs" />
+    <Compile Include="i8086\Base Instructions\LoadSegmentInstruction.cs" />
     <Compile Include="i8086\Base Instructions\ShortJumpInstruction.cs" />
     <Compile Include="i8086\IBus.cs" />
     <Compile Include="i8086\IExecutionUnit.cs" />
@@ -102,12 +103,16 @@
     <Compile Include="i8086\Instructions\JMP_Far.cs" />
     <Compile Include="i8086\Instructions\JMP_Near.cs" />
     <Compile Include="i8086\Instructions\LAHF.cs" />
+    <Compile Include="i8086\Instructions\LDS.cs" />
     <Compile Include="i8086\Instructions\LEA.cs" />
+    <Compile Include="i8086\Instructions\LES.cs" />
     <Compile Include="i8086\Instructions\MOV.cs" />
+    <Compile Include="i8086\Instructions\MOV_ByteImmediateToMemory.cs" />
     <Compile Include="i8086\Instructions\MOV_ImmediateByte.cs" />
     <Compile Include="i8086\Instructions\MOV_ImmediateWord.cs" />
     <Compile Include="i8086\Instructions\MOV_MemImmediate.cs" />
     <Compile Include="i8086\Instructions\MOV_SReg.cs" />
+    <Compile Include="i8086\Instructions\MOV_WordImmediateToMemory.cs" />
     <Compile Include="i8086\Instructions\NEG.cs" />
     <Compile Include="i8086\Instructions\NOOP.cs" />
     <Compile Include="i8086\Instructions\NOOP_TwoByte.cs" />

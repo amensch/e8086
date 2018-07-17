@@ -369,7 +369,10 @@ namespace KDS.e8086
             instructions.Add(0xc1, new RotateAndShiftImmediate(0xc1, this, Bus));
             instructions.Add(0xc2, new RET_ImmediateWord(0xc2, this, Bus));
             instructions.Add(0xc3, new RET(0xc3, this, Bus));
-
+            instructions.Add(0xc4, new LES(0xc4, this, Bus));
+            instructions.Add(0xc5, new LDS(0xc5, this, Bus));
+            instructions.Add(0xc6, new MOV_ByteImmediateToMemory(0xc6, this, Bus));
+            instructions.Add(0xc7, new MOV_WordImmediateToMemory(0xc7, this, Bus));
             instructions.Add(0xc8, new NOOP(0xc8, this, Bus));  // undocumented and unimplemented
             instructions.Add(0xc9, new NOOP(0xc9, this, Bus));  // undocumented and unimplemented
 
@@ -386,6 +389,7 @@ namespace KDS.e8086
 
             instructions.Add(0xd6, new SALC(0xd6, this, Bus));
             instructions.Add(0xd7, new XLAT(0xd7, this, Bus));
+
             // D8-DF ESC OPCODE,SOURCE -- math coprocessor instructions
             instructions.Add(0xd8, new NOOP_TwoByte(0xd8, this, Bus));
             instructions.Add(0xd9, new NOOP_TwoByte(0xd9, this, Bus));
@@ -524,11 +528,6 @@ namespace KDS.e8086
             OpTable[0xad] = new OpCodeRecord(Execute_LoadString);
             OpTable[0xae] = new OpCodeRecord(Execute_ScanString);
             OpTable[0xaf] = new OpCodeRecord(Execute_ScanString);
-
-            OpTable[0xc4] = new OpCodeRecord(Execute_LDS_LES);
-            OpTable[0xc5] = new OpCodeRecord(Execute_LDS_LES);
-            OpTable[0xc6] = new OpCodeRecord(ExecuteMOV_c6);
-            OpTable[0xc7] = new OpCodeRecord(ExecuteMOV_c7);
 
             OpTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
             OpTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });

@@ -13,6 +13,10 @@ namespace KDS.e8086
     {
         public MOV_ImmediateByte(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
+        // MOV MEM-8, IMM-8
+        // displacement bytes are optional so don't retrieve the immediate value
+        // until the destination offset has been determined.
+
         protected override void ExecuteInstruction()
         {
             // use op code like the reg field to define the register
