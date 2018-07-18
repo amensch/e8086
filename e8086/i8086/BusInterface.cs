@@ -104,7 +104,7 @@ namespace KDS.e8086
             }
 
             byte mem = ram[pc];
-            IP = (byte)((IP + 1) & 0xffff);
+            IP = (ushort)((IP + 1) & 0xffff);
             return mem;
         }
 

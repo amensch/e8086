@@ -137,12 +137,16 @@ namespace e8086UnitTests
 
             cpu.EU.Registers.BP = 0x10ff;
             cpu.EU.Registers.CL = 0xff;
+
+            // need to manually set base pointer for this to work
             cpu.Bus.UsingBasePointer = true;
             cpu.Bus.SaveByte(cpu.EU.Registers.BP + 0x10, value8);
+            // set it back to false to test the instruction setting it itself
+            cpu.Bus.UsingBasePointer = false;
             cpu.NextInstruction();
 
             Assert.AreEqual(value8, cpu.EU.Registers.CL, "Instruction 0x8a failed (2)");
-            Assert.AreEqual(false, cpu.Bus.UsingBasePointer, "Instruction 0x8a failed (3)");
+            Assert.AreEqual(true, cpu.Bus.UsingBasePointer, "Instruction 0x8a failed (3)");
 
         }
 
