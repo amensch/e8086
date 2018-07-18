@@ -106,6 +106,9 @@
     <Compile Include="i8086\Instructions\LDS.cs" />
     <Compile Include="i8086\Instructions\LEA.cs" />
     <Compile Include="i8086\Instructions\LES.cs" />
+    <Compile Include="i8086\Instructions\LOOP.cs" />
+    <Compile Include="i8086\Instructions\LOOPE.cs" />
+    <Compile Include="i8086\Instructions\LOOPNE.cs" />
     <Compile Include="i8086\Instructions\MOV.cs" />
     <Compile Include="i8086\Instructions\MOV_ByteImmediateToMemory.cs" />
     <Compile Include="i8086\Instructions\MOV_ImmediateByte.cs" />

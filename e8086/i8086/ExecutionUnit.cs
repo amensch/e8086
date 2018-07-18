@@ -399,7 +399,9 @@ namespace KDS.e8086
             instructions.Add(0xdd, new NOOP_TwoByte(0xdd, this, Bus));
             instructions.Add(0xde, new NOOP_TwoByte(0xde, this, Bus));
             instructions.Add(0xdf, new NOOP_TwoByte(0xdf, this, Bus));
-
+            instructions.Add(0xe0, new LOOPNE(0xe0, this, Bus));
+            instructions.Add(0xe1, new LOOPE(0xe1, this, Bus));
+            instructions.Add(0xe2, new LOOP(0xe2, this, Bus));
             instructions.Add(0xe3, new JCXZ(0xe3, this, Bus));
 
             instructions.Add(0xe8, new CALL_Near(0xe8, this, Bus));
@@ -409,6 +411,8 @@ namespace KDS.e8086
 
             instructions.Add(0xf0, new NOOP(0xf0, this, Bus));  // LOCK instruction
             instructions.Add(0xf1, new NOOP(0xf1, this, Bus));  // officially undocumented opcode
+            // 0xf2: REPNE / REPNZ
+            // 0xf3: REP / REPE / REPZ
             instructions.Add(0xf4, new HLT(0xf4, this, Bus));
             instructions.Add(0xf5, new CMC(0xf5, this, Bus));
             instructions.Add(0xf6, new GRP3(0xf6, this, Bus));
@@ -532,10 +536,6 @@ namespace KDS.e8086
             OpTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
             OpTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
             OpTable[0xce] = new OpCodeRecord(() => { if (CondReg.OverflowFlag) Interrupt(4); });
-
-            OpTable[0xe0] = new OpCodeRecord(Execute_Loop);
-            OpTable[0xe1] = new OpCodeRecord(Execute_Loop);
-            OpTable[0xe2] = new OpCodeRecord(Execute_Loop);
 
             OpTable[0xe4] = new OpCodeRecord(Execute_IN);
             OpTable[0xe5] = new OpCodeRecord(Execute_IN);
