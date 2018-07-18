@@ -98,42 +98,60 @@ namespace KDS.e8086
                 // Interrupt( i8259 next interrupt ) ;
             }
 
-            // Retrieve the next instruction and count stats
-            InstructionCount++;
-            CurrentOpCode = Bus.NextIP();
-            Stats.AddOpCode(CurrentOpCode);
+            // Reset the prefix and base pointer flags.
+            Bus.SegmentOverride = SegmentOverrideState.NoOverride;
+            Bus.UsingBasePointer = false;
+            RepeatMode = RepeatModeEnum.NoRepeat;
+            _repeat = false;
 
-            // If segment override then process that right here.
-            // Process the next instruction immediately after.  Cannot allow an interrupt here or
-            // the segment override will be lost after the interrupt.
-            if (CurrentOpCode == 0x26)
+
+            bool more = false;
+            do
             {
-                Bus.SegmentOverride = SegmentOverrideState.UseES;
+                // Retrieve the next instruction and count stats
                 InstructionCount++;
                 CurrentOpCode = Bus.NextIP();
                 Stats.AddOpCode(CurrentOpCode);
-            }
-            else if (CurrentOpCode == 0x2e)
-            {
-                Bus.SegmentOverride = SegmentOverrideState.UseCS;
-                InstructionCount++;
-                CurrentOpCode = Bus.NextIP();
-                Stats.AddOpCode(CurrentOpCode);
-            }
-            else if (CurrentOpCode == 0x36)
-            {
-                Bus.SegmentOverride = SegmentOverrideState.UseSS;
-                InstructionCount++;
-                CurrentOpCode = Bus.NextIP();
-                Stats.AddOpCode(CurrentOpCode);
-            }
-            else if (CurrentOpCode == 0x3e)
-            {
-                Bus.SegmentOverride = SegmentOverrideState.UseDS;
-                InstructionCount++;
-                CurrentOpCode = Bus.NextIP();
-                Stats.AddOpCode(CurrentOpCode);
-            }
+                more = true;
+                switch (CurrentOpCode)
+                {
+                    case 0x26:
+                        {
+                            Bus.SegmentOverride = SegmentOverrideState.UseES;
+                            break;
+                        }
+                    case 0x2e:
+                        {
+                            Bus.SegmentOverride = SegmentOverrideState.UseCS;
+                            break;
+                        }
+                    case 0x36:
+                        {
+                            Bus.SegmentOverride = SegmentOverrideState.UseSS;
+                            break;
+                        }
+                    case 0x3e:
+                        {
+                            Bus.SegmentOverride = SegmentOverrideState.UseDS;
+                            break;
+                        }
+                    case 0xf2:
+                        {
+                            RepeatMode = RepeatModeEnum.REPNZ;
+                            break;
+                        }
+                    case 0xf3:
+                        {
+                            RepeatMode = RepeatModeEnum.REP;
+                            break;
+                        }
+                    default:
+                        {
+                            more = false;
+                            break;
+                        }
+                }
+            } while (more);
 
             // If this is in the dictionary of op codes call it, otherwise
             // use the "old" array
@@ -155,10 +173,7 @@ namespace KDS.e8086
             // Tick the PIT
             // i8253.Tick()
 
-            // After executing the instruction reset the override and base pointer flags.
-            Bus.SegmentOverride = SegmentOverrideState.NoOverride;
-            Bus.UsingBasePointer = false;
-            _repeat = false;
+
         }
 
         public void AddInputDevice(int port, IInputDevice device)
@@ -547,33 +562,18 @@ namespace KDS.e8086
             OpTable[0xee] = new OpCodeRecord(Execute_OUT);
             OpTable[0xef] = new OpCodeRecord(Execute_OUT);
 
-            // F2 REPNE/REPNZ
-            OpTable[0xf2] = new OpCodeRecord(() =>
-            {
-                _repeat = true;
-                _repeatType = 1;
-            });
-            // F3 REP/E/Z
-            OpTable[0xf3] = new OpCodeRecord(() =>
-            {
-                _repeat = true;
-                _repeatType = 2;
-            });
-        }
-
-        private void Execute_Loop()
-        {
-            ushort tmp = SignExtend(Bus.NextIP());
-            Registers.CX--;
-            if( Registers.CX != 0)
-            {
-                if ((CurrentOpCode == 0xe0 && !CondReg.ZeroFlag) ||  // LOOPNZ
-                    (CurrentOpCode == 0xe1 && CondReg.ZeroFlag) ||   // LOOPZ
-                    (CurrentOpCode == 0xe2))                       // LOOP
-                {
-                    Bus.IP += tmp;
-                }
-            }
+            //// F2 REPNE/REPNZ
+            //OpTable[0xf2] = new OpCodeRecord(() =>
+            //{
+            //    _repeat = true;
+            //    _repeatType = 1;
+            //});
+            //// F3 REP/E/Z
+            //OpTable[0xf3] = new OpCodeRecord(() =>
+            //{
+            //    _repeat = true;
+            //    _repeatType = 2;
+            //});
         }
 
         #region Instructions 60-6F (80186)

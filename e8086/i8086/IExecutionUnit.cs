@@ -9,8 +9,8 @@ namespace KDS.e8086
     public enum RepeatModeEnum
     {
         NoRepeat,
-        RepeatWhileZero,
-        RepeatWhileNotZero
+        REP,
+        REPNZ
     }
     public interface IExecutionUnit
     {
