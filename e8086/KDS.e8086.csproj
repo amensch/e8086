@@ -55,7 +55,9 @@
     <Compile Include="Chipset\InputDevice.cs" />
     <Compile Include="Chipset\OutputDevice.cs" />
     <Compile Include="i8086\Base Instructions\GroupInstruction.cs" />
+    <Compile Include="i8086\Base Instructions\InputInstruction.cs" />
     <Compile Include="i8086\Base Instructions\LoadSegmentInstruction.cs" />
+    <Compile Include="i8086\Base Instructions\OutputInstruction.cs" />
     <Compile Include="i8086\Base Instructions\RepeatableInstruction.cs" />
     <Compile Include="i8086\Base Instructions\ShortJumpInstruction.cs" />
     <Compile Include="i8086\IBus.cs" />
@@ -100,7 +102,10 @@
     <Compile Include="i8086\Base Instructions\LogicalInstruction.cs" />
     <Compile Include="i8086\Base Instructions\LogicalImmediate.cs" />
     <Compile Include="i8086\Instructions\INC_RegMem.cs" />
+    <Compile Include="i8086\Instructions\INT.cs" />
     <Compile Include="i8086\Instructions\InvalidInstruction.cs" />
+    <Compile Include="i8086\Instructions\IN_Immediate.cs" />
+    <Compile Include="i8086\Instructions\IN_Reg.cs" />
     <Compile Include="i8086\Instructions\JMP.cs" />
     <Compile Include="i8086\Instructions\JMP_Far.cs" />
     <Compile Include="i8086\Instructions\JMP_Near.cs" />
@@ -126,6 +131,8 @@
     <Compile Include="i8086\Instructions\OR.cs" />
     <Compile Include="i8086\Instructions\OR_Immediate.cs" />
     <Compile Include="i8086\Instructions\OR_ImmediateToReg.cs" />
+    <Compile Include="i8086\Instructions\OUT_Immediate.cs" />
+    <Compile Include="i8086\Instructions\OUT_Reg.cs" />
     <Compile Include="i8086\Instructions\POP.cs" />
     <Compile Include="i8086\Instructions\POPA.cs" />
     <Compile Include="i8086\Instructions\POPF.cs" />

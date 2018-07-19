@@ -87,7 +87,8 @@ namespace KDS.e8086
             // If the trap flag is set, trigger interrupt 1
             if (CondReg.TrapFlag)
             {
-                Interrupt(1);
+                var ins = new INT(0, 1, this, Bus);
+                ins.Execute();
             }
 
             // If interrupts are enabled and there is an interrupt waiting,
@@ -104,7 +105,7 @@ namespace KDS.e8086
             RepeatMode = RepeatModeEnum.NoRepeat;
             _repeat = false;
 
-
+            // Process prefix instructions
             bool more = false;
             do
             {
@@ -153,15 +154,17 @@ namespace KDS.e8086
                 }
             } while (more);
 
+            // Process the next instruction. 
+
             // If this is in the dictionary of op codes call it, otherwise
-            // use the "old" array
+            // use the "old" array.  When the refactor is complete this "if"
+            // will go away.
             if (instructions.ContainsKey(CurrentOpCode))
             {
                 instructions[CurrentOpCode].Execute();
             }
             else
             {
-
                 // Call method to execute this instruction
                 OpTable[CurrentOpCode].opAction();
             }
@@ -402,6 +405,9 @@ namespace KDS.e8086
 
             instructions.Add(0xca, new RETF_ImmediateWord(0xca, this, Bus));
             instructions.Add(0xcb, new RETF(0xcb, this, Bus));
+            instructions.Add(0xcc, new INT(0xcc, 3, this, Bus));
+            instructions.Add(0xcd, new INT(0xcd, this, Bus));
+            instructions.Add(0xce, new INT(0xce, CondReg.OverflowFlag, 4, this, Bus));
 
             instructions.Add(0xcf, new IRET(0xcf, this, Bus));
             instructions.Add(0xd0, new RotateAndShift(0xd0, this, Bus));
@@ -427,12 +433,18 @@ namespace KDS.e8086
             instructions.Add(0xe1, new LOOPE(0xe1, this, Bus));
             instructions.Add(0xe2, new LOOP(0xe2, this, Bus));
             instructions.Add(0xe3, new JCXZ(0xe3, this, Bus));
-
+            instructions.Add(0xe4, new IN_Reg(0xe4, this, Bus));
+            instructions.Add(0xe5, new IN_Reg(0xe5, this, Bus));
+            instructions.Add(0xe6, new OUT_Reg(0xe6, this, Bus));
+            instructions.Add(0xe7, new OUT_Reg(0xe7, this, Bus));
             instructions.Add(0xe8, new CALL_Near(0xe8, this, Bus));
             instructions.Add(0xe9, new JMP_Near(0xe9, this, Bus));
             instructions.Add(0xea, new JMP_Far(0xea, this, Bus));
             instructions.Add(0xeb, new JMP(0xeb, this, Bus));
-
+            instructions.Add(0xec, new IN_Immediate(0xec, this, Bus));
+            instructions.Add(0xed, new IN_Immediate(0xed, this, Bus));
+            instructions.Add(0xee, new OUT_Immediate(0xee, this, Bus));
+            instructions.Add(0xef, new OUT_Immediate(0xef, this, Bus));
             instructions.Add(0xf0, new NOOP(0xf0, this, Bus));  // LOCK instruction
             instructions.Add(0xf1, new NOOP(0xf1, this, Bus));  // officially undocumented opcode
             // 0xf2: REPNE / REPNZ
@@ -449,8 +461,6 @@ namespace KDS.e8086
             instructions.Add(0xfd, new STD(0xfd, this, Bus));
             instructions.Add(0xfe, new GRP4(0xfe, this, Bus));
             instructions.Add(0xff, new GRP5(0xff, this, Bus));
-
-
 
             OpTable[0x6c] = new OpCodeRecord(() => // INSB
             {
@@ -545,32 +555,6 @@ namespace KDS.e8086
                 }
             });
 
-            OpTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
-            OpTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });
-            OpTable[0xce] = new OpCodeRecord(() => { if (CondReg.OverflowFlag) Interrupt(4); });
-
-            OpTable[0xe4] = new OpCodeRecord(Execute_IN);
-            OpTable[0xe5] = new OpCodeRecord(Execute_IN);
-            OpTable[0xe6] = new OpCodeRecord(Execute_OUT);
-            OpTable[0xe7] = new OpCodeRecord(Execute_OUT);
-
-            OpTable[0xec] = new OpCodeRecord(Execute_IN);
-            OpTable[0xed] = new OpCodeRecord(Execute_IN);
-            OpTable[0xee] = new OpCodeRecord(Execute_OUT);
-            OpTable[0xef] = new OpCodeRecord(Execute_OUT);
-
-            //// F2 REPNE/REPNZ
-            //OpTable[0xf2] = new OpCodeRecord(() =>
-            //{
-            //    _repeat = true;
-            //    _repeatType = 1;
-            //});
-            //// F3 REP/E/Z
-            //OpTable[0xf3] = new OpCodeRecord(() =>
-            //{
-            //    _repeat = true;
-            //    _repeatType = 2;
-            //});
         }
 
         #region Instructions 60-6F (80186)
@@ -598,6 +582,16 @@ namespace KDS.e8086
 
         #endregion
 
+        public bool TryGetInputDevice(ushort port, out IInputDevice device)
+        {
+            return (_inputDevices.TryGetValue(port, out device));
+        }
+
+        public bool TryGetOutputDevice(ushort port, out IOutputDevice device)
+        {
+            return (_outputDevices.TryGetValue(port, out device));
+        }
+
         #region Input/Output device instructions
 
         // IN   data from port is stored in the accumulator
@@ -618,9 +612,9 @@ namespace KDS.e8086
             if (_inputDevices.TryGetValue(port, out device))
             {
                 if (word_size == 0)
-                    Registers.AL = device.Read();
+                    Registers.AL = device.ReadByte();
                 else
-                    Registers.AX = device.Read16();
+                    Registers.AX = device.ReadWord();
             }
             else
             {
@@ -640,9 +634,9 @@ namespace KDS.e8086
             if (_inputDevices.TryGetValue(Registers.DX, out device))
             {
                 if (word_size == 0)
-                    Bus.SaveByteString(Registers.DI, device.Read());
+                    Bus.SaveByteString(Registers.DI, device.ReadByte());
                 else
-                    Bus.SaveWordString(Registers.DI, device.Read16());
+                    Bus.SaveWordString(Registers.DI, device.ReadWord());
             }
             else
             {
@@ -1841,9 +1835,6 @@ namespace KDS.e8086
         #region Interrupt Processing
         public void Interrupt(int interrupt_num)
         {
-            // address of pointer is calculated by multiplying interrupt type by 4
-            ushort int_ptr = (ushort)(interrupt_num * 4);
-
             // push flags
             Push(CondReg.Value);
 
@@ -1857,11 +1848,11 @@ namespace KDS.e8086
             // clear interrupt enable
             CondReg.InterruptEnable = false;
 
-            // the second word of the interrupt pointer replaces CS
-            Bus.CS = Bus.GetWord(0, int_ptr + 2);
-
             // replace IP by first word of interrupt pointer
-            Bus.IP = Bus.GetWord(0, int_ptr);
+            Bus.IP = Bus.GetWord(0, interrupt_num * 4);
+
+            // the second word of the interrupt pointer replaces CS
+            Bus.CS = Bus.GetWord(0, (interrupt_num * 4) + 2);
         }
         #endregion
 

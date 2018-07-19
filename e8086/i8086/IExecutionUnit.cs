@@ -18,6 +18,9 @@ namespace KDS.e8086
         Registers Registers { get; }
         ConditionalRegister CondReg { get; }
 
+        bool TryGetInputDevice(ushort port, out IInputDevice device);
+        bool TryGetOutputDevice(ushort port, out IOutputDevice device);
+
         bool Halted { get; set; }
 
         /// <summary>
@@ -27,6 +30,7 @@ namespace KDS.e8086
         /// 2 = repeat until zero flag is true
         /// </summary>
         RepeatModeEnum RepeatMode { get; set; }
+
         long InstructionCount { get; } 
     }
 }

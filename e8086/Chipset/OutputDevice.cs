@@ -11,23 +11,23 @@ namespace KDS.e8086
 
     public class OutputDevice : IOutputDevice
     {
-        WriteByteDelgate _write8;
-        WriteWordDelegate _write16;
+        WriteByteDelgate writeByte;
+        WriteWordDelegate writeWord;
 
         public OutputDevice(WriteByteDelgate byteDelgate, WriteWordDelegate wordDelegate)
         {
-            _write8 = byteDelgate;
-            _write16 = wordDelegate;
+            writeByte = byteDelgate;
+            writeWord = wordDelegate;
         }
 
         public void Write(byte data)
         {
-            _write8(data);
+            writeByte(data);
         }
 
         public void Write(ushort data)
         {
-            _write16(data);
+            writeWord(data);
         }
     }
 }
