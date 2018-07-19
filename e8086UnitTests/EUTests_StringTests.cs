@@ -107,8 +107,9 @@ namespace e8086UnitTests
         {
             CPU cpu = GetCPU(new byte[] { 0xac, 0xad });
 
+            cpu.EU.Bus.DS = 0x1200;
             cpu.EU.Registers.SI = 0x200;
-            cpu.EU.Registers.AX = 0x0e00;
+            cpu.EU.Registers.AL = 0xaa;
             cpu.Bus.SaveByte(cpu.EU.Registers.SI, 0xc7);
 
             cpu.NextInstruction();

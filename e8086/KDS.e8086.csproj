@@ -56,6 +56,7 @@
     <Compile Include="Chipset\OutputDevice.cs" />
     <Compile Include="i8086\Base Instructions\GroupInstruction.cs" />
     <Compile Include="i8086\Base Instructions\LoadSegmentInstruction.cs" />
+    <Compile Include="i8086\Base Instructions\RepeatableInstruction.cs" />
     <Compile Include="i8086\Base Instructions\ShortJumpInstruction.cs" />
     <Compile Include="i8086\IBus.cs" />
     <Compile Include="i8086\IExecutionUnit.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="i8086\Instructions\CBW.cs" />
     <Compile Include="i8086\Instructions\ADC_ImmediateToReg.cs" />
     <Compile Include="i8086\Instructions\CMP.cs" />
+    <Compile Include="i8086\Instructions\CMPS.cs" />
     <Compile Include="i8086\Instructions\CMP_Immediate.cs" />
     <Compile Include="i8086\Instructions\CMP_ImmediateToReg.cs" />
     <Compile Include="i8086\Instructions\CWD.cs" />
@@ -106,10 +108,12 @@
     <Compile Include="i8086\Instructions\LDS.cs" />
     <Compile Include="i8086\Instructions\LEA.cs" />
     <Compile Include="i8086\Instructions\LES.cs" />
+    <Compile Include="i8086\Instructions\LODS.cs" />
     <Compile Include="i8086\Instructions\LOOP.cs" />
     <Compile Include="i8086\Instructions\LOOPE.cs" />
     <Compile Include="i8086\Instructions\LOOPNE.cs" />
     <Compile Include="i8086\Instructions\MOV.cs" />
+    <Compile Include="i8086\Instructions\MOVS.cs" />
     <Compile Include="i8086\Instructions\MOV_ByteImmediateToMemory.cs" />
     <Compile Include="i8086\Instructions\MOV_ImmediateByte.cs" />
     <Compile Include="i8086\Instructions\MOV_ImmediateWord.cs" />
@@ -142,6 +146,8 @@
     <Compile Include="i8086\Instructions\SBB.cs" />
     <Compile Include="i8086\Instructions\SBB_Immediate.cs" />
     <Compile Include="i8086\Instructions\SBB_ImmediateToReg.cs" />
+    <Compile Include="i8086\Instructions\SCAS.cs" />
+    <Compile Include="i8086\Instructions\STOS.cs" />
     <Compile Include="i8086\Instructions\SUB.cs" />
     <Compile Include="i8086\Instructions\SUB_Immediate.cs" />
     <Compile Include="i8086\Instructions\SUB_ImmediateToReg.cs" />

@@ -357,9 +357,18 @@ namespace KDS.e8086
             instructions.Add(0xa1, new MOV_MemImmediate(0xa1, this, Bus));
             instructions.Add(0xa2, new MOV_MemImmediate(0xa2, this, Bus));
             instructions.Add(0xa3, new MOV_MemImmediate(0xa3, this, Bus));
-
+            instructions.Add(0xa4, new MOVS(0xa4, this, Bus));
+            instructions.Add(0xa5, new MOVS(0xa5, this, Bus));
+            instructions.Add(0xa6, new CMPS(0xa6, this, Bus));
+            instructions.Add(0xa7, new CMPS(0xa7, this, Bus));
             instructions.Add(0xa8, new TEST_Immediate(0xa8, this, Bus));
             instructions.Add(0xa9, new TEST_Immediate(0xa9, this, Bus));
+            instructions.Add(0xaa, new STOS(0xaa, this, Bus));
+            instructions.Add(0xab, new STOS(0xab, this, Bus));
+            instructions.Add(0xac, new LODS(0xac, this, Bus));
+            instructions.Add(0xad, new LODS(0xad, this, Bus));
+            instructions.Add(0xae, new SCAS(0xae, this, Bus));
+            instructions.Add(0xaf, new SCAS(0xaf, this, Bus));
 
             instructions.Add(0xb0, new MOV_ImmediateByte(0xb0, this, Bus));
             instructions.Add(0xb1, new MOV_ImmediateByte(0xb1, this, Bus));
@@ -535,18 +544,6 @@ namespace KDS.e8086
                     _repeat = false;
                 }
             });
-
-            OpTable[0xa4] = new OpCodeRecord(Execute_MoveString);
-            OpTable[0xa5] = new OpCodeRecord(Execute_MoveString);
-            OpTable[0xa6] = new OpCodeRecord(Execute_CompareString);
-            OpTable[0xa7] = new OpCodeRecord(Execute_CompareString);
-
-            OpTable[0xaa] = new OpCodeRecord(Execute_StoreString);
-            OpTable[0xab] = new OpCodeRecord(Execute_StoreString);
-            OpTable[0xac] = new OpCodeRecord(Execute_LoadString);
-            OpTable[0xad] = new OpCodeRecord(Execute_LoadString);
-            OpTable[0xae] = new OpCodeRecord(Execute_ScanString);
-            OpTable[0xaf] = new OpCodeRecord(Execute_ScanString);
 
             OpTable[0xcc] = new OpCodeRecord(() => { Interrupt(3); });
             OpTable[0xcd] = new OpCodeRecord(() => { Interrupt(Bus.NextIP()); });

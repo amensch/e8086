@@ -35,6 +35,7 @@ namespace KDS.e8086
         void MoveByteString(int src_offset, int dst_offset);
         void MoveWordString(int src_offset, int dst_offset);
 
+        int GetDestString(int word_size, int offset);
         byte GetByteDestString(int offset);
         ushort GetWordDestString(int offset);
 

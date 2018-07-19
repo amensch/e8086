@@ -205,6 +205,14 @@ namespace KDS.e8086
             ram[dst_addr] = data.LO;
         }
 
+        public int GetDestString(int word_size, int offset)
+        {
+            if (word_size == 0)
+                return GetByteDestString(offset);
+            else
+                return GetWordDestString(offset);
+        }
+
         public byte GetByteDestString(int offset)
         {
             return ram[(ES << 4) + offset];
