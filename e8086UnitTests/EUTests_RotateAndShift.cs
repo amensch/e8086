@@ -8,9 +8,9 @@ namespace e8086UnitTests
     public class EUTests_RotateAndShift
     {
 
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_ROL()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xc0 });/* ROL AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xc0 });/* ROL AL,1 */
 
             cpu.EU.Registers.AL = 0x1c;
 
@@ -32,7 +32,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_ROR()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xc8 });/* ROR AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xc8 });/* ROR AL,1 */
 
             cpu.EU.Registers.AL = 0x1c;
 
@@ -43,7 +43,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_RCL()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xd0 });/* RCL AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xd0 });/* RCL AL,1 */
 
             cpu.EU.CondReg.CarryFlag = true;
             cpu.EU.Registers.AL = 0x1c;
@@ -55,7 +55,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_RCR()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xd8 });/* RCR AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xd8 });/* RCR AL,1 */
 
             cpu.EU.CondReg.CarryFlag = true;
             cpu.EU.Registers.AL = 0x1c;
@@ -67,7 +67,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_SAL()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xe0 });/* SAL AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xe0 });/* SAL AL,1 */
 
             cpu.EU.Registers.AL = 0xe0;
 
@@ -78,7 +78,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_SHR()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xe8 });/* SHR AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xe8 });/* SHR AL,1 */
 
             cpu.EU.Registers.AL = 0x07;
 
@@ -89,7 +89,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test_SAR()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0xd0, 0xf8, /* SAR AL,1 */
+            CPU cpu = GetCPU(new byte[] { 0xd0, 0xf8, /* SAR AL,1 */
                                                 0xd2, 0xfb }); /* SAR BL, CL */
 
             cpu.EU.Registers.AL = 0xe0;

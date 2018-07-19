@@ -11,7 +11,7 @@ namespace CPUConsole
 {
     class CPUConsole
     {
-        static i8086CPU cpu = new i8086CPU();
+        static CPU cpu = new CPU();
         static bool exit = false;
         static long count = 0;
         static Stopwatch sw = new Stopwatch();
@@ -34,7 +34,7 @@ namespace CPUConsole
             //DisassembleThings();
 
             Console.SetWindowSize(100, 50);
-            cpu = new i8086CPU();
+            cpu = new CPU();
             
             // laptop
             //cpu.Boot(FileLoader.LoadFile("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf.bin"));
@@ -85,7 +85,7 @@ namespace CPUConsole
 
         static void DisassembleThings()
         {
-            string dasm = Disassemble8086.Disassemble(File.ReadAllBytes("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.bin"), 0);
+            string dasm = Disassembler.Disassemble(File.ReadAllBytes("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.bin"), 0);
 
             StreamWriter sw = new StreamWriter("C:\\Users\\adam\\Downloads\\XUBR580\\pcxtbios.txt");
             sw.Write(dasm);
@@ -119,7 +119,7 @@ namespace CPUConsole
 
             Console.WriteLine();
             string dasm;
-            int bytes = (int)Disassemble8086.DisassembleNext(cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
+            int bytes = (int)Disassembler.DisassembleNext(cpu.Bus.GetNext6Bytes(), 0, 0, out dasm);
             Console.WriteLine("IP {0:X4}:{1:X4}: {2}", cpu.Bus.CS,cpu.Bus.IP,dasm);
 
             byte[] data = cpu.Bus.GetNextIPBytes(bytes);

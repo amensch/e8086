@@ -38,11 +38,11 @@ namespace KDS.e8086
         private const int TIMERS = 3;
 
         private i8253timer[] _timers;
-        private i8086CPU.InterruptFunc _intFunc;
+        private CPU.InterruptFunc _intFunc;
         private Thread _timer;
         private bool _stopTimer = false;
 
-        public i8253(i8086CPU.InterruptFunc intFunc)
+        public i8253(CPU.InterruptFunc intFunc)
         {
             //_host_frequency = Stopwatch.Frequency;
             //Active = false;

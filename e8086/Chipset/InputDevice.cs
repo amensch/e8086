@@ -11,23 +11,23 @@ namespace KDS.e8086
 
     public class InputDevice : IInputDevice
     {
-        ReadByteDelegate _read8;
-        ReadWordDelegate _read16;
+        ReadByteDelegate readByteDelegate;
+        ReadWordDelegate readWordDelegate;
 
         public InputDevice(ReadByteDelegate byteDelgate, ReadWordDelegate wordDelegate)
         {
-            _read8 = byteDelgate;
-            _read16 = wordDelegate;
+            readByteDelegate = byteDelgate;
+            readWordDelegate = wordDelegate;
         }
 
-        public byte Read()
+        public byte ReadByte()
         {
-            return _read8();
+            return readByteDelegate();
         }
 
-        public ushort Read16()
+        public ushort ReadWord()
         {
-            return _read16();
+            return readWordDelegate();
         }
     }
 }

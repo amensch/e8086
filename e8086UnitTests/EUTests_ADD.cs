@@ -7,9 +7,9 @@ namespace e8086UnitTests
     [TestClass]
     public class EUTests_ADD
     {
-        private i8086CPU GetCPU(byte[] program)
+        private CPU GetCPU(byte[] program)
         {
-            i8086CPU cpu = new i8086CPU();
+            CPU cpu = new CPU();
             cpu.Boot(program);
             cpu.Bus.DS = 0x2000;
             cpu.Bus.SS = 0x4000;
@@ -21,7 +21,7 @@ namespace e8086UnitTests
         public void Test00()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0xd8, /* ADD AL,BL */
+            CPU cpu = GetCPU(new byte[] { 0x00, 0xd8, /* ADD AL,BL */
                                       0x00, 0xd1, /* ADD CL,DL */
                                       0x00, 0xe7, /* ADD BH,AH */
                                       0x00, 0x36, 0x15, 0x01 /* ADD [0115],DH */
@@ -61,9 +61,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x00, cpu.Bus.GetData8(0x0115), "ADD (4) result failed");
+            Assert.AreEqual(0x00, cpu.Bus.GetByte(0x0115), "ADD (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (4) zero flag failed");
@@ -77,7 +77,7 @@ namespace e8086UnitTests
         public void Test01()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x01, 0xd8, /* ADD AX,BX */
+            CPU cpu = GetCPU(new byte[] { 0x01, 0xd8, /* ADD AX,BX */
                                       0x01, 0xd1, /* ADD CX,DD */
                                       0x01, 0xe7, /* ADD DI,SP */
                                       0x01, 0x36, 0x15, 0x01 /* ADD [0115],SI */
@@ -117,9 +117,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x0000, cpu.Bus.GetData16(0x0115), "ADD (4) result failed");
+            Assert.AreEqual(0x0000, cpu.Bus.GetWord(0x0115), "ADD (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (4) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (4) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (4) zero flag failed");
@@ -133,7 +133,7 @@ namespace e8086UnitTests
         public void Test02()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x02, 0xd8, /* ADD BL,AL */
+            CPU cpu = GetCPU(new byte[] { 0x02, 0xd8, /* ADD BL,AL */
                                       0x02, 0xd1, /* ADD DL,CL */
                                       0x02, 0xe7, /* ADD AH,BH */
                                       0x02, 0x36, 0x15, 0x01 /* ADD DH,[0115] */
@@ -173,7 +173,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveData8(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.DH, "ADD (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (4) carry flag failed");
@@ -189,7 +189,7 @@ namespace e8086UnitTests
         public void Test03()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x03, 0xd8, /* ADD BX,AX */
+            CPU cpu = GetCPU(new byte[] { 0x03, 0xd8, /* ADD BX,AX */
                                       0x03, 0xd1, /* ADD DX,CX */
                                       0x03, 0xe7, /* ADD SP,DI */
                                       0x03, 0x36, 0x15, 0x01 /* ADD SI,[0115] */
@@ -229,7 +229,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveData16(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.EU.Registers.SI, "ADD (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (4) carry flag failed");
@@ -246,7 +246,7 @@ namespace e8086UnitTests
         public void Test04()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x04, 0x28, /* ADD AL,28H */
+            CPU cpu = GetCPU(new byte[] { 0x04, 0x28, /* ADD AL,28H */
                                       0x04, 0x80, /* ADD AL,80H */
                                       0x04, 0x40 /* ADD BH,40H */
                         });
@@ -286,7 +286,7 @@ namespace e8086UnitTests
         public void Test05()
         {
             // Test Flags
-            i8086CPU cpu = GetCPU(new byte[] { 0x05, 0x00, 0x28, /* ADD AX,2800H */
+            CPU cpu = GetCPU(new byte[] { 0x05, 0x00, 0x28, /* ADD AX,2800H */
                                       0x05, 0x00, 0x80, /* ADD AX,8000H */
                                       0x05, 0x00, 0x40 /* ADD AX,4000H */
                         });
@@ -326,7 +326,7 @@ namespace e8086UnitTests
         [TestMethod]
         public void Test80()
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x80, 0xc1, 0x80 });
+            CPU cpu = GetCPU(new byte[] { 0x80, 0xc1, 0x80 });
             cpu.EU.Registers.CL = 0x80;  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.CL, "ADD (1) result failed");
@@ -339,9 +339,9 @@ namespace e8086UnitTests
 
 
             cpu = GetCPU(new byte[] { 0x80, 0x06, 0x15, 0x01, 0x80 }); /* SBB [0115],80h */
-            cpu.Bus.SaveData8(0x0115, 0x80);  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
+            cpu.Bus.SaveByte(0x0115, 0x80);  // 80+80=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=1
             cpu.NextInstruction();
-            Assert.AreEqual(0x00, cpu.Bus.GetData8(0x0115), "ADD (2) result failed");
+            Assert.AreEqual(0x00, cpu.Bus.GetByte(0x0115), "ADD (2) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
@@ -350,9 +350,9 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADD (2) overflow flag failed");
 
             cpu = GetCPU(new byte[] { 0x81, 0x06, 0x15, 0x01, 0x80, 0x2e }); /* SBB [0115],2e80h */
-            cpu.Bus.SaveData16(0x0115, 0x1234);  // 1234+2e80=40b4.  Carry=0, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveWord(0x0115, 0x1234);  // 1234+2e80=40b4.  Carry=0, Parity=0, Zero=0, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
-            Assert.AreEqual(0x40b4, cpu.Bus.GetData16(0x0115), "ADD (2) result failed");
+            Assert.AreEqual(0x40b4, cpu.Bus.GetWord(0x0115), "ADD (2) result failed");
             Assert.AreEqual(false, cpu.EU.CondReg.CarryFlag, "ADD (2) carry flag failed");
             Assert.AreEqual(true, cpu.EU.CondReg.ParityFlag, "ADD (2) parity flag failed");
             Assert.AreEqual(false, cpu.EU.CondReg.ZeroFlag, "ADD (2) zero flag failed");
@@ -378,7 +378,7 @@ namespace e8086UnitTests
 
         public void AdditionTest(byte a, byte b, byte expected_result, bool expected_of, bool expected_sf, bool expected_zf, bool expected_cf)
         {
-            i8086CPU cpu = GetCPU(new byte[] { 0x00, 0xd8 });  // add al,bl
+            CPU cpu = GetCPU(new byte[] { 0x00, 0xd8 });  // add al,bl
             cpu.EU.Registers.AL = a;
             cpu.EU.Registers.BL = b;
             cpu.NextInstruction();

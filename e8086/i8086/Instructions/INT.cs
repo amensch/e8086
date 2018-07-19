@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace KDS.e8086
+{
+    public class INT : Instruction
+    {
+        private int InterruptNumber = 0;
+        private bool DoInterrupt = false;
+
+        public INT(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
+        {
+            DoInterrupt = true;
+        }
+
+        public INT(byte opCode, int interruptNumber, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
+        {
+            DoInterrupt = true;
+            InterruptNumber = interruptNumber;
+        }
+
+        public INT(byte opCode, bool interruptCondition, int interruptNumber, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
+        {
+            DoInterrupt = interruptCondition;
+            InterruptNumber = interruptNumber;
+        }
+
+        protected override void PreProcessing()
+        {
+            base.PreProcessing();
+            if(InterruptNumber == 0)
+            {
+                InterruptNumber = EU.Bus.NextIP();
+            }
+        }
+
+        protected override void ExecuteInstruction()
+        {
+            if (DoInterrupt)
+            {
+                // push flags
+                Push(EU.CondReg.Value);
+
+                // push CS and IP
+                Push(Bus.CS);
+                Push(Bus.IP);
+
+                // clear trap flag
+                EU.CondReg.TrapFlag = false;
+
+                // clear interrupt enable
+                EU.CondReg.InterruptEnable = false;
+
+                // replace IP by first word of interrupt pointer
+                Bus.IP = Bus.GetWord(0, InterruptNumber * 4);
+
+                // the second word of the interrupt pointer replaces CS
+                Bus.CS = Bus.GetWord(0, (InterruptNumber * 4) + 2);
+            }
+        }
+    }
+}
