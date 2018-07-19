@@ -16,6 +16,10 @@ namespace KDS.e8086
             {
                 DoInstruction();
             }
+            else if(EU.RepeatMode != RepeatModeEnum.NoRepeat && EU.Registers.CX == 0)
+            {
+                // If repeat is on but CX is 0 do not carry out the instruction.
+            }
             else
             {
                 do

@@ -307,7 +307,10 @@ namespace KDS.e8086
             instructions.Add(0x69, new IMUL_ImmediateWord(0x69, this, Bus));
             instructions.Add(0x6a, new PUSH_ImmediateByte(0x6a, this, Bus));
             instructions.Add(0x6b, new IMUL_ImmediateByte(0x6b, this, Bus));
-
+            instructions.Add(0x6c, new INS(0x6c, this, Bus));
+            instructions.Add(0x6d, new INS(0x6d, this, Bus));
+            instructions.Add(0x6e, new OUTS(0x6e, this, Bus));
+            instructions.Add(0x6f, new OUTS(0x6f, this, Bus));
             instructions.Add(0x70, new JO(0x70, this, Bus));
             instructions.Add(0x71, new JNO(0x71, this, Bus));
             instructions.Add(0x72, new JC(0x72, this, Bus));
@@ -462,98 +465,98 @@ namespace KDS.e8086
             instructions.Add(0xfe, new GRP4(0xfe, this, Bus));
             instructions.Add(0xff, new GRP5(0xff, this, Bus));
 
-            OpTable[0x6c] = new OpCodeRecord(() => // INSB
-            {
-                // if repetition is on but CX is 0 then do nothing
-                if( ( _repeat ) && ( Registers.CX == 0 ) )
-                {
-                }
-                else
-                {
-                    do
-                    {
-                        Execute_IN_String();
+            //OpTable[0x6c] = new OpCodeRecord(() => // INSB
+            //{
+            //    // if repetition is on but CX is 0 then do nothing
+            //    if( ( _repeat ) && ( Registers.CX == 0 ) )
+            //    {
+            //    }
+            //    else
+            //    {
+            //        do
+            //        {
+            //            Execute_IN_String();
 
-                        if (CondReg.DirectionFlag)
-                            Registers.DI--;
-                        else
-                            Registers.DI++;
+            //            if (CondReg.DirectionFlag)
+            //                Registers.DI--;
+            //            else
+            //                Registers.DI++;
 
-                        if (_repeat)
-                            Registers.CX--;
-                    } while (Registers.CX != 0);
-                    _repeat = false;
-                }
-            });
-            OpTable[0x6d] = new OpCodeRecord(() => // INSW
-            {
-                // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (Registers.CX == 0))
-                {
-                }
-                else
-                {
-                    do
-                    {
-                        Execute_IN_String();
+            //            if (_repeat)
+            //                Registers.CX--;
+            //        } while (Registers.CX != 0);
+            //        _repeat = false;
+            //    }
+            //});
+            //OpTable[0x6d] = new OpCodeRecord(() => // INSW
+            //{
+            //    // if repetition is on but CX is 0 then do nothing
+            //    if ((_repeat) && (Registers.CX == 0))
+            //    {
+            //    }
+            //    else
+            //    {
+            //        do
+            //        {
+            //            Execute_IN_String();
 
-                            if (CondReg.DirectionFlag)
-                                Registers.DI -= 2;
-                            else
-                                Registers.DI += 2;
+            //                if (CondReg.DirectionFlag)
+            //                    Registers.DI -= 2;
+            //                else
+            //                    Registers.DI += 2;
 
-                        if (_repeat)
-                            Registers.CX--;
-                    } while (Registers.CX != 0);
-                    _repeat = false;
-                }
-            });
-            OpTable[0x6e] = new OpCodeRecord(() => // OUTSB
-            {
-                // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (Registers.CX == 0))
-                {
-                }
-                else
-                {
-                    do
-                    {
-                        Execute_OUT_String();
+            //            if (_repeat)
+            //                Registers.CX--;
+            //        } while (Registers.CX != 0);
+            //        _repeat = false;
+            //    }
+            //});
+            //OpTable[0x6e] = new OpCodeRecord(() => // OUTSB
+            //{
+            //    // if repetition is on but CX is 0 then do nothing
+            //    if ((_repeat) && (Registers.CX == 0))
+            //    {
+            //    }
+            //    else
+            //    {
+            //        do
+            //        {
+            //            Execute_OUT_String();
 
-                        if (CondReg.DirectionFlag)
-                            Registers.SI -= 1;
-                        else
-                            Registers.SI += 1;
+            //            if (CondReg.DirectionFlag)
+            //                Registers.SI -= 1;
+            //            else
+            //                Registers.SI += 1;
 
-                        if (_repeat)
-                            Registers.CX--;
-                    } while (Registers.CX != 0);
-                    _repeat = false;
-                }
-            });
-            OpTable[0x6f] = new OpCodeRecord(() => // OUTSW
-            {
-                // if repetition is on but CX is 0 then do nothing
-                if ((_repeat) && (Registers.CX == 0))
-                {
-                }
-                else
-                {
-                    do
-                    {
-                        Execute_OUT_String();
+            //            if (_repeat)
+            //                Registers.CX--;
+            //        } while (Registers.CX != 0);
+            //        _repeat = false;
+            //    }
+            //});
+            //OpTable[0x6f] = new OpCodeRecord(() => // OUTSW
+            //{
+            //    // if repetition is on but CX is 0 then do nothing
+            //    if ((_repeat) && (Registers.CX == 0))
+            //    {
+            //    }
+            //    else
+            //    {
+            //        do
+            //        {
+            //            Execute_OUT_String();
 
-                        if (CondReg.DirectionFlag)
-                            Registers.SI -= 2;
-                        else
-                            Registers.SI += 2;
+            //            if (CondReg.DirectionFlag)
+            //                Registers.SI -= 2;
+            //            else
+            //                Registers.SI += 2;
 
-                        if (_repeat)
-                            Registers.CX--;
-                    } while (Registers.CX != 0);
-                    _repeat = false;
-                }
-            });
+            //            if (_repeat)
+            //                Registers.CX--;
+            //        } while (Registers.CX != 0);
+            //        _repeat = false;
+            //    }
+            //});
 
         }
 

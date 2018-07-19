@@ -102,6 +102,7 @@
     <Compile Include="i8086\Base Instructions\LogicalInstruction.cs" />
     <Compile Include="i8086\Base Instructions\LogicalImmediate.cs" />
     <Compile Include="i8086\Instructions\INC_RegMem.cs" />
+    <Compile Include="i8086\Instructions\INS.cs" />
     <Compile Include="i8086\Instructions\INT.cs" />
     <Compile Include="i8086\Instructions\InvalidInstruction.cs" />
     <Compile Include="i8086\Instructions\IN_Immediate.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="i8086\Instructions\OR.cs" />
     <Compile Include="i8086\Instructions\OR_Immediate.cs" />
     <Compile Include="i8086\Instructions\OR_ImmediateToReg.cs" />
+    <Compile Include="i8086\Instructions\OUTS.cs" />
     <Compile Include="i8086\Instructions\OUT_Immediate.cs" />
     <Compile Include="i8086\Instructions\OUT_Reg.cs" />
     <Compile Include="i8086\Instructions\POP.cs" />
