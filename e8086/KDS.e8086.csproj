@@ -186,8 +186,6 @@
     <Compile Include="i8086\CPU.cs" />
     <Compile Include="i8086\ExecutionUnit.cs" />
     <Compile Include="i8086\Registers.cs" />
-    <Compile Include="i8086\OpCode List\OpCodeRecord.cs" />
-    <Compile Include="i8086\OpCode List\OpCodeTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statistics\Statistics.cs" />
     <Compile Include="Windows\NumberDialog.cs">
