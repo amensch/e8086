@@ -14,7 +14,15 @@ namespace KDS.e8086
         public GroupInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)
         {
             instructions = new Dictionary<int, TwoByteInstruction>();
-            LoadInstructionList();
+        }
+
+        protected override void PreProcessing()
+        {
+            base.PreProcessing();
+            if(instructions.Count == 0)
+            {
+                LoadInstructionList();
+            }
         }
 
         protected abstract void LoadInstructionList();
