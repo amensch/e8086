@@ -55,8 +55,7 @@ namespace KDS.e8086
         public IBus Bus { get; private set; }
 
         // I/O Ports
-        private Dictionary<int, IInputDevice> InputDevices;
-        private Dictionary<int, IOutputDevice> OutputDevices;
+        private Dictionary<int, IODevice> Devices;
 
         // Repeat flag
         public RepeatModeEnum RepeatMode { get; set; }
@@ -70,8 +69,7 @@ namespace KDS.e8086
             Halted = false;
             RepeatMode = RepeatModeEnum.NoRepeat;
 
-            InputDevices = new Dictionary<int, IInputDevice>();
-            OutputDevices = new Dictionary<int, IOutputDevice>();
+            Devices = new Dictionary<int, IODevice>();
 
             LoadInstructionList();
         }
@@ -169,23 +167,6 @@ namespace KDS.e8086
 
         }
 
-        public void AddInputDevice(int port, IInputDevice device)
-        {
-            if (InputDevices.ContainsKey(port))
-            {
-                InputDevices.Remove(port);
-            }
-            InputDevices.Add(port, device);
-        }
-
-        public void AddOutputDevice(int port, IOutputDevice device)
-        {
-            if (OutputDevices.ContainsKey(port))
-            {
-                OutputDevices.Remove(port);
-            }
-            OutputDevices.Add(port, device);
-        }
 
         private void LoadInstructionList()
         {
@@ -456,14 +437,18 @@ namespace KDS.e8086
             instructions.Add(0xff, new GRP5(0xff, this, Bus));
         }
 
-        public bool TryGetInputDevice(ushort port, out IInputDevice device)
+        public void AddDevice(int port, IODevice device)
         {
-            return (InputDevices.TryGetValue(port, out device));
+            if(Devices.ContainsKey(port))
+            {
+                Devices.Remove(port);
+            }
+            Devices.Add(port, device);
         }
 
-        public bool TryGetOutputDevice(ushort port, out IOutputDevice device)
+        public bool TryGetDevice(ushort port, out IODevice device)
         {
-            return (OutputDevices.TryGetValue(port, out device));
+            return (Devices.TryGetValue(port, out device));
         }
 
         public void Interrupt(int interrupt_num)

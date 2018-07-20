@@ -73,18 +73,15 @@ namespace KDS.e8086
         */
 
         public delegate void InterruptFunc(byte int_number);
-        
-        // CPU Components
-        private ExecutionUnit _eu;
-        private BusInterface _bus;
+        public ExecutionUnit EU { get; private set; }
+        public BusInterface Bus { get; private set; }
 
         // External chips
-        private i8259 _i8259;  // interrupts (PIC)
+        private Intel8259 _i8259;  // interrupts (PIC)
         private i8253 _i8253;  // timer (PIT)
 
         // List of interrupts - thread safe FIFO queue
         private ConcurrentQueue<byte> _interrupts;
-
 
         public CPU()
         {
@@ -94,13 +91,13 @@ namespace KDS.e8086
         public void Reset()
         {
             _interrupts = new ConcurrentQueue<byte>();
-            _bus = new BusInterface();
-            _bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
+            Bus = new BusInterface();
+            Bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\rombasic.bin"), 0xf6000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\videorom.bin"), 0xc0000);
 
-            _eu = new ExecutionUnit(_bus);
+            EU = new ExecutionUnit(Bus);
 
             // 0x00 - 0x0f: DMA Chip 8237A-5
 
@@ -129,15 +126,15 @@ namespace KDS.e8086
 
         private void Init8259()
         {
-            _i8259 = new i8259(AddInterrupt);
+            _i8259 = new Intel8259(AddInterrupt);
 
             // i8259 input devices (PIC)
-            _eu.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
-            _eu.AddInputDevice(0x21, new InputDevice(_i8259.ReadPicData, _i8259.ReadPicData16));
+            //EU.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
+            //EU.AddInputDevice(0x21, new InputDevice(_i8259.ReadPicData, _i8259.ReadPicData16));
 
-            // i8259 output devices (PIC)
-            _eu.AddOutputDevice(0x20, new OutputDevice(_i8259.WritePicCommand, _i8259.WritePicCommand));
-            _eu.AddOutputDevice(0x21, new OutputDevice(_i8259.WritePicData, _i8259.WritePicData));
+            //// i8259 output devices (PIC)
+            //EU.AddOutputDevice(0x20, new OutputDevice(_i8259.WritePicCommand, _i8259.WritePicCommand));
+            //EU.AddOutputDevice(0x21, new OutputDevice(_i8259.WritePicData, _i8259.WritePicData));
         }
 
         private void Init8253()
@@ -145,23 +142,23 @@ namespace KDS.e8086
             _i8253 = new i8253(AddInterrupt);
 
             //i8253 input devices(PIT)
-            _eu.AddInputDevice(0x40, new InputDevice(_i8253.ReadCounter1, _i8253.Read16));
-            _eu.AddInputDevice(0x41, new InputDevice(_i8253.ReadCounter2, _i8253.Read16));
-            _eu.AddInputDevice(0x42, new InputDevice(_i8253.ReadCounter3, _i8253.Read16));
-            _eu.AddInputDevice(0x43, new InputDevice(_i8253.ReadControlWord, _i8253.Read16));
+            //EU.AddInputDevice(0x40, new InputDevice(_i8253.ReadCounter1, _i8253.Read16));
+            //EU.AddInputDevice(0x41, new InputDevice(_i8253.ReadCounter2, _i8253.Read16));
+            //EU.AddInputDevice(0x42, new InputDevice(_i8253.ReadCounter3, _i8253.Read16));
+            //EU.AddInputDevice(0x43, new InputDevice(_i8253.ReadControlWord, _i8253.Read16));
 
-            ////i8253 output devices(PIT)
-            _eu.AddOutputDevice(0x40, new OutputDevice(_i8253.WriteCounter1, _i8253.WriteCounter));
-            _eu.AddOutputDevice(0x41, new OutputDevice(_i8253.WriteCounter2, _i8253.WriteCounter));
-            _eu.AddOutputDevice(0x42, new OutputDevice(_i8253.WriteCounter3, _i8253.WriteCounter));
-            _eu.AddOutputDevice(0x43, new OutputDevice(_i8253.WriteControlWord, _i8253.WriteControlWord));
+            //////i8253 output devices(PIT)
+            //EU.AddOutputDevice(0x40, new OutputDevice(_i8253.WriteCounter1, _i8253.WriteCounter));
+            //EU.AddOutputDevice(0x41, new OutputDevice(_i8253.WriteCounter2, _i8253.WriteCounter));
+            //EU.AddOutputDevice(0x42, new OutputDevice(_i8253.WriteCounter3, _i8253.WriteCounter));
+            //EU.AddOutputDevice(0x43, new OutputDevice(_i8253.WriteControlWord, _i8253.WriteControlWord));
         }
 
         public void Boot(byte[] program)
         {
             // For now we will hard code the BIOS to start at a particular code segment.
-            _bus = new BusInterface(0x0000, 0x0100, program);
-            _eu = new ExecutionUnit(_bus);
+            Bus = new BusInterface(0x0000, 0x0100, program);
+            EU = new ExecutionUnit(Bus);
         }
 
         public void AddInterrupt(byte int_number)
@@ -179,46 +176,38 @@ namespace KDS.e8086
                 // check for interrupt
                 if( _interrupts.TryDequeue(out int_number))
                 {
-                    if( _eu.CondReg.InterruptEnable )
+                    if( EU.CondReg.InterruptEnable )
                     {
-                        _eu.Interrupt(int_number);
+                        EU.Interrupt(int_number);
                     }
                 }
 
                 NextInstructionDebug();
                 count++;
-            } while (!_eu.Halted);
+            } while (!EU.Halted);
             return count;
         }
 
         public void NextInstruction()
         {
-            _eu.Tick();
+            EU.Tick();
         }
 
         public void NextInstruction(out string dasm)
         {
-            Disassembler.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
+            Disassembler.DisassembleNext(Bus.GetNext6Bytes(), 0, 0, out dasm);
             NextInstruction();
         }
 
         public void NextInstructionDebug()
         {
             string dasm;
-            Disassembler.DisassembleNext(_bus.GetNext6Bytes(), 0, 0, out dasm);
-            Debug.WriteLine(_bus.CS.ToString("X4") + ":" + _bus.IP.ToString("X4") + " " + dasm);
+            Disassembler.DisassembleNext(Bus.GetNext6Bytes(), 0, 0, out dasm);
+            Debug.WriteLine(Bus.CS.ToString("X4") + ":" + Bus.IP.ToString("X4") + " " + dasm);
             NextInstruction();
         }
 
-        public ExecutionUnit EU
-        {
-            get { return _eu; }
-        }
 
-        public BusInterface Bus
-        {
-            get { return _bus; }
-        }
 
     }
 }

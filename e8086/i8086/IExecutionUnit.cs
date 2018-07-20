@@ -18,8 +18,7 @@ namespace KDS.e8086
         Registers Registers { get; }
         ConditionalRegister CondReg { get; }
 
-        bool TryGetInputDevice(ushort port, out IInputDevice device);
-        bool TryGetOutputDevice(ushort port, out IOutputDevice device);
+        bool TryGetDevice(ushort port, out IODevice device);
 
         bool Halted { get; set; }
 

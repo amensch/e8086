@@ -13,17 +13,10 @@ namespace KDS.e8086
 
         protected override void ExecuteInstruction()
         {
-            IOutputDevice device;
-            if (EU.TryGetOutputDevice(port, out device))
+            IODevice device;
+            if (EU.TryGetDevice(port, out device))
             {
-                if (wordSize == 0)
-                {
-                    device.Write(EU.Registers.AL);
-                }
-                else
-                {
-                    device.Write(EU.Registers.AX);
-                }
+                device.writeData(wordSize, EU.Registers.AX);
             }
         }
     }

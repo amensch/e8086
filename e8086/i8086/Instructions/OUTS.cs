@@ -12,13 +12,13 @@ namespace KDS.e8086
 
         protected override void DoInstruction()
         {
-            IOutputDevice device;
-            if (EU.TryGetOutputDevice(EU.Registers.DX, out device))
+            IODevice device;
+            if (EU.TryGetDevice(EU.Registers.DX, out device))
             {
                 if(wordSize == 0)
-                    device.Write(Bus.GetByteDestString(EU.Registers.SI));
+                    device.Write(wordSize, Bus.GetByteDestString(EU.Registers.SI));
                 else
-                    device.Write(Bus.GetWordDestString(EU.Registers.SI));
+                    device.Write(wordSize, Bus.GetWordDestString(EU.Registers.SI));
             }
 
 

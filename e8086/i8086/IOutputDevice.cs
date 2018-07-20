@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace KDS.e8086
 {
     public interface IOutputDevice
-    {
-        void Write(byte data);
-        void Write(ushort data);
+    { 
+        void Write(int wordSize, int data);
     }
 }

@@ -49,11 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chipset\IODevice.cs" />
     <Compile Include="i8086\AddressMode.cs" />
     <Compile Include="Chipset\i8253.cs" />
-    <Compile Include="Chipset\i8259.cs" />
-    <Compile Include="Chipset\InputDevice.cs" />
-    <Compile Include="Chipset\OutputDevice.cs" />
+    <Compile Include="Chipset\Intel8259.cs" />
     <Compile Include="i8086\Base Instructions\GroupInstruction.cs" />
     <Compile Include="i8086\Base Instructions\InputInstruction.cs" />
     <Compile Include="i8086\Base Instructions\LoadSegmentInstruction.cs" />

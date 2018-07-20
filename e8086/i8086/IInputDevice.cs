@@ -8,7 +8,6 @@ namespace KDS.e8086
 {
     public interface IInputDevice
     {
-        byte ReadByte();
-        ushort ReadWord();
+        int ReadData(int wordSize);
     }
 }
