@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class XOR_Immediate : LogicalImmediate
+    internal class XOR_Immediate : LogicalImmediate
     {
         public XOR_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

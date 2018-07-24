@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class SALC : Instruction
+    internal class SALC : Instruction
     {
         public SALC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CALL_Near : Instruction
+    internal class CALL_Near : Instruction
     {
         public CALL_Near(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

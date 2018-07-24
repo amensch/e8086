@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LDS : LoadSegmentInstruction
+    internal class LDS : LoadSegmentInstruction
     {
         public LDS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

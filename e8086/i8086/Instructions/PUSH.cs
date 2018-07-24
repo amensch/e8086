@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// 
     /// </summary>
-    public class PUSH : Instruction
+    internal class PUSH : Instruction
     {
         public PUSH(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

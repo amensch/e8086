@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class GroupInstruction : TwoByteInstruction
+    internal abstract class GroupInstruction : TwoByteInstruction
     {
-        protected int source;
+        protected int source = 0;
         protected Dictionary<int, TwoByteInstruction> instructions;
 
         public GroupInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)

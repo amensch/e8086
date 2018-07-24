@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class AND : LogicalInstruction
+    internal class AND : LogicalInstruction
     {
         public AND(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -18,9 +18,10 @@ namespace KDS.e8086
         Registers Registers { get; }
         ConditionalRegister CondReg { get; }
 
-        bool TryGetDevice(ushort port, out IODevice device);
-
         bool Halted { get; set; }
+
+        int ReadPort(int wordSize, ushort port);
+        void WritePort(int wordSize, ushort port, int data);
 
         /// <summary>
         /// Mode Value

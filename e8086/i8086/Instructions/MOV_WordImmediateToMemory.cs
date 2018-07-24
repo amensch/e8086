@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class MOV_WordImmediateToMemory : TwoByteInstruction
+    internal class MOV_WordImmediateToMemory : TwoByteInstruction
     {
         public MOV_WordImmediateToMemory(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

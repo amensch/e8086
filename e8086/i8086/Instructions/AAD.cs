@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// AAD: Ascii Adjust Divide
     /// </summary>
-    public class AAD : Instruction
+    internal class AAD : Instruction
     {
         public AAD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

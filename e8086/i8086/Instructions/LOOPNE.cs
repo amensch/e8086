@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LOOPNE : LOOP
+    internal class LOOPNE : LOOP
     {
         public LOOPNE(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

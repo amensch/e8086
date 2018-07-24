@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// DAA: Decimal Adjust Add
     /// </summary>
-    public class DAA : Instruction
+    internal class DAA : Instruction
     {
         public DAA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

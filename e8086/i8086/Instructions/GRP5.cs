@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class GRP5 : GroupInstruction
+    internal class GRP5 : GroupInstruction
     {
         public GRP5(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -31,7 +31,7 @@ namespace KDS.e8086
         }
     }
 
-    public class CALL_RegMem : TwoByteInstruction
+    internal class CALL_RegMem : TwoByteInstruction
     {
         public CALL_RegMem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override void ExecuteInstruction()
@@ -43,7 +43,7 @@ namespace KDS.e8086
         }
     }
 
-    public class CALL_Mem : TwoByteInstruction
+    internal class CALL_Mem : TwoByteInstruction
     {
         public CALL_Mem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -58,7 +58,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JMP_RegMem : TwoByteInstruction
+    internal class JMP_RegMem : TwoByteInstruction
     {
         public JMP_RegMem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -70,7 +70,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JMP_Mem : TwoByteInstruction
+    internal class JMP_Mem : TwoByteInstruction
     {
         public JMP_Mem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -83,7 +83,7 @@ namespace KDS.e8086
         }
     }
 
-    public class PUSH_Mem : TwoByteInstruction
+    internal class PUSH_Mem : TwoByteInstruction
     {
         public PUSH_Mem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

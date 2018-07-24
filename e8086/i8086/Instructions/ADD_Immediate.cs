@@ -11,7 +11,7 @@ namespace KDS.e8086
     /// operand1 = operand1 + operand2
     /// Flags: O S Z A P C    
     /// </summary>    
-    public class ADD_Immediate : ADD
+    internal class ADD_Immediate : ADD
     {
         public ADD_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

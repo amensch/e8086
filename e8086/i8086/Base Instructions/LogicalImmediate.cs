@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class LogicalImmediate : LogicalInstruction
+    internal abstract class LogicalImmediate : LogicalInstruction
     {
         public LogicalImmediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

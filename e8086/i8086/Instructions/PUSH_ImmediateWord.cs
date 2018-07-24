@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// OpCode 0x68: PUSH Imm-16
     /// </summary>
-    public class PUSH_ImmediateWord : Instruction
+    internal class PUSH_ImmediateWord : Instruction
     {
         public PUSH_ImmediateWord(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

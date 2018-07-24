@@ -10,7 +10,7 @@ namespace KDS.e8086
     /// REPNE, REPNZ are 2 mnemonics for the same instruction
     /// Repeat while not zero -- stop repeating when zero flag = true
     /// </summary>
-    public class REPNZ : Instruction
+    internal class REPNZ : Instruction
     {
         public REPNZ(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

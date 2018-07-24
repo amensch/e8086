@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LAHF : Instruction
+    internal class LAHF : Instruction
     {
         public LAHF(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

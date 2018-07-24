@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class ADC_Immediate : ADD_Immediate
+    internal class ADC_Immediate : ADD_Immediate
     {
         public ADC_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

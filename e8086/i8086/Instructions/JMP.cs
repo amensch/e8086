@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class JMP: ShortJumpInstruction
+    internal class JMP: ShortJumpInstruction
     {
         public JMP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -16,7 +16,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JCXZ : ShortJumpInstruction
+    internal class JCXZ : ShortJumpInstruction
     {
         public JCXZ(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -26,7 +26,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JO : ShortJumpInstruction
+    internal class JO : ShortJumpInstruction
     {
         public JO(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -35,7 +35,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNO : ShortJumpInstruction
+    internal class JNO : ShortJumpInstruction
     {
         public JNO(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -44,7 +44,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JC : ShortJumpInstruction
+    internal class JC : ShortJumpInstruction
     {
         public JC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -53,7 +53,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNC : ShortJumpInstruction
+    internal class JNC : ShortJumpInstruction
     {
         public JNC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -62,7 +62,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JZ : ShortJumpInstruction
+    internal class JZ : ShortJumpInstruction
     {
         public JZ(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -71,7 +71,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNZ : ShortJumpInstruction
+    internal class JNZ : ShortJumpInstruction
     {
         public JNZ(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -80,7 +80,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNA : ShortJumpInstruction
+    internal class JNA : ShortJumpInstruction
     {
         public JNA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -89,7 +89,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JA : ShortJumpInstruction
+    internal class JA : ShortJumpInstruction
     {
         public JA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -98,7 +98,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JS : ShortJumpInstruction
+    internal class JS : ShortJumpInstruction
     {
         public JS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -107,7 +107,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNS : ShortJumpInstruction
+    internal class JNS : ShortJumpInstruction
     {
         public JNS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -116,7 +116,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JP : ShortJumpInstruction
+    internal class JP : ShortJumpInstruction
     {
         public JP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -125,7 +125,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNP : ShortJumpInstruction
+    internal class JNP : ShortJumpInstruction
     {
         public JNP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -134,7 +134,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JL : ShortJumpInstruction
+    internal class JL : ShortJumpInstruction
     {
         public JL(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -143,7 +143,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNL : ShortJumpInstruction
+    internal class JNL : ShortJumpInstruction
     {
         public JNL(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -152,7 +152,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JNG : ShortJumpInstruction
+    internal class JNG : ShortJumpInstruction
     {
         public JNG(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()
@@ -161,7 +161,7 @@ namespace KDS.e8086
         }
     }
 
-    public class JG : ShortJumpInstruction
+    internal class JG : ShortJumpInstruction
     {
         public JG(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
         protected override bool JumpDecision()

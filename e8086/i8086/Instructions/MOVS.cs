@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class MOVS : RepeatableInstruction
+    internal class MOVS : RepeatableInstruction
     {
         public MOVS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class PUSHA : Instruction
+    internal class PUSHA : Instruction
     {
         public PUSHA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

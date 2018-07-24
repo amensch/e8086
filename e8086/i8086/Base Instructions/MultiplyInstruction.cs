@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class MultiplyInstruction : TwoByteInstruction
+    internal abstract class MultiplyInstruction : TwoByteInstruction
     {
         public MultiplyInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

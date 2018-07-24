@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CMP_Immediate : SUB_Immediate
+    internal class CMP_Immediate : SUB_Immediate
     {
         public CMP_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

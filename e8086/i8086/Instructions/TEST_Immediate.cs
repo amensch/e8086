@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class TEST_Immediate : AND_Immediate
+    internal class TEST_Immediate : AND_Immediate
     {
         public TEST_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

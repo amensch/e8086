@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class INC_RegMem : TwoByteInstruction
+    internal class INC_RegMem : TwoByteInstruction
     {
         public INC_RegMem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

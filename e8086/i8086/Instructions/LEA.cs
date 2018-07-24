@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LEA : TwoByteInstruction
+    internal class LEA : TwoByteInstruction
     {
         public LEA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

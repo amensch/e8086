@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// MOV MEM <-> IMM (8 and 16)
     /// </summary>
-    public class MOV_MemImmediate : Instruction
+    internal class MOV_MemImmediate : Instruction
     {
         public MOV_MemImmediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -17,7 +17,7 @@ namespace KDS.e8086
         The PIT oscillator runs at 1.193182 Mhz.
     */
 
-    public class i8253 
+    internal class Intel8253 
     {
 
         private enum TimerAccessMode
@@ -28,7 +28,7 @@ namespace KDS.e8086
             BothBytes = 3
         };
 
-        private class i8253timer
+        private class Intel8253Timer
         {
             public TimerAccessMode AccessMode { get; set; }
             public TimerAccessMode ToggleMode { get; set; }
@@ -37,20 +37,20 @@ namespace KDS.e8086
 
         private const int TIMERS = 3;
 
-        private i8253timer[] _timers;
+        private Intel8253Timer[] _timers;
         private CPU.InterruptFunc _intFunc;
         private Thread  _timer;
         private bool _stopTimer = false;
 
-        public i8253(CPU.InterruptFunc intFunc)
+        public Intel8253(CPU.InterruptFunc intFunc)
         {
             //_host_frequency = Stopwatch.Frequency;
             //Active = false;
-            _timers = new i8253timer[TIMERS];
+            _timers = new Intel8253Timer[TIMERS];
             _intFunc = intFunc;
             for( int ii=0; ii < TIMERS; ii++ )
             {
-                _timers[ii] = new i8253timer();
+                _timers[ii] = new Intel8253Timer();
             }
         }
 

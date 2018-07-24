@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class Instruction
+    internal abstract class Instruction
     {
         public byte OpCode { get; private set; }
         protected AddressMode OpCodeMode { get; private set; }

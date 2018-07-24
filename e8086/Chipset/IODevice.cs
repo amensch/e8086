@@ -6,28 +6,10 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public delegate int ReadDeviceDelegate(int wordSize);
-    public delegate void WriteDataDelegate(int wordSize, int data);
-
-    public class IODevice : IInputDevice, IOutputDevice
+    public interface IODevice
     {
-        protected ReadDeviceDelegate readDelegate;
-        protected WriteDataDelegate writeData;
-
-        public IODevice(ReadDeviceDelegate read, WriteDataDelegate write)
-        {
-            readDelegate = read;
-            writeData = write;
-        }
-
-        public int ReadData(int wordSize)
-        {
-            return readDelegate(wordSize);
-        }
-
-        public void Write(int wordSize, int data)
-        {
-            writeData(wordSize, data);
-        }
+        bool IsListening(ushort port);
+        int ReadData(int wordSize, ushort port);
+        void WriteData(int wordSize, ushort port, int data);
     }
 }

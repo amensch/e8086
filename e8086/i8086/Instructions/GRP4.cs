@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class GRP4 : GroupInstruction
+    internal class GRP4 : GroupInstruction
     {
         public GRP4(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class OUT_Immediate : OutputInstruction
+    internal class OUT_Immediate : OutputInstruction
     {
         public OUT_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

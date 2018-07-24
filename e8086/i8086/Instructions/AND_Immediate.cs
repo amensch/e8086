@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class AND_Immediate : LogicalImmediate
+    internal class AND_Immediate : LogicalImmediate
     {
         public AND_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

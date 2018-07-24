@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CMPS : RepeatableInstruction
+    internal class CMPS : RepeatableInstruction
     {
         public CMPS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CMP : SUB
+    internal class CMP : SUB
     {
         public CMP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

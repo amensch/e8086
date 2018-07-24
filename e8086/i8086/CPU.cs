@@ -77,8 +77,8 @@ namespace KDS.e8086
         public BusInterface Bus { get; private set; }
 
         // External chips
-        private Intel8259 _i8259;  // interrupts (PIC)
-        private i8253 _i8253;  // timer (PIT)
+        private IODevice PIC;  // interrupts (PIC - Intel8259)
+        private IODevice PIT;  // timer (PIT - Intel8253)
 
         // List of interrupts - thread safe FIFO queue
         private ConcurrentQueue<byte> _interrupts;
@@ -102,7 +102,7 @@ namespace KDS.e8086
             // 0x00 - 0x0f: DMA Chip 8237A-5
 
             // 0x20 - 0x21: Interrupt 8259A
-            Init8259();
+            InitPIC();
 
             // 0x40 - 0x43: Timer 8253
 //            Init8253();
@@ -124,9 +124,9 @@ namespace KDS.e8086
 
         }
 
-        private void Init8259()
+        private void InitPIC()
         {
-            _i8259 = new Intel8259(AddInterrupt);
+            //_i8259 = new Intel8259(AddInterrupt);
 
             // i8259 input devices (PIC)
             //EU.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
@@ -137,9 +137,9 @@ namespace KDS.e8086
             //EU.AddOutputDevice(0x21, new OutputDevice(_i8259.WritePicData, _i8259.WritePicData));
         }
 
-        private void Init8253()
+        private void InitPIT()
         {
-            _i8253 = new i8253(AddInterrupt);
+            //PIT = new Intel8253(AddInterrupt);
 
             //i8253 input devices(PIT)
             //EU.AddInputDevice(0x40, new InputDevice(_i8253.ReadCounter1, _i8253.Read16));

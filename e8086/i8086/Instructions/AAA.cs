@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// AAA: Ascii Adjust Add
     /// </summary>
-    public class AAA : Instruction
+    internal class AAA : Instruction
     {
         public AAA(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

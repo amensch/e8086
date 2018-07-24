@@ -12,7 +12,7 @@ namespace KDS.e8086
     /// operand1 = operand1 - operand2
     /// Flags: O S Z A P C
     /// </summary>
-    public class SUB : TwoByteInstruction
+    internal class SUB : TwoByteInstruction
     {
         protected bool SubWithBorrow;
         protected bool CompareOnly;

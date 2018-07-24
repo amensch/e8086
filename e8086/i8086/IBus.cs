@@ -19,7 +19,7 @@ namespace KDS.e8086
         ushort IP { get; set; }  // instruction pointer
         SegmentOverrideState SegmentOverride { get; set; }
         bool UsingBasePointer { get; set; }
-        RAM ram { get; set; }
+        RAM Ram { get; set; }
 
         void SaveByteString(int offset, byte data);
         void SaveWordString(int offset, ushort data);

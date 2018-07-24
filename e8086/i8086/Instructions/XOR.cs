@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class XOR : LogicalInstruction
+    internal class XOR : LogicalInstruction
     {
         public XOR(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

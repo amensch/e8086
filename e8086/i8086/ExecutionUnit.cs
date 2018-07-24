@@ -55,7 +55,7 @@ namespace KDS.e8086
         public IBus Bus { get; private set; }
 
         // I/O Ports
-        private Dictionary<int, IODevice> Devices;
+        private List<IODevice> ExternalDevices;
 
         // Repeat flag
         public RepeatModeEnum RepeatMode { get; set; }
@@ -69,7 +69,7 @@ namespace KDS.e8086
             Halted = false;
             RepeatMode = RepeatModeEnum.NoRepeat;
 
-            Devices = new Dictionary<int, IODevice>();
+            ExternalDevices = new List<IODevice>();
 
             LoadInstructionList();
         }
@@ -166,7 +166,6 @@ namespace KDS.e8086
 
 
         }
-
 
         private void LoadInstructionList()
         {
@@ -437,18 +436,34 @@ namespace KDS.e8086
             instructions.Add(0xff, new GRP5(0xff, this, Bus));
         }
 
-        public void AddDevice(int port, IODevice device)
+        public void AddDevice(IODevice device)
         {
-            if(Devices.ContainsKey(port))
-            {
-                Devices.Remove(port);
-            }
-            Devices.Add(port, device);
+            ExternalDevices.Add(device);
         }
 
-        public bool TryGetDevice(ushort port, out IODevice device)
+        public int ReadPort(int wordSize, ushort port)
         {
-            return (Devices.TryGetValue(port, out device));
+            foreach( var device in ExternalDevices )
+            {
+                if(device.IsListening(port))
+                {
+                    return device.ReadData(wordSize, port);
+                }
+            }
+
+            // this is proper emulation -- if no device is listening on this port return 0
+            return 0;
+        }
+
+        public void WritePort(int wordSize, ushort port, int data)
+        {
+            foreach(var device in ExternalDevices)
+            {
+                if(device.IsListening(port))
+                {
+                    device.WriteData(wordSize, port, data);
+                }
+            }
         }
 
         public void Interrupt(int interrupt_num)

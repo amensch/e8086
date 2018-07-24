@@ -6,21 +6,13 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class OUTS : RepeatableInstruction
+    internal class OUTS : RepeatableInstruction
     {
         public OUTS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
         protected override void DoInstruction()
         {
-            IODevice device;
-            if (EU.TryGetDevice(EU.Registers.DX, out device))
-            {
-                if(wordSize == 0)
-                    device.Write(wordSize, Bus.GetByteDestString(EU.Registers.SI));
-                else
-                    device.Write(wordSize, Bus.GetWordDestString(EU.Registers.SI));
-            }
-
+            EU.WritePort(wordSize, EU.Registers.DX, Bus.GetDestString(wordSize, EU.Registers.SI));
 
             if (EU.CondReg.DirectionFlag)
             {

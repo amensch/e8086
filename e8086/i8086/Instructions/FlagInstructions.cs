@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CMC : Instruction
+    internal class CMC : Instruction
     {
         public CMC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -17,7 +17,7 @@ namespace KDS.e8086
         }
     }
 
-    public class CLC : Instruction
+    internal class CLC : Instruction
     {
         public CLC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -28,7 +28,7 @@ namespace KDS.e8086
         }
     }
 
-    public class STC : Instruction
+    internal class STC : Instruction
     {
         public STC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -39,7 +39,7 @@ namespace KDS.e8086
         }
     }
 
-    public class CLI : Instruction
+    internal class CLI : Instruction
     {
         public CLI(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -50,7 +50,7 @@ namespace KDS.e8086
         }
     }
 
-    public class STI : Instruction
+    internal class STI : Instruction
     {
         public STI(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -61,7 +61,7 @@ namespace KDS.e8086
         }
     }
 
-    public class CLD : Instruction
+    internal class CLD : Instruction
     {
         public CLD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -72,7 +72,7 @@ namespace KDS.e8086
         }
     }
 
-    public class STD : Instruction
+    internal class STD : Instruction
     {
         public STD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
