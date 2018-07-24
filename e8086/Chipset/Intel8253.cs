@@ -17,7 +17,7 @@ namespace KDS.e8086
         The PIT oscillator runs at 1.193182 Mhz.
     */
 
-    public class i8253 
+    internal class Intel8253 
     {
 
         private enum TimerAccessMode
@@ -28,29 +28,29 @@ namespace KDS.e8086
             BothBytes = 3
         };
 
-        private class i8253timer
+        private class Intel8253Timer
         {
-            public TimerAccessMode accessMode { get; set; }
-            public TimerAccessMode toggleMode { get; set; }
-            public ushort counter { get; set; }
+            public TimerAccessMode AccessMode { get; set; }
+            public TimerAccessMode ToggleMode { get; set; }
+            public ushort Counter { get; set; }
         }
 
         private const int TIMERS = 3;
 
-        private i8253timer[] _timers;
+        private Intel8253Timer[] _timers;
         private CPU.InterruptFunc _intFunc;
-        private Thread _timer;
+        private Thread  _timer;
         private bool _stopTimer = false;
 
-        public i8253(CPU.InterruptFunc intFunc)
+        public Intel8253(CPU.InterruptFunc intFunc)
         {
             //_host_frequency = Stopwatch.Frequency;
             //Active = false;
-            _timers = new i8253timer[TIMERS];
+            _timers = new Intel8253Timer[TIMERS];
             _intFunc = intFunc;
             for( int ii=0; ii < TIMERS; ii++ )
             {
-                _timers[ii] = new i8253timer();
+                _timers[ii] = new Intel8253Timer();
             }
         }
 
@@ -77,26 +77,26 @@ namespace KDS.e8086
         private byte ReadCounter(int idx)
         {
             byte data = 0;
-            if ((_timers[idx].accessMode == TimerAccessMode.Latch) ||
-                (_timers[idx].accessMode == TimerAccessMode.LoByte) ||
-                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.LoByte))
+            if ((_timers[idx].AccessMode == TimerAccessMode.Latch) ||
+                (_timers[idx].AccessMode == TimerAccessMode.LoByte) ||
+                (_timers[idx].AccessMode == TimerAccessMode.BothBytes && _timers[idx].ToggleMode == TimerAccessMode.LoByte))
             {
-                data = (byte)(_timers[idx].counter & 0x00ff) ;
+                data = (byte)(_timers[idx].Counter & 0x00ff) ;
             }
-            else if ((_timers[idx].accessMode == TimerAccessMode.HiByte) ||
-                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.HiByte))
+            else if ((_timers[idx].AccessMode == TimerAccessMode.HiByte) ||
+                (_timers[idx].AccessMode == TimerAccessMode.BothBytes && _timers[idx].ToggleMode == TimerAccessMode.HiByte))
             {
-                data = (byte)(_timers[idx].counter >> 8);
+                data = (byte)(_timers[idx].Counter >> 8);
             }
 
             // if toggle mode if access mode is both
-            if (_timers[idx].accessMode == TimerAccessMode.Latch ||
-                _timers[idx].accessMode == TimerAccessMode.BothBytes)
+            if (_timers[idx].AccessMode == TimerAccessMode.Latch ||
+                _timers[idx].AccessMode == TimerAccessMode.BothBytes)
             {
-                if (_timers[idx].toggleMode == TimerAccessMode.LoByte)
-                    _timers[idx].toggleMode = TimerAccessMode.HiByte;
+                if (_timers[idx].ToggleMode == TimerAccessMode.LoByte)
+                    _timers[idx].ToggleMode = TimerAccessMode.HiByte;
                 else
-                    _timers[idx].toggleMode = TimerAccessMode.LoByte;
+                    _timers[idx].ToggleMode = TimerAccessMode.LoByte;
             }
 
             return data;
@@ -124,11 +124,11 @@ namespace KDS.e8086
                     _stopTimer = true;
             }
 
-            _timers[sc].accessMode = mode;
+            _timers[sc].AccessMode = mode;
 
             if (mode == TimerAccessMode.Latch ||
                 mode == TimerAccessMode.BothBytes)
-                _timers[sc].toggleMode = TimerAccessMode.LoByte;
+                _timers[sc].ToggleMode = TimerAccessMode.LoByte;
         }
 
         // port 0x43
@@ -160,32 +160,32 @@ namespace KDS.e8086
         // Write for ports 0x40-0x42
         private void WriteCounter(int idx, byte data)
         {
-            if( ( _timers[idx].accessMode == TimerAccessMode.LoByte ) ||
-                ( _timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.LoByte ))
+            if( ( _timers[idx].AccessMode == TimerAccessMode.LoByte ) ||
+                ( _timers[idx].AccessMode == TimerAccessMode.BothBytes && _timers[idx].ToggleMode == TimerAccessMode.LoByte ))
             {
                 // zero out lo byte then assign from data
-                _timers[idx].counter = (ushort)((_timers[idx].counter & 0xff00) | data);
+                _timers[idx].Counter = (ushort)((_timers[idx].Counter & 0xff00) | data);
             }
-            else if ((_timers[idx].accessMode == TimerAccessMode.HiByte) ||
-                (_timers[idx].accessMode == TimerAccessMode.BothBytes && _timers[idx].toggleMode == TimerAccessMode.HiByte))
+            else if ((_timers[idx].AccessMode == TimerAccessMode.HiByte) ||
+                (_timers[idx].AccessMode == TimerAccessMode.BothBytes && _timers[idx].ToggleMode == TimerAccessMode.HiByte))
             {
                 // zero out hi byte then assign from data
-                _timers[idx].counter = (ushort)((_timers[idx].counter & 0x00ff) | ( data << 8 ));
+                _timers[idx].Counter = (ushort)((_timers[idx].Counter & 0x00ff) | ( data << 8 ));
             }
 
             // if toggle mode if access mode is both
-            if( _timers[idx].accessMode == TimerAccessMode.BothBytes)
+            if( _timers[idx].AccessMode == TimerAccessMode.BothBytes)
             {
-                if( _timers[idx].toggleMode == TimerAccessMode.LoByte)
-                    _timers[idx].toggleMode = TimerAccessMode.HiByte;
+                if( _timers[idx].ToggleMode == TimerAccessMode.LoByte)
+                    _timers[idx].ToggleMode = TimerAccessMode.HiByte;
                 else
-                    _timers[idx].toggleMode = TimerAccessMode.LoByte;
+                    _timers[idx].ToggleMode = TimerAccessMode.LoByte;
             }
 
             // If this timer 1, reset and start timer
             if (idx == 0 &&
-                !(_timers[idx].accessMode == TimerAccessMode.BothBytes &&
-                    _timers[idx].toggleMode == TimerAccessMode.LoByte))
+                !(_timers[idx].AccessMode == TimerAccessMode.BothBytes &&
+                    _timers[idx].ToggleMode == TimerAccessMode.LoByte))
             {
                 if(_timer.ThreadState != System.Threading.ThreadState.Running )
                 {

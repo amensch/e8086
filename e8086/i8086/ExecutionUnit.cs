@@ -55,8 +55,7 @@ namespace KDS.e8086
         public IBus Bus { get; private set; }
 
         // I/O Ports
-        private Dictionary<int, IInputDevice> InputDevices;
-        private Dictionary<int, IOutputDevice> OutputDevices;
+        private List<IODevice> ExternalDevices;
 
         // Repeat flag
         public RepeatModeEnum RepeatMode { get; set; }
@@ -70,8 +69,7 @@ namespace KDS.e8086
             Halted = false;
             RepeatMode = RepeatModeEnum.NoRepeat;
 
-            InputDevices = new Dictionary<int, IInputDevice>();
-            OutputDevices = new Dictionary<int, IOutputDevice>();
+            ExternalDevices = new List<IODevice>();
 
             LoadInstructionList();
         }
@@ -167,24 +165,6 @@ namespace KDS.e8086
             // i8253.Tick()
 
 
-        }
-
-        public void AddInputDevice(int port, IInputDevice device)
-        {
-            if (InputDevices.ContainsKey(port))
-            {
-                InputDevices.Remove(port);
-            }
-            InputDevices.Add(port, device);
-        }
-
-        public void AddOutputDevice(int port, IOutputDevice device)
-        {
-            if (OutputDevices.ContainsKey(port))
-            {
-                OutputDevices.Remove(port);
-            }
-            OutputDevices.Add(port, device);
         }
 
         private void LoadInstructionList()
@@ -456,14 +436,34 @@ namespace KDS.e8086
             instructions.Add(0xff, new GRP5(0xff, this, Bus));
         }
 
-        public bool TryGetInputDevice(ushort port, out IInputDevice device)
+        public void AddDevice(IODevice device)
         {
-            return (InputDevices.TryGetValue(port, out device));
+            ExternalDevices.Add(device);
         }
 
-        public bool TryGetOutputDevice(ushort port, out IOutputDevice device)
+        public int ReadPort(int wordSize, ushort port)
         {
-            return (OutputDevices.TryGetValue(port, out device));
+            foreach( var device in ExternalDevices )
+            {
+                if(device.IsListening(port))
+                {
+                    return device.ReadData(wordSize, port);
+                }
+            }
+
+            // this is proper emulation -- if no device is listening on this port return 0
+            return 0;
+        }
+
+        public void WritePort(int wordSize, ushort port, int data)
+        {
+            foreach(var device in ExternalDevices)
+            {
+                if(device.IsListening(port))
+                {
+                    device.WriteData(wordSize, port, data);
+                }
+            }
         }
 
         public void Interrupt(int interrupt_num)

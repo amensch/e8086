@@ -12,7 +12,7 @@ namespace KDS.e8086
     /// operand1 = operand1 - operand2
     /// Flags: O S Z A P C
     /// </summary>
-    public class SUB_Immediate : SUB
+    internal class SUB_Immediate : SUB
     {
         public SUB_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

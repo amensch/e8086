@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// OpCodes b8-bf: MOV <reg>, IMM-16
     /// </summary>
-    public class MOV_ImmediateWord : Instruction
+    internal class MOV_ImmediateWord : Instruction
     {
         public MOV_ImmediateWord(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

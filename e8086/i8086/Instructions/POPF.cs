@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class POPF : Instruction
+    internal class POPF : Instruction
     {
         /// <summary>
         /// OpCode = 0x9d POPF

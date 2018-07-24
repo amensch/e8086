@@ -2,7 +2,7 @@
 
 namespace KDS.e8086
 {
-    public class OpCodeDasmRecord
+    internal class OpCodeDasmRecord
     {
         public ushort op { get; set; }
         public string addr_byte { get; set; }

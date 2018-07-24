@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class RepeatableInstruction : Instruction
+    internal abstract class RepeatableInstruction : Instruction
     {
         public RepeatableInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class OR_Immediate : LogicalImmediate
+    internal class OR_Immediate : LogicalImmediate
     {
         public OR_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

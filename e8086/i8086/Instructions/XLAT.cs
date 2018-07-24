@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class XLAT : Instruction
+    internal class XLAT : Instruction
     {
         public XLAT(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

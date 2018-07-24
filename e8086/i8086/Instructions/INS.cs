@@ -6,27 +6,19 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class INS : RepeatableInstruction
+    internal class INS : RepeatableInstruction
     {
         public INS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
         protected override void DoInstruction()
         {
-            IInputDevice device;
-            if(EU.TryGetInputDevice(EU.Registers.DX, out device))
+            if(wordSize == 0)
             {
-                if(wordSize == 0)
-                    Bus.SaveByteString(EU.Registers.DI, device.ReadByte());
-                else
-                    Bus.SaveWordString(EU.Registers.DI, device.ReadWord());
+                Bus.SaveByteString(EU.Registers.DI, (byte)EU.ReadPort(wordSize, EU.Registers.DX));
             }
             else
             {
-                // zero out the register if no port attached
-                if (wordSize == 0)
-                    Bus.SaveByteString(EU.Registers.DI, 0);
-                else
-                    Bus.SaveWordString(EU.Registers.DI, 0);
+                Bus.SaveWordString(EU.Registers.DI, (ushort)EU.ReadPort(wordSize, EU.Registers.DX));
             }
 
             if (EU.CondReg.DirectionFlag)

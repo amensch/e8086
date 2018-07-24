@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class InvalidInstruction : Instruction
+    internal class InvalidInstruction : Instruction
     {
         public InvalidInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -1,7 +1,7 @@
 ﻿
 namespace KDS.e8086
 {
-    public class OpCodeDasmTable
+    internal class OpCodeDasmTable
     {
         public static OpCodeDasmRecord[] opCodes = new OpCodeDasmRecord[]
         {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LOOP : Instruction
+    internal class LOOP : Instruction
     {
         public LOOP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

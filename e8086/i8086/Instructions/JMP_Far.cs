@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class JMP_Far : Instruction
+    internal class JMP_Far : Instruction
     {
         public JMP_Far(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

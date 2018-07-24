@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class MOV : TwoByteInstruction
+    internal class MOV : TwoByteInstruction
     {
         public MOV(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

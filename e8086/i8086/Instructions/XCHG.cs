@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class XCHG : TwoByteInstruction
+    internal class XCHG : TwoByteInstruction
     {
         public XCHG(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

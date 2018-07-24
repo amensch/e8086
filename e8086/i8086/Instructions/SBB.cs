@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class SBB : SUB
+    internal class SBB : SUB
     {
         public SBB(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

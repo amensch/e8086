@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class INT : Instruction
+    internal class INT : Instruction
     {
         private int InterruptNumber = 0;
         private bool DoInterrupt = false;

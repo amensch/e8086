@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class ADD_ImmediateToReg : ADD
+    internal class ADD_ImmediateToReg : ADD
     {
         public ADD_ImmediateToReg(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

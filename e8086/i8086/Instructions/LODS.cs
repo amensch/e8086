@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class LODS : RepeatableInstruction
+    internal class LODS : RepeatableInstruction
     {
         public LODS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

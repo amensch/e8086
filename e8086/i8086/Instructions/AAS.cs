@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// AAS: Ascii Adjust Subtract
     /// </summary>
-    public class AAS : Instruction
+    internal class AAS : Instruction
     {
         public AAS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

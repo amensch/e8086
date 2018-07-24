@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public abstract class LoadSegmentInstruction : TwoByteInstruction
+    internal abstract class LoadSegmentInstruction : TwoByteInstruction
     {
         // Transfer a 32 bit pointer variable from the source operand (which must be memory)
         // to the destination operand and DS.

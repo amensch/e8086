@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class OUT_Reg : OutputInstruction
+    internal class OUT_Reg : OutputInstruction
     {
         public OUT_Reg(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

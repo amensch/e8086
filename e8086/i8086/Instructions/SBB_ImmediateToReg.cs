@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class SBB_ImmediateToReg : SBB
+    internal class SBB_ImmediateToReg : SBB
     {
         public SBB_ImmediateToReg(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

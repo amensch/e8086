@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class SCAS : RepeatableInstruction
+    internal class SCAS : RepeatableInstruction
     {
         public SCAS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

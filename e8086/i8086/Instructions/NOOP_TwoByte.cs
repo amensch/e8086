@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class NOOP_TwoByte : TwoByteInstruction
+    internal class NOOP_TwoByte : TwoByteInstruction
     {
         public NOOP_TwoByte(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
     }

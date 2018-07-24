@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class PUSHF : Instruction
+    internal class PUSHF : Instruction
     {
         /// <summary>
         /// OpCode = 0x9c PUSHF

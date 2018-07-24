@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class ADC : ADD
+    internal class ADC : ADD
     {
         public ADC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// DAS: Decimal Adjust Subtract
     /// </summary>
-    public class DAS : Instruction
+    internal class DAS : Instruction
     {
         public DAS(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

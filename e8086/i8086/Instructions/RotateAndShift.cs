@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class RotateAndShift : TwoByteInstruction
+    internal class RotateAndShift : TwoByteInstruction
     {
         public RotateAndShift(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

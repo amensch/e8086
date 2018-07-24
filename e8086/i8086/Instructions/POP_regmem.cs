@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// Instruction 0x8f POP REG16/MEM16
     /// </summary>
-    public class POP_regmem : TwoByteInstruction
+    internal class POP_regmem : TwoByteInstruction
     {
         public POP_regmem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

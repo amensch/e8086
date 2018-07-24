@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// 
     /// </summary>
-    public class POP : TwoByteInstruction
+    internal class POP : TwoByteInstruction
     {
         public POP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

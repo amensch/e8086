@@ -11,7 +11,7 @@ namespace KDS.e8086
     /// Increment the designated register.
     /// Parse the op code, the affected register is the last 3 bits.
     /// </summary>
-    public class INC : Instruction
+    internal class INC : Instruction
     {
         public INC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

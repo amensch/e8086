@@ -12,7 +12,7 @@ namespace KDS.e8086
     /// This mean repeat while CX is not 0.
     /// REPE and REPZ are used with CMPS and SCAS. ZF must be set prior to use.
     /// </summary>
-    public class REP : Instruction
+    internal class REP : Instruction
     {
         public REP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

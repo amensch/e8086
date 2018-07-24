@@ -13,7 +13,7 @@ namespace KDS.e8086
     /// XOR: 30-33
     /// TEST: 84-85
     /// </summary>
-    public abstract class LogicalInstruction : TwoByteInstruction
+    internal abstract class LogicalInstruction : TwoByteInstruction
     {
         protected int source;
         public LogicalInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }

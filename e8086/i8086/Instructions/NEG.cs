@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class NEG : TwoByteInstruction
+    internal class NEG : TwoByteInstruction
     {
         public NEG(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

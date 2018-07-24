@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class GRP3 : TwoByteInstruction
+    internal class GRP3 : TwoByteInstruction
     {
         public GRP3(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

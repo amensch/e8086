@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public class CWD : Instruction
+    internal class CWD : Instruction
     {
         public CWD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

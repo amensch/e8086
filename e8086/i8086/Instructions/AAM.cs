@@ -9,7 +9,7 @@ namespace KDS.e8086
     /// <summary>
     /// AAM: Ascii Adjust Multiply
     /// </summary>
-    public class AAM : Instruction
+    internal class AAM : Instruction
     {
         public AAM(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
