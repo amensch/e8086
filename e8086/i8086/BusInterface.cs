@@ -164,7 +164,7 @@ namespace KDS.e8086
         // fetch the 16 bit value at the requested offset while forcing a segment address
         public ushort GetWord(int segment, int offset)
         {
-            int addr = (GetDataSegment() << 4) + offset;
+            int addr = (segment << 4) + offset;
             if (addr >= MAX_MEMORY)
             {
                 throw new InvalidOperationException(String.Format("Memory bounds exceeded. DS={0:X4} offset={1:X4}", DS, offset));

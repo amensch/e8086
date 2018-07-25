@@ -31,54 +31,50 @@ namespace KDS.e8086
         Beginning with PC/AT two were used in master/slave combination (adding 8 to 15)
     */
 
-    internal class Intel8259 : IODevice
+    internal class Intel8259 : IODevice, IPIC
     {
         private const byte PIC1_COMMAND = 0x20;
         private const byte PIC1_DATA = PIC1_COMMAND+1;
         private const byte PIC2_COMMAND = 0xa0;
         private const byte PIC2_DATA = PIC2_COMMAND+1;
 
-        private byte InterruptMask;     // imr
-        private byte InterruptRequest;  // irr
-        private byte InService;         // isr
-        private byte[] ICW = new byte[5];   // icw - Initialization Command Word
+        /// <summary>
+        /// IMR: Interrupt Mask Register
+        /// A bitmap of interrupt request lines.  When a bit is set requests are ignored.
+        /// Setting this register to 0xff effectively disables the PIC from raising interrupts.
+        /// Setting IRQ2 disables the slave PIC.
+        /// </summary>
+        private byte IMR;     
+
+        /// <summary>
+        /// IRR: Interrupt Request Register
+        /// A bitmap of which interrupts have been raised.  Once sent to the CPU they are marked in the ISR.
+        /// </summary>
+        private byte IRR;  
+
+        /// <summary>
+        /// ISR: Interrupt Service Register
+        /// A bitmap of which interrupts are being serviced (sent to the CPU)
+        /// </summary>
+        private byte ISR;         
+
+        private byte[] ICW = new byte[4];   // icw - Initialization Command Word
         private byte ICWStep;
 
 
         public Intel8259()
         {
-            InterruptMask = 0;
-            InterruptRequest = 0;
-            InService = 0;
+            IMR = 0;
+            IRR = 0;
+            ISR = 0;
             ICWStep = 0;
         }
+
+        #region IO Device Implementation
 
         public bool IsListening(ushort port)
         {
             return (port == PIC1_COMMAND || port == PIC1_DATA || port == PIC2_COMMAND || port == PIC2_DATA);
-        }
-
-        public bool HasInterrupt()
-        {
-            byte mask = (byte)(InterruptRequest & (~InterruptMask));
-            return (mask > 0);
-        }
-
-        public byte GetNextInterrupt()
-        {
-            // XOR request with inverted mask
-            byte mask = (byte)(InterruptRequest & (~InterruptMask));  
-
-            for( byte ii = 0; ii < 8; ii++ )
-            {
-                if( ((mask >> ii) & 0x01) >= 0x01 )
-                {
-                    InterruptRequest = (byte)(InterruptRequest ^ (1 << ii));
-                    InService = (byte)(InService | (1 << ii));
-                    return ((byte)(ICW[2] + ii));
-                }
-            }
-            return 0;
         }
 
         public int ReadData(int wordSize, ushort port)
@@ -90,13 +86,13 @@ namespace KDS.e8086
                 case PIC1_COMMAND:
                 case PIC2_COMMAND:
                     {
-                        data = InterruptRequest;
+                        data = IRR;
                         break;
                     }
                 case PIC1_DATA:
                 case PIC2_DATA:
                     {
-                        data = InterruptMask;
+                        data = IMR;
                         break;
                     }
             }
@@ -107,7 +103,7 @@ namespace KDS.e8086
         {
             // this device only writes byte data
             byte bytedata = (byte)(data & 0xff);
-            switch(port)
+            switch (port)
             {
                 // 0x20, 0xa0
                 case PIC1_COMMAND:
@@ -126,21 +122,59 @@ namespace KDS.e8086
                     }
             }
         }
+        #endregion
+
+        #region IPIC Implementation
+
+        public bool HasInterrupt()
+        {
+            // IMR disables interrupt if the bit is set
+            byte mask = (byte)(IRR & (~IMR));
+            return (mask > 0);
+        }
+
+        public byte GetNextInterrupt()
+        {
+            // XOR request with inverted mask
+            byte mask = (byte)(IRR & (~IMR));  
+
+            // find the interrupt that is masked
+            for( byte ii = 0; ii < 8; ii++ )
+            {
+                if( ((mask >> ii) & 0x01) >= 0x01 )
+                {
+                    IRR = (byte)(IRR ^ (1 << ii));
+                    ISR = (byte)(ISR | (1 << ii));
+                    return ((byte)(ICW[1] + ii));
+                }
+            }
+            return 0;
+        }
+
+        public void SetInterrupt(byte irq)
+        {
+            IRR |= (byte)(0x01 << irq);
+        }
+
+        #endregion
 
         private void WritePicCommand(byte data)
         {
             if ((byte)(data & 0x10) == 0x10)
             {
-                InterruptMask = 0;
+                IMR = 0;
                 ICW[ICWStep++] = data;
             }
-            else if ((byte)(data & 0x20) == 0x20)
+
+            // End of Interrupt (EOI)
+            // Program should send this to the PIC when interrupt routine is completed.
+            if ((byte)(data & 0x20) == 0x20)
             {
                 for (int ii = 0; ii < 8; ii++)
                 {
-                    if ((byte)((InService >> ii) & 0x01) == 0x01)
+                    if ((byte)((ISR >> ii) & 0x01) == 0x01)
                     {
-                        InService = (byte)(InService ^ (1 << ii));
+                        ISR = (byte)(ISR ^ (1 << ii));
                     }
                 }
             }
@@ -160,7 +194,7 @@ namespace KDS.e8086
             }
             else
             {
-                InterruptMask = data;
+                IMR = data;
             }
         }
     }
