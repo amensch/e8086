@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDS.e8086
+namespace KDS.e8086.Instructions
 {
     /// <summary>
     /// REPNE, REPNZ are 2 mnemonics for the same instruction

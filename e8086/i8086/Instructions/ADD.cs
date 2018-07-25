@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDS.e8086
+namespace KDS.e8086.Instructions
 {
     /// <summary>
     /// Op Codes: 00-03, 10-13

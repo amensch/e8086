@@ -167,6 +167,7 @@
     <Compile Include="i8086\Instructions\XOR.cs" />
     <Compile Include="i8086\Instructions\XOR_Immediate.cs" />
     <Compile Include="i8086\Instructions\XOR_ImmediateToReg.cs" />
+    <Compile Include="i8086\IPIC.cs" />
     <Compile Include="i8086\RAM.cs" />
     <Compile Include="Windows\DebugWindow.cs">
       <SubType>Form</SubType>
