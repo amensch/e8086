@@ -23,33 +23,18 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcParityFlag(result);
             EU.CondReg.CalcCarryFlag(wordSize, result);
 
-            if (wordSize == 0)
+            if (EU.CondReg.DirectionFlag)
             {
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI--;
-                    EU.Registers.DI--;
-                }
-                else
-                {
-                    EU.Registers.SI++;
-                    EU.Registers.DI++;
-                }
+                EU.Registers.SI -= (ushort)(wordSize + 1);
+                EU.Registers.DI -= (ushort)(wordSize + 1);
             }
             else
             {
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI -= 2;
-                    EU.Registers.DI -= 2;
-                }
-                else
-                {
-                    EU.Registers.SI += 2;
-                    EU.Registers.DI += 2;
-                }
+                EU.Registers.SI += (ushort)(wordSize + 1);
+                EU.Registers.DI += (ushort)(wordSize + 1);
             }
         }
+
         protected override bool RepeatConditions()
         {
             // REP is repeat while zero

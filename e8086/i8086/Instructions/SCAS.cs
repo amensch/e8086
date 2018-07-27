@@ -15,30 +15,24 @@ namespace KDS.e8086.Instructions
             int source = 0;
             int dest = Bus.GetDestString(wordSize, EU.Registers.DI);
 
+            if (EU.CondReg.DirectionFlag)
+            {
+                EU.Registers.DI -= (ushort)(wordSize + 1);
+            }
+            else
+            {
+                EU.Registers.DI += (ushort)(wordSize + 1);
+            }
+
             if (wordSize == 0)
             {
                 source = EU.Registers.AL;
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.DI--;
-                }
-                else
-                {
-                    EU.Registers.DI++;
-                }
             }
             else
             {
                 source = EU.Registers.AX;
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.DI -= 2;
-                }
-                else
-                {
-                    EU.Registers.DI += 2;
-                }
             }
+
             int result = dest - source;
             EU.CondReg.CalcOverflowFlag(wordSize, source, dest);
             EU.CondReg.CalcSignFlag(wordSize, result);

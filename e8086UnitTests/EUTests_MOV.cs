@@ -127,7 +127,7 @@ namespace e8086UnitTests
 
             cpu.EU.Registers.BX = 0x10ff;
             cpu.EU.Registers.CL = 0xff;
-            cpu.Bus.SaveByte(cpu.EU.Registers.BX + 0x10, value8);
+            cpu.Bus.SaveData(0, cpu.EU.Registers.BX + 0x10, value8);
             cpu.NextInstruction();
 
             Assert.AreEqual(value8, cpu.EU.Registers.CL, "Instruction 0x8a failed");
@@ -140,7 +140,7 @@ namespace e8086UnitTests
 
             // need to manually set base pointer for this to work
             cpu.Bus.UsingBasePointer = true;
-            cpu.Bus.SaveByte(cpu.EU.Registers.BP + 0x10, value8);
+            cpu.Bus.SaveData(0, cpu.EU.Registers.BP + 0x10, value8);
             // set it back to false to test the instruction setting it itself
             cpu.Bus.UsingBasePointer = false;
             cpu.NextInstruction();
@@ -182,7 +182,7 @@ namespace e8086UnitTests
 
             cpu.Bus.ES = 0xffff;
             cpu.EU.Registers.DI = 0x1015;
-            cpu.Bus.SaveWord(cpu.EU.Registers.DI + 0x35, 0x9f23);
+            cpu.Bus.SaveData(1, cpu.EU.Registers.DI + 0x35, 0x9f23);
 
             cpu.NextInstruction();
 
@@ -193,7 +193,7 @@ namespace e8086UnitTests
         public void Testa0()
         {
             CPU cpu = GetCPU(new byte[] { 0xa0, 0x23, 0x98 });
-            cpu.Bus.SaveByte(0x9823, 0x65);
+            cpu.Bus.SaveData(0, 0x9823, 0x65);
             cpu.NextInstruction();
 
             Assert.AreEqual(0x65, cpu.EU.Registers.AL, "Instruction a0 failed");
@@ -203,7 +203,7 @@ namespace e8086UnitTests
         public void Testa1()
         {
             CPU cpu = GetCPU(new byte[] { 0xa1, 0x23, 0x98 });
-            cpu.Bus.SaveWord(0x9823, 0x65fe);
+            cpu.Bus.SaveData(1, 0x9823, 0x65fe);
             cpu.NextInstruction();
 
             Assert.AreEqual(0x65fe, cpu.EU.Registers.AX, "Instruction a1 failed");

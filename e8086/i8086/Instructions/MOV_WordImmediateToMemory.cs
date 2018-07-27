@@ -22,19 +22,19 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         dest = GetRMTable1(secondByte.RM);
-                        Bus.SaveWord(dest, GetImmediateWord());
+                        Bus.SaveData(1, dest, GetImmediateWord());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(secondByte.MOD, secondByte.RM);
-                        Bus.SaveWord(dest, GetImmediateWord());
+                        Bus.SaveData(1, dest, GetImmediateWord());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(secondByte.MOD, secondByte.RM);
-                        Bus.SaveWord(dest, GetImmediateWord());
+                        Bus.SaveData(1, dest, GetImmediateWord());
                         break;
                     }
                 case 0x03:

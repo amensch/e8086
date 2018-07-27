@@ -12,33 +12,16 @@ namespace KDS.e8086.Instructions
 
         protected override void DoInstruction()
         {
-            if(wordSize == 0)
+            Bus.MoveString(wordSize, EU.Registers.SI, EU.Registers.DI);
+            if(EU.CondReg.DirectionFlag)
             {
-                Bus.MoveByteString(EU.Registers.SI, EU.Registers.DI);
-                if(EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI--;
-                    EU.Registers.DI--;
-                }
-                else
-                {
-                    EU.Registers.SI++;
-                    EU.Registers.DI++;
-                }
+                EU.Registers.SI -= (ushort)(wordSize + 1);
+                EU.Registers.DI -= (ushort)(wordSize + 1);
             }
             else
             {
-                Bus.MoveWordString(EU.Registers.SI, EU.Registers.DI);
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI -= 2;
-                    EU.Registers.DI -= 2;
-                }
-                else
-                {
-                    EU.Registers.SI += 2;
-                    EU.Registers.DI += 2;
-                }
+                EU.Registers.SI += (ushort)(wordSize + 1);
+                EU.Registers.DI += (ushort)(wordSize + 1);
             }
         }
 

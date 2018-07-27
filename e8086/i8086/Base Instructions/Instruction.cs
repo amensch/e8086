@@ -230,27 +230,13 @@ namespace KDS.e8086.Instructions
                 {
                     case 0x00:
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                Bus.SaveByte(GetRMTable1(rm), (byte)data);
-                            }
-                            else // if ((direction == 0) && (word_size == 1))
-                            {
-                                Bus.SaveWord(GetRMTable1(rm), (ushort)data);
-                            }
+                            Bus.SaveData(useSREG ? 1 : word_size, GetRMTable1(rm), data);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                Bus.SaveByte(GetRMTable2(mod, rm), (byte)data);
-                            }
-                            else // if ((direction == 0) && (word_size == 1))
-                            {
-                                Bus.SaveWord(GetRMTable2(mod, rm), (ushort)data);
-                            }
+                            Bus.SaveData(useSREG ? 1 : word_size, GetRMTable2(mod, rm), data);
                             break;
                         }
                     case 0x03:

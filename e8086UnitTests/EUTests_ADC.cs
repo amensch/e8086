@@ -61,7 +61,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData(0, 0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.Bus.GetData(0, 0x0115), "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
@@ -117,7 +117,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData(1, 0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.Bus.GetData(1, 0x0115), "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
@@ -173,7 +173,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.DH = 0xff;
-            cpu.Bus.SaveByte(0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData(0, 0x0115, 0x01); // ff+01=100.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x00, cpu.EU.Registers.DH, "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");
@@ -229,7 +229,7 @@ namespace e8086UnitTests
             Assert.AreEqual(true, cpu.EU.CondReg.OverflowFlag, "ADC (3) overflow flag failed");
 
             cpu.EU.Registers.SI = 0xff00;
-            cpu.Bus.SaveWord(0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
+            cpu.Bus.SaveData(1, 0x0115, 0x0100); // ff00+0100=10000.  Carry=1, Parity=1, Zero=1, Sign=0, AuxCarry=0, Overflow=0
             cpu.NextInstruction();
             Assert.AreEqual(0x0000, cpu.EU.Registers.SI, "ADC (4) result failed");
             Assert.AreEqual(true, cpu.EU.CondReg.CarryFlag, "ADC (4) carry flag failed");

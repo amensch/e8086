@@ -32,10 +32,10 @@ namespace e8086UnitTests
             ushort value16 = 0x5f02;
 
             bus.DS = 0x300;
-            bus.SaveByte(offset, value8);
+            bus.SaveData(0, offset, value8);
             Assert.AreEqual(value8, bus.GetData(0, offset), "GetData8 failed");
 
-            bus.SaveWord(offset + 1, value16);
+            bus.SaveData(1, offset + 1, value16);
             Assert.AreEqual(value16, bus.GetData(1, offset + 1), "GetData16 failed");
 
         }

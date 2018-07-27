@@ -35,7 +35,7 @@ namespace e8086UnitTests
             byte value = 0xa1;
             for (int ii = cpu.EU.Registers.SI; ii <= 0x120; ii++ )
             {
-                cpu.Bus.SaveByte(ii, value++);
+                cpu.Bus.SaveData(0, ii, value++);
             }
 
             // write a bunch of data to ES:offset (to show the correct data is overwritten)
@@ -43,7 +43,7 @@ namespace e8086UnitTests
             value = 0x55;
             for (int ii = cpu.EU.Registers.DI; ii <= 0x220; ii++)
             {
-                cpu.Bus.SaveByte(ii, value++);
+                cpu.Bus.SaveData(0, ii, value++);
             }
 
             cpu.Bus.SegmentOverride = SegmentOverrideState.NoOverride;
@@ -76,7 +76,7 @@ namespace e8086UnitTests
             byte value = 0xa1;
             for (int ii = cpu.EU.Registers.SI; ii <= 0x120; ii++)
             {
-                cpu.Bus.SaveByte(ii, value++);
+                cpu.Bus.SaveData(0, ii, value++);
             }
 
             // write a bunch of data to ES:offset (to show the correct data is overwritten)
@@ -84,7 +84,7 @@ namespace e8086UnitTests
             value = 0x55;
             for (int ii = cpu.EU.Registers.DI; ii <= 0x220; ii++)
             {
-                cpu.Bus.SaveByte(ii, value++);
+                cpu.Bus.SaveData(0, ii, value++);
             }
 
             cpu.Bus.SegmentOverride = SegmentOverrideState.NoOverride;
@@ -110,7 +110,7 @@ namespace e8086UnitTests
             cpu.EU.Bus.DS = 0x1200;
             cpu.EU.Registers.SI = 0x200;
             cpu.EU.Registers.AL = 0xaa;
-            cpu.Bus.SaveByte(cpu.EU.Registers.SI, 0xc7);
+            cpu.Bus.SaveData(0, cpu.EU.Registers.SI, 0xc7);
 
             cpu.NextInstruction();
             Assert.AreEqual(0xc7, cpu.EU.Registers.AL, "LODSB 1 result failed");
@@ -118,7 +118,7 @@ namespace e8086UnitTests
 
             cpu.EU.Registers.SI = 0x300;
             cpu.EU.Registers.AX = 0xffff;
-            cpu.Bus.SaveWord(cpu.EU.Registers.SI, 0xa965);
+            cpu.Bus.SaveData(1, cpu.EU.Registers.SI, 0xa965);
 
             cpu.NextInstruction();
             Assert.AreEqual(0xa965, cpu.EU.Registers.AX, "LODSW 2 result failed");
@@ -135,14 +135,14 @@ namespace e8086UnitTests
             cpu.EU.Registers.AL = 0xf8;
 
             cpu.NextInstruction();
-            Assert.AreEqual(0xf8, cpu.Bus.GetByteDestString(0x200), "STOSB result failed");
+            Assert.AreEqual(0xf8, cpu.Bus.GetDestString(0, 0x200), "STOSB result failed");
             Assert.AreEqual(0x201, cpu.EU.Registers.DI, "STOSB DI failed");
 
             cpu.EU.Registers.DI = 0x300;
             cpu.EU.Registers.AX = 0x12fe;
 
             cpu.NextInstruction();
-            Assert.AreEqual(0x12fe, cpu.Bus.GetWordDestString(0x300), "STOSW result failed");
+            Assert.AreEqual(0x12fe, cpu.Bus.GetDestString(1, 0x300), "STOSW result failed");
             Assert.AreEqual(0x302, cpu.EU.Registers.DI, "STOSW DI failed");
 
         }
