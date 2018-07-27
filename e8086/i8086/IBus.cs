@@ -19,7 +19,6 @@ namespace KDS.e8086
         ushort IP { get; set; }  // instruction pointer
         SegmentOverrideState SegmentOverride { get; set; }
         bool UsingBasePointer { get; set; }
-        RAM Ram { get; set; }
 
         /// <summary>
         /// Stack operations

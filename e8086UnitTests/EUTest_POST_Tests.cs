@@ -163,9 +163,10 @@ namespace KDS.e8086UnitTests
                                         0xf4 //hlt
             });
 
-            cpu.Bus.Ram[2050] = src;
+            cpu.Bus.SaveData(0, 2050, src);
             cpu.Run();
-            Assert.AreEqual(dest, cpu.Bus.Ram[2051], "Sum test failed " + src.ToString() + " expected answer " + dest.ToString() + " actual answer " + cpu.Bus.Ram[2051].ToString());
+            byte data = (byte)cpu.Bus.GetData(0, 2051);
+            Assert.AreEqual(dest, data, "Sum test failed " + src.ToString() + " expected answer " + dest.ToString() + " actual answer " + data.ToString());
         }
     }
 }
