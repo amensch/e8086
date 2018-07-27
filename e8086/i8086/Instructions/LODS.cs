@@ -15,26 +15,19 @@ namespace KDS.e8086.Instructions
             if (wordSize == 0)
             {
                 EU.Registers.AL = (byte)(Bus.GetData(wordSize, EU.Registers.SI) & 0xff);
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI--;
-                }
-                else
-                {
-                    EU.Registers.SI++;
-                }
             }
             else
             {
                 EU.Registers.AX = (ushort)(Bus.GetData(wordSize, EU.Registers.SI) & 0xffff);
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.SI -= 2;
-                }
-                else
-                {
-                    EU.Registers.SI += 2;
-                }
+            }
+
+            if(EU.CondReg.DirectionFlag)
+            {
+                EU.Registers.SI -= (ushort)(wordSize + 1);
+            }
+            else
+            {
+                EU.Registers.SI += (ushort)(wordSize + 1);
             }
         }
 
