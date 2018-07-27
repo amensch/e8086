@@ -21,9 +21,6 @@ namespace KDS.e8086
         bool UsingBasePointer { get; set; }
         RAM Ram { get; set; }
 
-
-        int GetDestString(int word_size, int offset);
-
         /// <summary>
         /// Stack operations
         /// </summary>
@@ -46,6 +43,7 @@ namespace KDS.e8086
         /// </summary>
         void SaveString(int word_size, int offset, int data);
         void MoveString(int word_size, int src_offset, int dst_offset);
+        int GetDestString(int word_size, int offset);
 
         /// <summary>
         /// For overriding the segment selection made by GetData/SaveData.
