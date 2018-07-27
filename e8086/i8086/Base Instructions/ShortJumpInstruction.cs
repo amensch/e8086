@@ -21,12 +21,12 @@ namespace KDS.e8086.Instructions
         {
             if (JumpDecision())
             {
-                ushort oper = SignExtendByteToWord(Bus.NextIP());
+                ushort oper = SignExtendByteToWord(Bus.NextImmediate());
                 Bus.IP += oper;
             }
             else
             {
-                Bus.NextIP();  // skip over the immediate jump value
+                Bus.NextImmediate();  // skip over the immediate jump value
             }
         }
     }

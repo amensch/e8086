@@ -43,8 +43,8 @@ namespace KDS.e8086.Instructions
         // Gets the immediate 16 bit value
         protected ushort GetImmediateWord()
         {
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
+            byte lo = Bus.NextImmediate();
+            byte hi = Bus.NextImmediate();
             return new WordRegister(hi, lo);
         }
 
@@ -398,7 +398,7 @@ namespace KDS.e8086.Instructions
                         }
                         else
                         {
-                            disp = Bus.NextIP();
+                            disp = Bus.NextImmediate();
                             LastLookupValue = disp;
                             LastLookupCount = EU.InstructionCount;
                         }

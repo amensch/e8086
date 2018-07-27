@@ -30,7 +30,7 @@ namespace KDS.e8086
         ushort PopStack(int offset);
         void PushStack(int offset, ushort value);
 
-        byte NextIP();
+        byte NextImmediate();
 
         void MoveByteString(int src_offset, int dst_offset);
         void MoveWordString(int src_offset, int dst_offset);
@@ -40,6 +40,7 @@ namespace KDS.e8086
         ushort GetWordDestString(int offset);
 
         int GetData(int word_size, int offset);
+
         ushort GetWord(int segment, int offset);
     }
 }

@@ -34,7 +34,7 @@ namespace KDS.e8086.Instructions
 
             if (wordSize == 0)
             {
-                source = Bus.NextIP();
+                source = Bus.NextImmediate();
             }
             else
             {

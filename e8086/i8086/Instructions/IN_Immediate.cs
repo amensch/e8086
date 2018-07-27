@@ -13,7 +13,7 @@ namespace KDS.e8086.Instructions
         protected override void PreProcessing()
         {
             base.PreProcessing();
-            port = Bus.NextIP();
+            port = Bus.NextImmediate();
         }
     }
 }

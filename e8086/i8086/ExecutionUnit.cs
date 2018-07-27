@@ -99,7 +99,7 @@ namespace KDS.e8086
             {
                 // Retrieve the next instruction and count stats
                 InstructionCount++;
-                CurrentOpCode = Bus.NextIP();
+                CurrentOpCode = Bus.NextImmediate();
                 Stats.AddOpCode(CurrentOpCode);
                 more = true;
                 switch (CurrentOpCode)

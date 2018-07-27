@@ -21,7 +21,7 @@ namespace KDS.e8086.Instructions
         {
             // use op code like the reg field to define the register
             byte reg = (byte)(OpCode & 0x07);
-            byte value = Bus.NextIP();
+            byte value = Bus.NextImmediate();
             EU.Registers.SaveRegisterValue(0, reg, value);
         }
 
