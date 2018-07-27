@@ -99,8 +99,7 @@ namespace KDS.e8086.Instructions
 
         private void RotateByteLeft(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
-            AssertMOD(mod);
-            byte original = 0;
+            int original = 0;
             byte result = 0;
             bool old_CF;
             int offset = 0;
@@ -109,25 +108,25 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetByte(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetByte(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x03:
                     {
-                        original = (byte)(EU.Registers.GetRegisterValue(wordSize, rm) & 0xff);
+                        original = EU.Registers.GetRegisterValue(wordSize, rm);
                         break;
                     }
             }
 
             // preserve the original value
-            result = original;
+            result = (byte)(original & 0xff);
 
             // perform the rotation or shift
             for (int ii = 1; ii <= source; ii++)
@@ -179,7 +178,6 @@ namespace KDS.e8086.Instructions
 
         private void RotateWordLeft(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
-            AssertMOD(mod);
             int original = 0;
             int result = 0;
             int offset = 0;
@@ -189,14 +187,14 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetWord(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetWord(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x03:
@@ -259,7 +257,6 @@ namespace KDS.e8086.Instructions
 
         private void RotateByteRight(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
         {
-            AssertMOD(mod);
             int original = 0;
             int result = 0;
             int offset = 0;
@@ -269,19 +266,19 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetByte(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetByte(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x03:
                     {
-                        original = (byte)(EU.Registers.GetRegisterValue(wordSize, rm) & 0xff);
+                        original = EU.Registers.GetRegisterValue(wordSize, rm);
                         break;
                     }
             }
@@ -354,7 +351,6 @@ namespace KDS.e8086.Instructions
 
         private void RotateWordRight(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
         {
-            AssertMOD(mod);
             int original = 0;
             int result = 0;
             int offset = 0;
@@ -364,14 +360,14 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         offset = GetRMTable1(rm);
-                        original = Bus.GetWord(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x01:
                 case 0x02:  // difference is processed in the GetRMTable2 function
                     {
                         offset = GetRMTable2(mod, rm);
-                        original = Bus.GetWord(offset);
+                        original = Bus.GetData(wordSize, offset);
                         break;
                     }
                 case 0x03:

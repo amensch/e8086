@@ -129,7 +129,7 @@ namespace KDS.e8086
         }
 
         // fetch the 8 bit value at the requested offset
-        public byte GetByte(int offset)
+        private byte GetByte(int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -151,7 +151,7 @@ namespace KDS.e8086
         }
 
         // fetch the 16 bit value at the requested offset
-        public ushort GetWord(int offset)
+        private ushort GetWord(int offset)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)

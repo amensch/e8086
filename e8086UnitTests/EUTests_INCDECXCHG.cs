@@ -107,7 +107,7 @@ namespace e8086UnitTests
 
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x57, cpu.Bus.GetByte(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0x57, cpu.Bus.GetData(0, 0x0115), "XCHG (2) [0115] failed");
             Assert.AreEqual(0xf3, cpu.EU.Registers.DH, "XCHG (2) DH failed");
 
         }
@@ -133,7 +133,7 @@ namespace e8086UnitTests
 
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x1057, cpu.Bus.GetWord(0x0115), "XCHG (2) [0115] failed");
+            Assert.AreEqual(0x1057, cpu.Bus.GetData(1, 0x0115), "XCHG (2) [0115] failed");
             Assert.AreEqual(0x23f3, cpu.EU.Registers.SI, "XCHG (2) SI failed");
 
         }

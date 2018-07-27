@@ -53,8 +53,8 @@ namespace KDS.e8086.Instructions
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             Push(Bus.CS);
             Push(Bus.IP);
-            Bus.IP = Bus.GetWord(dest);
-            Bus.CS = Bus.GetWord(dest + 2);
+            Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
+            Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
     }
 
@@ -78,8 +78,8 @@ namespace KDS.e8086.Instructions
         {
             // JMP mem-16 (intrasegment)
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
-            Bus.IP = Bus.GetWord(dest);
-            Bus.CS = Bus.GetWord(dest + 2);
+            Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
+            Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
     }
 

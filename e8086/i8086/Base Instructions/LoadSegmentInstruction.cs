@@ -26,18 +26,17 @@ namespace KDS.e8086.Instructions
         protected override void PreProcessing()
         {
             base.PreProcessing();
-            AssertMOD(secondByte.MOD);
             switch (secondByte.MOD)
             {
                 case 0x00:
                     {
-                        offset = Bus.GetWord(GetRMTable1(secondByte.RM));
+                        offset = Bus.GetData(1, GetRMTable1(secondByte.RM));
                         break;
                     }
                 case 0x01:
                 case 0x02:   // difference is processed in the GetRMTable2 function
                     {
-                        offset = Bus.GetWord(GetRMTable2(secondByte.MOD, secondByte.RM));
+                        offset = Bus.GetData(1, GetRMTable2(secondByte.MOD, secondByte.RM));
                         break;
                     }
                 case 0x03:
@@ -46,7 +45,7 @@ namespace KDS.e8086.Instructions
                     }
             }
 
-            EU.Registers.SaveRegisterValue(1, secondByte.REG, Bus.GetWord(offset));
+            EU.Registers.SaveRegisterValue(1, secondByte.REG, Bus.GetData(1, offset));
         }
 
         protected override void ExecuteInstruction()

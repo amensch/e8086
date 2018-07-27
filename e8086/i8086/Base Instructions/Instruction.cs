@@ -66,44 +66,6 @@ namespace KDS.e8086.Instructions
                 return num | 0xffffff00;
         }
 
-        // Assert a proper mod value
-        protected void AssertMOD(byte mod)
-        {
-            if (mod > 0x03)
-            {
-                throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", OpCode));
-            }
-        }
-
-        // Assert a proper reg value
-        protected void AssertREG(byte reg)
-        {
-            if (reg > 0x07)
-            {
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid reg value in opcode={0:X2}", OpCode));
-            }
-        }
-
-        // Assert a proper sreg value
-        protected void AssertSREG(byte reg)
-        {
-            if (reg > 0x03)
-            {
-                throw new ArgumentOutOfRangeException("reg", reg, string.Format("Invalid sreg value in opcode={0:X2}", OpCode));
-            }
-        }
-
-        // Assert a proper rm value
-        protected void AssertRM(byte rm)
-        {
-            if (rm > 0x07)
-            {
-                throw new ArgumentOutOfRangeException("rm", rm, string.Format("Invalid rm value in opcode={0:X2}", OpCode));
-            }
-        }
-
-
-
         #endregion
 
         #region Push and Pop
@@ -121,13 +83,12 @@ namespace KDS.e8086.Instructions
         }
         #endregion
 
-        #region Get and Set registers
+        #region Get and Set  segmentation registers
 
         // Get 16 bit SREG result
         protected ushort GetWordFromSegReg(byte reg)
         {
             ushort result = 0;
-            AssertSREG(reg);
             switch (reg)
             {
                 case 0x00:
@@ -157,7 +118,6 @@ namespace KDS.e8086.Instructions
         // Save 16 bit value into a Seg Reg
         protected void SaveWordToSegReg(byte reg, ushort value)
         {
-            AssertSREG(reg);
             switch (reg)
             {
                 case 0x00:
@@ -209,32 +169,17 @@ namespace KDS.e8086.Instructions
             }
             else
             {
-                AssertMOD(mod);
                 switch (mod)
                 {
                     case 0x00:
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                result = Bus.GetByte(GetRMTable1(rm));
-                            }
-                            else //if ((direction == 1) && (word_size == 1))
-                            {
-                                result = Bus.GetWord(GetRMTable1(rm));
-                            }
+                            result = Bus.GetData(useSREG ? 1 : word_size, GetRMTable1(rm));
                             break;
                         }
                     case 0x01:
                     case 0x02:   // difference is processed in the GetRMTable2 function
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                result = Bus.GetByte(GetRMTable2(mod, rm));
-                            }
-                            else //if ((direction == 1) && (word_size == 1))
-                            {
-                                result = Bus.GetWord(GetRMTable2(mod, rm));
-                            }
+                            result = Bus.GetData(useSREG ? 1 : word_size, GetRMTable2(mod, rm));
                             break;
                         }
                     case 0x03:
@@ -267,8 +212,6 @@ namespace KDS.e8086.Instructions
         }
         protected void SaveToDestination(int data, int direction, int word_size, byte mod, byte reg, byte rm, bool useSREG)
         {
-            AssertMOD(mod);
-
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
             {
@@ -328,7 +271,6 @@ namespace KDS.e8086.Instructions
         protected int GetRMTable1(byte rm)
         {
             ushort result = 0;
-            AssertRM(rm);
             switch (rm)
             {
                 case 0x00:
@@ -399,7 +341,6 @@ namespace KDS.e8086.Instructions
         {
             ushort result = 0;
             ushort disp = 0;
-            AssertRM(rm);
             switch (rm)
             {
                 case 0x00:

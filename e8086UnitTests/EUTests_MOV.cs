@@ -81,7 +81,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.CL = value8;
             cpu.NextInstruction();
 
-            Assert.AreEqual(value8, cpu.Bus.GetByte(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
+            Assert.AreEqual(value8, cpu.Bus.GetData(0, cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
 
             cpu.Boot(new byte[] { 0x88, 0x8f, 0x10, 0x00 } /* MOV [bx+10],CL using 16 bit displacement */);
             value8 = 0x2f;
@@ -89,7 +89,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.CL = value8;
             cpu.NextInstruction();
 
-            Assert.AreEqual(value8, cpu.Bus.GetByte(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
+            Assert.AreEqual(value8, cpu.Bus.GetData(0, cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
 
             // Test with segment override
             cpu.Boot(new byte[] { 0x26, 0x88, 0x8f, 0x10, 0x00 } /* MOV [bx+10],CL using 16 bit displacement with ES override */);
@@ -103,7 +103,7 @@ namespace e8086UnitTests
 
             // now set the override again so the correct memory segment is accessed
             cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
-            Assert.AreEqual(value8, cpu.Bus.GetByte(cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
+            Assert.AreEqual(value8, cpu.Bus.GetData(0, cpu.EU.Registers.BX + 0x10), "Instruction 0x88 failed");
 
         }
 
@@ -172,7 +172,7 @@ namespace e8086UnitTests
 
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x76d2, cpu.Bus.GetWord(cpu.EU.Registers.BX + 0x35), "Instruction 0x8c failed");
+            Assert.AreEqual(0x76d2, cpu.Bus.GetData(1, cpu.EU.Registers.BX + 0x35), "Instruction 0x8c failed");
         }
 
         [TestMethod]
@@ -216,7 +216,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.AL = 0xc4;
             cpu.NextInstruction();
 
-            Assert.AreEqual(0xc4, cpu.Bus.GetByte(0x9823), "Instruction a2 failed");
+            Assert.AreEqual(0xc4, cpu.Bus.GetData(0, 0x9823), "Instruction a2 failed");
         }
 
         [TestMethod]
@@ -226,7 +226,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.AX = 0xc42f;
             cpu.NextInstruction();
 
-            Assert.AreEqual(0xc42f, cpu.Bus.GetWord(0x9823), "Instruction a3 failed");
+            Assert.AreEqual(0xc42f, cpu.Bus.GetData(1, 0x9823), "Instruction a3 failed");
         }
 
         [TestMethod]
@@ -236,7 +236,7 @@ namespace e8086UnitTests
             CPU cpu = GetCPU(new byte[] { 0xc6, 0x06, 0x00, 0x01, 0x28 });
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x28, cpu.Bus.GetByte(0x100), "Instruction c6 failed");
+            Assert.AreEqual(0x28, cpu.Bus.GetData(0, 0x100), "Instruction c6 failed");
 
             // MOV [si],39
             cpu = GetCPU(new byte[] { 0xc6, 0x04, 0x39 });
@@ -244,7 +244,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.SI = 0x350;
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x39, cpu.Bus.GetByte(cpu.EU.Registers.SI), "Instruction c6 failed (2)");
+            Assert.AreEqual(0x39, cpu.Bus.GetData(0, cpu.EU.Registers.SI), "Instruction c6 failed (2)");
         }
 
         [TestMethod]
@@ -254,7 +254,7 @@ namespace e8086UnitTests
             CPU cpu = GetCPU(new byte[] { 0xc7, 0x06, 0x00, 0x01, 0xfa, 0x28 });
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x28fa, cpu.Bus.GetWord(0x100), "Instruction c7 failed");
+            Assert.AreEqual(0x28fa, cpu.Bus.GetData(1, 0x100), "Instruction c7 failed");
 
             // MOV [si],3902
             cpu = GetCPU(new byte[] { 0xc7, 0x04, 0x02, 0x39 });
@@ -262,7 +262,7 @@ namespace e8086UnitTests
             cpu.EU.Registers.SI = 0x350;
             cpu.NextInstruction();
 
-            Assert.AreEqual(0x3902, cpu.Bus.GetWord(cpu.EU.Registers.SI), "Instruction c7 failed (2)");
+            Assert.AreEqual(0x3902, cpu.Bus.GetData(1, cpu.EU.Registers.SI), "Instruction c7 failed (2)");
         }
     }
 }

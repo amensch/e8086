@@ -28,7 +28,6 @@ namespace KDS.e8086.Instructions
 
         protected void ProcessInstruction(int source, byte mod, byte reg, byte rm, bool test_only)
         {
-            AssertMOD(mod);
             int result = 0;
             int offset;
             int dest = 0;

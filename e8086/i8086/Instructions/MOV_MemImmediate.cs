@@ -21,12 +21,12 @@ namespace KDS.e8086.Instructions
             {
                 case 0xa0:
                     {
-                        EU.Registers.AL = Bus.GetByte(new WordRegister(hi, lo));
+                        EU.Registers.AL = (byte)(Bus.GetData(0, new WordRegister(hi, lo)) & 0xff);
                         break;
                     }
                 case 0xa1:
                     {
-                        EU.Registers.AX = Bus.GetWord(new WordRegister(hi, lo));
+                        EU.Registers.AX = (ushort)(Bus.GetData(1, new WordRegister(hi, lo)) & 0xffff);
                         break;
                     }
                 case 0xa2:

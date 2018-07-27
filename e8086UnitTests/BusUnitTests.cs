@@ -33,10 +33,10 @@ namespace e8086UnitTests
 
             bus.DS = 0x300;
             bus.SaveByte(offset, value8);
-            Assert.AreEqual(value8, bus.GetByte(offset), "GetData8 failed");
+            Assert.AreEqual(value8, bus.GetData(0, offset), "GetData8 failed");
 
             bus.SaveWord(offset + 1, value16);
-            Assert.AreEqual(value16, bus.GetWord(offset + 1), "GetData16 failed");
+            Assert.AreEqual(value16, bus.GetData(1, offset + 1), "GetData16 failed");
 
         }
     }

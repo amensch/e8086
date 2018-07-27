@@ -17,7 +17,6 @@ namespace KDS.e8086.Instructions
         protected override void ExecuteInstruction()
         {
             int dest;
-            AssertMOD(secondByte.MOD);
             switch (secondByte.MOD)
             {
                 case 0x00:
