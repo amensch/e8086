@@ -12,29 +12,15 @@ namespace KDS.e8086.Instructions
 
         protected override void DoInstruction()
         {
-            if (wordSize == 0)
+            Bus.SaveString(wordSize, EU.Registers.DI, EU.Registers.AX);
+
+            if(EU.CondReg.DirectionFlag)
             {
-                Bus.SaveByteString(EU.Registers.DI, EU.Registers.AL);
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.DI--;
-                }
-                else
-                {
-                    EU.Registers.DI++;
-                }
+                EU.Registers.DI -= (ushort)(wordSize + 1);
             }
             else
             {
-                Bus.SaveWordString(EU.Registers.DI, EU.Registers.AX);
-                if (EU.CondReg.DirectionFlag)
-                {
-                    EU.Registers.DI -= 2;
-                }
-                else
-                {
-                    EU.Registers.DI += 2;
-                }
+                EU.Registers.DI += (ushort)(wordSize + 1);
             }
         }
 

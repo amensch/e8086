@@ -103,7 +103,7 @@ namespace e8086UnitTests
             cpu = GetCPU(new byte[] { 0x86, 0x36, 0x15, 0x01 }); /* XCHG [0115],DH */
             
             cpu.EU.Registers.DH = 0x57;
-            cpu.Bus.SaveByte(0x0115, 0xf3);
+            cpu.Bus.SaveData(0, 0x0115, 0xf3);
 
             cpu.NextInstruction();
 
@@ -129,7 +129,7 @@ namespace e8086UnitTests
             cpu = GetCPU(new byte[] { 0x87, 0x36, 0x15, 0x01 }); /* XCHG [0115],SI */
 
             cpu.EU.Registers.SI = 0x1057;
-            cpu.Bus.SaveWord(0x0115, 0x23f3);
+            cpu.Bus.SaveData(1, 0x0115, 0x23f3);
 
             cpu.NextInstruction();
 

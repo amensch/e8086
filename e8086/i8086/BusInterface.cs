@@ -140,7 +140,7 @@ namespace KDS.e8086
         }
 
         // save the 8 bit value to the requested offset
-        public void SaveByte(int offset, byte value)
+        private void SaveByte(int offset, byte value)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -173,7 +173,7 @@ namespace KDS.e8086
         }
 
         // save the 16 bit value to the requested offset
-        public void SaveWord(int offset, ushort value)
+        private void SaveWord(int offset, ushort value)
         {
             int addr = (GetDataSegment() << 4) + offset;
             if (addr >= MAX_MEMORY)
@@ -188,15 +188,29 @@ namespace KDS.e8086
         #endregion
 
         #region Retrieve and Copy Strings
-        // move string instruction
-        // the source string segment can be overridden
-        // the dest string segment is always ES
-        public void MoveByteString(int src_offset, int dst_offset)
+        /// <summary>
+        /// move string instruction
+        /// the source string segment can be overridden
+        /// the dest string segment is always ES
+        /// </summary>
+        public void MoveString(int word_size, int src_offset, int dst_offset)
+        {
+            if(word_size == 0)
+            {
+                MoveByteString(src_offset, dst_offset);
+            }
+            else
+            {
+                MoveWordString(src_offset, dst_offset);
+            }
+        }
+
+        private void MoveByteString(int src_offset, int dst_offset)
         {
             Ram[(ES << 4) + dst_offset] = GetByte(src_offset);
         }
 
-        public void MoveWordString(int src_offset, int dst_offset)
+        private void MoveWordString(int src_offset, int dst_offset)
         {
             int dst_addr = (ES << 4) + dst_offset;
 
@@ -213,23 +227,35 @@ namespace KDS.e8086
                 return GetWordDestString(offset);
         }
 
-        public byte GetByteDestString(int offset)
+        private byte GetByteDestString(int offset)
         {
             return Ram[(ES << 4) + offset];
         }
 
-        public ushort GetWordDestString(int offset)
+        private ushort GetWordDestString(int offset)
         {
             int addr = (ES << 4) + offset;
             return new WordRegister(Ram[addr + 1], Ram[addr]);
         }
 
-        public void SaveByteString(int offset, byte data)
+        public void SaveString(int word_size, int offset, int data)
+        {
+            if(word_size == 0)
+            {
+                SaveByteString(offset, (byte)data);
+            }
+            else
+            {
+                SaveWordString(offset, (ushort)data);
+            }
+        }
+
+        private void SaveByteString(int offset, byte data)
         {
             Ram[(ES << 4) + offset] = data;
         }
 
-        public void SaveWordString(int offset, ushort data)
+        private void SaveWordString(int offset, ushort data)
         {
             int addr = (ES << 4) + offset;
             WordRegister reg = new WordRegister(data);

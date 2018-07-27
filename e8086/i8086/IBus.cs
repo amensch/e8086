@@ -21,26 +21,36 @@ namespace KDS.e8086
         bool UsingBasePointer { get; set; }
         RAM Ram { get; set; }
 
-        void SaveByteString(int offset, byte data);
-        void SaveWordString(int offset, ushort data);
-        void SaveData(int word_size, int offset, int value);
-        void SaveByte(int offset, byte value);
-        void SaveWord(int offset, ushort value);
 
+        int GetDestString(int word_size, int offset);
+
+        /// <summary>
+        /// Stack operations
+        /// </summary>
         ushort PopStack(int offset);
         void PushStack(int offset, ushort value);
 
+        /// <summary>
+        /// Get next immediate byte and increment the program counter.
+        /// </summary>
         byte NextImmediate();
 
-        void MoveByteString(int src_offset, int dst_offset);
-        void MoveWordString(int src_offset, int dst_offset);
-
-        int GetDestString(int word_size, int offset);
-        byte GetByteDestString(int offset);
-        ushort GetWordDestString(int offset);
-
+        /// <summary>
+        /// Get/Save from Memory
+        /// </summary>
         int GetData(int word_size, int offset);
+        void SaveData(int word_size, int offset, int value);
 
+        /// <summary>
+        /// Used by repeatable string operations
+        /// </summary>
+        void SaveString(int word_size, int offset, int data);
+        void MoveString(int word_size, int src_offset, int dst_offset);
+
+        /// <summary>
+        /// For overriding the segment selection made by GetData/SaveData.
+        /// Currently used by the interrupt instruction.
+        /// </summary>
         ushort GetWord(int segment, int offset);
     }
 }

@@ -13,20 +13,13 @@ namespace KDS.e8086.Instructions
         protected override void DoInstruction()
         {
             EU.WritePort(wordSize, EU.Registers.DX, Bus.GetDestString(wordSize, EU.Registers.SI));
-
             if (EU.CondReg.DirectionFlag)
             {
-                if (wordSize == 0)
-                    EU.Registers.SI--;
-                else
-                    EU.Registers.SI -= 2;
+                EU.Registers.SI -= (ushort)(wordSize + 1);
             }
             else
             {
-                if (wordSize == 0)
-                    EU.Registers.SI++;
-                else
-                    EU.Registers.SI += 2;
+                EU.Registers.SI += (ushort)(wordSize + 1);
             }
         }
     }

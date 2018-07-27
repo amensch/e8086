@@ -31,12 +31,12 @@ namespace KDS.e8086.Instructions
                     }
                 case 0xa2:
                     {
-                        Bus.SaveByte(new WordRegister(hi, lo), EU.Registers.AL);
+                        Bus.SaveData(0, new WordRegister(hi, lo), EU.Registers.AL);
                         break;
                     }
                 case 0xa3:
                     {
-                        Bus.SaveWord(new WordRegister(hi, lo), EU.Registers.AX);
+                        Bus.SaveData(1, new WordRegister(hi, lo), EU.Registers.AX);
                         break;
                     }
             }
