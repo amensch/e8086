@@ -121,7 +121,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        original = GetByteFromRegisters(rm);
+                        original = (byte)(EU.Registers.GetRegisterValue(wordSize, rm) & 0xff);
                         break;
                     }
             }
@@ -201,7 +201,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        original = GetWordFromRegisters(rm);
+                        original = EU.Registers.GetRegisterValue(wordSize, rm);
                         break;
                     }
             }
@@ -281,7 +281,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        original = GetByteFromRegisters(rm);
+                        original = (byte)(EU.Registers.GetRegisterValue(wordSize, rm) & 0xff);
                         break;
                     }
             }
@@ -376,7 +376,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        original = GetWordFromRegisters(rm);
+                        original = EU.Registers.GetRegisterValue(wordSize, rm);
                         break;
                     }
             }

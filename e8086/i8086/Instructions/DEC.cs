@@ -17,9 +17,10 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            ushort dest = GetWordFromRegisters(OpCodeMode.RM);
+            // always use word size = 1
+            ushort dest = (ushort)(EU.Registers.GetRegisterValue(1, OpCodeMode.RM) & 0xffff);
             ushort result = (ushort)(dest - 1);
-            SaveWordToRegisters(OpCodeMode.RM, result);
+            EU.Registers.SaveRegisterValue(1, OpCodeMode.RM, result);
 
             // Flags: O S Z A P
             // Flags are set as if SUB instruction was used with operand2 = 1

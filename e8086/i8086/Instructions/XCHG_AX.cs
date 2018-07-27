@@ -18,8 +18,8 @@ namespace KDS.e8086.Instructions
             // Parse the op code, last 3 bits indicates register.
             // All swaps are done with AX
 
-            int first = GetWordFromRegisters(OpCodeMode.RM);
-            SaveWordToRegisters(OpCodeMode.RM, EU.Registers.AX);
+            int first = EU.Registers.GetRegisterValue(1, OpCodeMode.RM);
+            EU.Registers.SaveRegisterValue(1, OpCodeMode.RM, EU.Registers.AX);
             EU.Registers.AX = (ushort)first;
 
             // no flags are affected

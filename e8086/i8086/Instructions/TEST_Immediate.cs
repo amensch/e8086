@@ -12,7 +12,7 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            ProcessInstruction(source, direction, wordSize, 0x03, 0x00, 0x00, true);
+            ProcessInstruction(source, 0x03, 0x00, 0x00, true);
         }
     }
 }

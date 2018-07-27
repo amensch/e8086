@@ -46,7 +46,7 @@ namespace KDS.e8086.Instructions
                     }
             }
 
-            SaveWordToRegisters(secondByte.REG, Bus.GetWord(offset));
+            EU.Registers.SaveRegisterValue(1, secondByte.REG, Bus.GetWord(offset));
         }
 
         protected override void ExecuteInstruction()

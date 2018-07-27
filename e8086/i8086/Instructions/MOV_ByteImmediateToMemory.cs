@@ -36,7 +36,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        SaveByteToRegisters(secondByte.RM, Bus.NextIP());
+                        EU.Registers.SaveRegisterValue(0, secondByte.RM, Bus.NextIP());
                         break;
                     }
             }

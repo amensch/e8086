@@ -18,7 +18,7 @@ namespace KDS.e8086.Instructions
             // use op code like the reg field to define the register
             byte reg = (byte)(OpCode & 0x07);
             ushort value = GetImmediateWord();
-            SaveWordToRegisters(reg, value);
+            EU.Registers.SaveRegisterValue(1, reg, value);
         }
 
     }
