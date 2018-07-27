@@ -25,10 +25,10 @@ namespace KDS.e8086
 
         private enum TimerAccessMode
         {
-            Latch = 0,
-            LoByte = 1,
-            HiByte = 2,
-            BothBytes = 3
+            Latch = 0,      // toggle latch
+            LoByte = 1,     // read lo byte
+            HiByte = 2,     // read hi byte
+            BothBytes = 3   // read lo then hi
         };
 
         private class Intel8253Timer
@@ -109,7 +109,7 @@ namespace KDS.e8086
         }
 
         // port 0x43
-        public void WriteControlWord(byte data)
+        private void WriteControlWord(byte data)
         {
             // control word (bits 7-0)
             // SC1-SC0-RL1-RL0-M2-M1-M0-BCD
@@ -119,23 +119,12 @@ namespace KDS.e8086
             byte rl = (byte)((data >> 4) & 0x03);
             TimerAccessMode mode = (TimerAccessMode)rl;
 
-            if( sc == 0 )
-            {
-                //if (_timer.ThreadState == System.Threading.ThreadState.Running)
-                //    StopTimer = true;
-            }
-
             Timers[sc].AccessMode = mode;
 
-            if (mode == TimerAccessMode.Latch ||
-                mode == TimerAccessMode.BothBytes)
+            if (mode == TimerAccessMode.Latch || mode == TimerAccessMode.BothBytes)
+            {
                 Timers[sc].ToggleMode = TimerAccessMode.LoByte;
-        }
-
-        // port 0x43
-        public void WriteControlWord(ushort data)
-        {
-            WriteControlWord(data);
+            }
         }
 
         public void WriteCounter(ushort data)
@@ -195,6 +184,7 @@ namespace KDS.e8086
             }
         }
 
+        #region IODevice Implementation
         public bool IsListening(ushort port)
         {
             return (port >= 0x40 && port <= 0x43);
@@ -202,12 +192,31 @@ namespace KDS.e8086
 
         public int ReadData(int wordSize, ushort port)
         {
-            throw new NotImplementedException();
+            byte idx = (byte)(port & 0x03);
+
+            // Read mode register
+            if(port == 0x43)
+            {
+
+            }
+            return 0;
         }
 
         public void WriteData(int wordSize, ushort port, int data)
         {
-            throw new NotImplementedException();
+            byte idx = (byte)(port & 0x03);
+            byte value = (byte)(data & 0xff);
+
+            if(port == 0x43)
+            {
+                WriteControlWord(value);
+            }
+            else
+            {
+
+            }
         }
+        #endregion
+
     }  
 }

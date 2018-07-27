@@ -23,7 +23,7 @@ namespace KDS.e8086.Instructions
             // else use rm field to determine the register
             else
             {
-                SaveWordToRegisters(OpCodeMode.RM, Pop());
+                EU.Registers.SaveRegisterValue(1, OpCodeMode.RM, Pop());
             }
         }
 

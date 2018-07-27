@@ -46,18 +46,9 @@ namespace KDS.e8086.Instructions
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
             {
-                if (wordSize == 0)
-                {
-                    dest = GetByteFromRegisters(reg);
-                    result = dest - (source + carry);
-                    if (!CompareOnly) SaveByteToRegisters(reg, (byte)result);
-                }
-                else
-                {
-                    dest = GetWordFromRegisters(reg);
-                    result = dest - (source + carry);
-                    if (!CompareOnly) SaveWordToRegisters(reg, (ushort)result);
-                }
+                dest = EU.Registers.GetRegisterValue(wordSize, reg);
+                result = dest - (source + carry);
+                if (!CompareOnly) EU.Registers.SaveRegisterValue(wordSize, reg, result);
             }
             else
             {
@@ -82,18 +73,9 @@ namespace KDS.e8086.Instructions
                         }
                     case 0x03:
                         {
-                            if (wordSize == 0)
-                            {
-                                dest = GetByteFromRegisters(rm);
-                                result = dest - (source + carry);
-                                if (!CompareOnly) SaveByteToRegisters(rm, (byte)result);
-                            }
-                            else // if ((direction == 0) && (wordSize == 1))
-                            {
-                                dest = GetWordFromRegisters(rm);
-                                result = dest - (source + carry);
-                                if (!CompareOnly) SaveWordToRegisters(rm, (ushort)result);
-                            }
+                            dest = EU.Registers.GetRegisterValue(wordSize, rm);
+                            result = dest - (source + carry);
+                            if (!CompareOnly) EU.Registers.SaveRegisterValue(wordSize, rm, result);
                             break;
                         }
                 }

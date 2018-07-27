@@ -40,7 +40,7 @@ namespace KDS.e8086.Instructions
                     }
                 case 0x03:
                     {
-                        SaveWordToRegisters(secondByte.RM, GetImmediateWord());
+                        EU.Registers.SaveRegisterValue(1, secondByte.RM, GetImmediateWord());
                         break;
                     }
             }

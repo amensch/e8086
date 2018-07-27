@@ -43,18 +43,9 @@ namespace KDS.e8086.Instructions
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
             {
-                if (wordSize == 0)
-                {
-                    dest = GetByteFromRegisters(reg);
-                    result = source + dest + carry;
-                    SaveByteToRegisters(reg, (byte)result);
-                }
-                else
-                {
-                    dest = GetWordFromRegisters(reg);
-                    result = source + dest + carry;
-                    SaveWordToRegisters(reg, (ushort)result);
-                }
+                dest = EU.Registers.GetRegisterValue(wordSize, reg);
+                result = source + dest + carry;
+                EU.Registers.SaveRegisterValue(wordSize, reg, result);
             }
             else
             {
@@ -79,18 +70,9 @@ namespace KDS.e8086.Instructions
                         }
                     case 0x03:
                         {
-                            if (wordSize == 0)
-                            {
-                                dest = GetByteFromRegisters(rm);
-                                result = source + dest + carry;
-                                SaveByteToRegisters(rm, (byte)result);
-                            }
-                            else // if ((direction == 0) && (word_size == 1))
-                            {
-                                dest = GetWordFromRegisters(rm);
-                                result = source + dest + carry;
-                                SaveWordToRegisters(rm, (ushort)result);
-                            }
+                            dest = EU.Registers.GetRegisterValue(wordSize, rm);
+                            result = source + dest + carry;
+                            EU.Registers.SaveRegisterValue(wordSize, rm, result);
                             break;
                         }
                 }

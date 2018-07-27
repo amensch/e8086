@@ -26,7 +26,7 @@ namespace KDS.e8086.Instructions
 
         protected abstract int Operand(int source, int dest);
 
-        protected void ProcessInstruction(int source, int direction, int word_size, byte mod, byte reg, byte rm, bool test_only)
+        protected void ProcessInstruction(int source, byte mod, byte reg, byte rm, bool test_only)
         {
             AssertMOD(mod);
             int result = 0;
@@ -36,18 +36,9 @@ namespace KDS.e8086.Instructions
             // if direction is 1 (R/M is source) action is the same regardless of mod
             if (direction == 1)
             {
-                if (word_size == 0)
-                {
-                    dest = GetByteFromRegisters(reg);
-                    result = Operand(source, dest);
-                    if (!test_only) SaveByteToRegisters(reg, (byte)result);
-                }
-                else
-                {
-                    dest = GetWordFromRegisters(reg);
-                    result = Operand(source, dest);
-                    if (!test_only) SaveWordToRegisters(reg, (ushort)result);
-                }
+                dest = EU.Registers.GetRegisterValue(wordSize, reg);
+                result = Operand(source, dest);
+                if (!test_only) EU.Registers.SaveRegisterValue(wordSize, reg, result);
             }
             else
             {
@@ -56,34 +47,25 @@ namespace KDS.e8086.Instructions
                     case 0x00:
                         {
                             offset = GetRMTable1(rm);
-                            dest = Bus.GetData(word_size, offset);
+                            dest = Bus.GetData(wordSize, offset);
                             result = Operand(source, dest);
-                            if (!test_only) Bus.SaveData(word_size, offset, result);
+                            if (!test_only) Bus.SaveData(wordSize, offset, result);
                             break;
                         }
                     case 0x01:
                     case 0x02:  // difference is processed in the GetRMTable2 function
                         {
                             offset = GetRMTable2(mod, rm);
-                            dest = Bus.GetData(word_size, offset);
+                            dest = Bus.GetData(wordSize, offset);
                             result = Operand(source, dest);
-                            if (!test_only) Bus.SaveData(word_size, offset, result);
+                            if (!test_only) Bus.SaveData(wordSize, offset, result);
                             break;
                         }
                     case 0x03:
                         {
-                            if (word_size == 0)
-                            {
-                                dest = GetByteFromRegisters(rm);
-                                result = Operand(source, dest);
-                                if (!test_only) SaveByteToRegisters(rm, (byte)result);
-                            }
-                            else // if ((direction == 0) && (word_size == 1))
-                            {
-                                dest = GetWordFromRegisters(rm);
-                                result = Operand(source, dest);
-                                if (!test_only) SaveWordToRegisters(rm, (ushort)result);
-                            }
+                            dest = EU.Registers.GetRegisterValue(wordSize, rm);
+                            result = Operand(source, dest);
+                            if (!test_only) EU.Registers.SaveRegisterValue(wordSize, rm, result);
                             break;
                         }
                 }
@@ -93,8 +75,8 @@ namespace KDS.e8086.Instructions
             //        0 x x ? x 0
             EU.CondReg.OverflowFlag = false;
             EU.CondReg.CarryFlag = false;
-            EU.CondReg.CalcSignFlag(word_size, result);
-            EU.CondReg.CalcZeroFlag(word_size, result);
+            EU.CondReg.CalcSignFlag(wordSize, result);
+            EU.CondReg.CalcZeroFlag(wordSize, result);
             EU.CondReg.CalcParityFlag(result);
 
         }

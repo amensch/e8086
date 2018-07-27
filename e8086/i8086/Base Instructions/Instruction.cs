@@ -122,207 +122,6 @@ namespace KDS.e8086.Instructions
         #endregion
 
         #region Get and Set registers
-        // Get 8 bit REG result (or R/M mod=11)
-        protected byte GetByteFromRegisters(byte reg)
-        {
-            byte result = 0;
-            AssertREG(reg);
-            switch (reg)
-            {
-                case 0x00:
-                    {
-                        result = EU.Registers.AL;
-                        break;
-                    }
-                case 0x01:
-                    {
-                        result = EU.Registers.CL;
-                        break;
-                    }
-                case 0x02:
-                    {
-                        result = EU.Registers.DL;
-                        break;
-                    }
-                case 0x03:
-                    {
-                        result = EU.Registers.BL;
-                        break;
-                    }
-                case 0x04:
-                    {
-                        result = EU.Registers.AH;
-                        break;
-                    }
-                case 0x05:
-                    {
-                        result = EU.Registers.CH;
-                        break;
-                    }
-                case 0x06:
-                    {
-                        result = EU.Registers.DH;
-                        break;
-                    }
-                case 0x07:
-                    {
-                        result = EU.Registers.BH;
-                        break;
-                    }
-            }
-            return result;
-        }
-
-        // Save 8 bit value in register indicated by REG
-        protected void SaveByteToRegisters(byte reg, byte value)
-        {
-            AssertREG(reg);
-            switch (reg)
-            {
-                case 0x00:
-                    {
-                        EU.Registers.AL = value;
-                        break;
-                    }
-                case 0x01:
-                    {
-                        EU.Registers.CL = value;
-                        break;
-                    }
-                case 0x02:
-                    {
-                        EU.Registers.DL = value;
-                        break;
-                    }
-                case 0x03:
-                    {
-                        EU.Registers.BL = value;
-                        break;
-                    }
-                case 0x04:
-                    {
-                        EU.Registers.AH = value;
-                        break;
-                    }
-                case 0x05:
-                    {
-                        EU.Registers.CH = value;
-                        break;
-                    }
-                case 0x06:
-                    {
-                        EU.Registers.DH = value;
-                        break;
-                    }
-                case 0x07:
-                    {
-                        EU.Registers.BH = value;
-                        break;
-                    }
-            }
-
-        }
-
-        // Get 16 bit REG result (or R/M mod=11)
-        protected ushort GetWordFromRegisters(byte reg)
-        {
-            ushort result = 0;
-            AssertREG(reg);
-            switch (reg)
-            {
-                case 0x00:
-                    {
-                        result = EU.Registers.AX;
-                        break;
-                    }
-                case 0x01:
-                    {
-                        result = EU.Registers.CX;
-                        break;
-                    }
-                case 0x02:
-                    {
-                        result = EU.Registers.DX;
-                        break;
-                    }
-                case 0x03:
-                    {
-                        result = EU.Registers.BX;
-                        break;
-                    }
-                case 0x04:
-                    {
-                        result = EU.Registers.SP;
-                        break;
-                    }
-                case 0x05:
-                    {
-                        result = EU.Registers.BP;
-                        break;
-                    }
-                case 0x06:
-                    {
-                        result = EU.Registers.SI;
-                        break;
-                    }
-                case 0x07:
-                    {
-                        result = EU.Registers.DI;
-                        break;
-                    }
-            }
-            return result;
-        }
-
-        // Save 16 bit value in register indicated by REG
-        protected void SaveWordToRegisters(byte reg, ushort value)
-        {
-            AssertREG(reg);
-            switch (reg)
-            {
-                case 0x00:
-                    {
-                        EU.Registers.AX = value;
-                        break;
-                    }
-                case 0x01:
-                    {
-                        EU.Registers.CX = value;
-                        break;
-                    }
-                case 0x02:
-                    {
-                        EU.Registers.DX = value;
-                        break;
-                    }
-                case 0x03:
-                    {
-                        EU.Registers.BX = value;
-                        break;
-                    }
-                case 0x04:
-                    {
-                        EU.Registers.SP = value;
-                        break;
-                    }
-                case 0x05:
-                    {
-                        EU.Registers.BP = value;
-                        break;
-                    }
-                case 0x06:
-                    {
-                        EU.Registers.SI = value;
-                        break;
-                    }
-                case 0x07:
-                    {
-                        EU.Registers.DI = value;
-                        break;
-                    }
-            }
-
-        }
 
         // Get 16 bit SREG result
         protected ushort GetWordFromSegReg(byte reg)
@@ -391,6 +190,7 @@ namespace KDS.e8086.Instructions
         {
             return GetSourceData(direction, word_size, mod, reg, rm, false);
         }
+
         protected int GetSourceData(int direction, int word_size, byte mod, byte reg, byte rm, bool useSREG)
         {
             int result = 0;
@@ -404,14 +204,7 @@ namespace KDS.e8086.Instructions
                 }
                 else
                 {
-                    if (word_size == 0)
-                    {
-                        result = GetByteFromRegisters(reg);
-                    }
-                    else
-                    {
-                        result = GetWordFromRegisters(reg);
-                    }
+                    result = EU.Registers.GetRegisterValue(word_size, reg);
                 }
             }
             else
@@ -446,14 +239,7 @@ namespace KDS.e8086.Instructions
                         }
                     case 0x03:
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                result = GetByteFromRegisters(rm);
-                            }
-                            else //if ((direction == 1) && (word_size == 1))
-                            {
-                                result = GetWordFromRegisters(rm);
-                            }
+                            result = EU.Registers.GetRegisterValue(useSREG ? 1 : word_size, rm);
                             break;
                         }
                 }
@@ -492,14 +278,7 @@ namespace KDS.e8086.Instructions
                 }
                 else
                 {
-                    if (word_size == 0)
-                    {
-                        SaveByteToRegisters(reg, (byte)data);
-                    }
-                    else
-                    {
-                        SaveWordToRegisters(reg, (ushort)data);
-                    }
+                    EU.Registers.SaveRegisterValue(wordSize, reg, data);
                 }
             }
             else
@@ -533,14 +312,9 @@ namespace KDS.e8086.Instructions
                         }
                     case 0x03:
                         {
-                            if ((word_size == 0) && !useSREG)
-                            {
-                                SaveByteToRegisters(rm, (byte)data);
-                            }
-                            else // if ((direction == 0) && (word_size == 1))
-                            {
-                                SaveWordToRegisters(rm, (ushort)data);
-                            }
+                            // If this instruction is using segmented registers then
+                            // use a word size of 1 regardless of the instruction
+                            EU.Registers.SaveRegisterValue( useSREG ? 1 : word_size, rm, data);
                             break;
                         }
                 }
@@ -713,7 +487,6 @@ namespace KDS.e8086.Instructions
 
         }
         #endregion
-
 
     }
 }

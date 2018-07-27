@@ -86,5 +86,227 @@ namespace KDS.e8086
             get { return _dx.LO; }
             set { _dx.LO = value; }
         }
+
+        public int GetRegisterValue(int wordSize, byte reg)
+        {
+            if(wordSize == 0)
+            {
+                return GetByteFromRegisters(reg);
+            }
+            else
+            {
+                return GetWordFromRegisters(reg);
+            }
+        }
+
+        public void SaveRegisterValue(int wordSize, byte reg, int value)
+        {
+            if (wordSize == 0)
+            {
+                SaveByteToRegisters(reg, (byte)(value & 0xff));
+            }
+            else
+            {
+                SaveWordToRegisters(reg, (ushort)(value & 0xffff));
+            }
+        }
+
+        // Get 8 bit REG result (or R/M mod=11)
+        private byte GetByteFromRegisters(byte reg)
+        {
+            byte result = 0;
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        result = AL;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = CL;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = DL;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = BL;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = AH;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = CH;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = DH;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = BH;
+                        break;
+                    }
+            }
+            return result;
+        }
+
+        // Get 16 bit REG result (or R/M mod=11)
+        private ushort GetWordFromRegisters(byte reg)
+        {
+            ushort result = 0;
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        result = AX;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        result = CX;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        result = DX;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        result = BX;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        result = SP;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        result = BP;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        result = SI;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        result = DI;
+                        break;
+                    }
+            }
+            return result;
+        }
+
+        // Save 8 bit value in register indicated by REG
+        private void SaveByteToRegisters(byte reg, byte value)
+        {
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        AL = value;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        CL = value;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        DL = value;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        BL = value;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        AH = value;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        CH = value;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        DH = value;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        BH = value;
+                        break;
+                    }
+            }
+
+        }
+
+        // Save 16 bit value in register indicated by REG
+        private void SaveWordToRegisters(byte reg, ushort value)
+        {
+            switch (reg)
+            {
+                case 0x00:
+                    {
+                        AX = value;
+                        break;
+                    }
+                case 0x01:
+                    {
+                        CX = value;
+                        break;
+                    }
+                case 0x02:
+                    {
+                        DX = value;
+                        break;
+                    }
+                case 0x03:
+                    {
+                        BX = value;
+                        break;
+                    }
+                case 0x04:
+                    {
+                        SP = value;
+                        break;
+                    }
+                case 0x05:
+                    {
+                        BP = value;
+                        break;
+                    }
+                case 0x06:
+                    {
+                        SI = value;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        DI = value;
+                        break;
+                    }
+            }
+
+        }
     }
 }
