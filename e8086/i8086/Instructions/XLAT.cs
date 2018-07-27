@@ -15,7 +15,7 @@ namespace KDS.e8086.Instructions
             // one byte instruction (0xd7)
             // Store into AL the value located at a 256 byte lookup table
             // BX is the beginning of the table and AL is the offset
-            EU.Registers.AL = Bus.GetByte(EU.Registers.BX + EU.Registers.AL);
+            EU.Registers.AL = (byte)(Bus.GetData(0, EU.Registers.BX + EU.Registers.AL));
         }
     }
 }

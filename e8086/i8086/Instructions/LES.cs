@@ -12,7 +12,7 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            Bus.ES = Bus.GetWord(offset + 2);
+            Bus.ES = (ushort)(Bus.GetData(1, offset + 2) & 0xffff);
         }
 
     }

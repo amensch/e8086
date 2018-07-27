@@ -28,7 +28,6 @@ namespace KDS.e8086.Instructions
 
         protected void ADD_Destination(int source, byte mod, byte reg, byte rm)
         {
-            AssertMOD(mod);
             int result = 0;
             int offset;
             int dest = 0;

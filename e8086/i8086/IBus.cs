@@ -40,8 +40,6 @@ namespace KDS.e8086
         ushort GetWordDestString(int offset);
 
         int GetData(int word_size, int offset);
-        byte GetByte(int offset);
-        ushort GetWord(int offset);
         ushort GetWord(int segment, int offset);
     }
 }

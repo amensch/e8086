@@ -14,7 +14,7 @@ namespace KDS.e8086.Instructions
         {
             if (wordSize == 0)
             {
-                EU.Registers.AL = Bus.GetByte(EU.Registers.SI);
+                EU.Registers.AL = (byte)(Bus.GetData(wordSize, EU.Registers.SI) & 0xff);
                 if (EU.CondReg.DirectionFlag)
                 {
                     EU.Registers.SI--;
@@ -26,7 +26,7 @@ namespace KDS.e8086.Instructions
             }
             else
             {
-                EU.Registers.AX = Bus.GetWord(EU.Registers.SI);
+                EU.Registers.AX = (ushort)(Bus.GetData(wordSize, EU.Registers.SI) & 0xffff);
                 if (EU.CondReg.DirectionFlag)
                 {
                     EU.Registers.SI -= 2;

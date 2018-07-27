@@ -54,11 +54,11 @@ namespace e8086UnitTests
             cpu.NextInstruction();
 
             cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
-            Assert.AreEqual(0xa1, cpu.Bus.GetByte(0x200), "MOVS 1 result failed");
-            Assert.AreEqual(0xa2, cpu.Bus.GetByte(0x201), "MOVS 2 result failed");
-            Assert.AreEqual(0xa3, cpu.Bus.GetByte(0x202), "MOVS 3 result failed");
-            Assert.AreEqual(0xa4, cpu.Bus.GetByte(0x203), "MOVS 4 result failed");
-            Assert.AreEqual(0xa5, cpu.Bus.GetByte(0x204), "MOVS 5 result failed");
+            Assert.AreEqual(0xa1, cpu.Bus.GetData(0, 0x200), "MOVS 1 result failed");
+            Assert.AreEqual(0xa2, cpu.Bus.GetData(0, 0x201), "MOVS 2 result failed");
+            Assert.AreEqual(0xa3, cpu.Bus.GetData(0, 0x202), "MOVS 3 result failed");
+            Assert.AreEqual(0xa4, cpu.Bus.GetData(0, 0x203), "MOVS 4 result failed");
+            Assert.AreEqual(0xa5, cpu.Bus.GetData(0, 0x204), "MOVS 5 result failed");
         }
 
 
@@ -95,11 +95,11 @@ namespace e8086UnitTests
             cpu.NextInstruction();
 
             cpu.Bus.SegmentOverride = SegmentOverrideState.UseES;
-            Assert.AreEqual(0xa2a1, cpu.Bus.GetWord(0x200), "MOVSW 1 result failed");
-            Assert.AreEqual(0xa4a3, cpu.Bus.GetWord(0x202), "MOVSW 2 result failed");
-            Assert.AreEqual(0xa6a5, cpu.Bus.GetWord(0x204), "MOVSW 3 result failed");
-            Assert.AreEqual(0xa8a7, cpu.Bus.GetWord(0x206), "MOVSW 4 result failed");
-            Assert.AreEqual(0xaaa9, cpu.Bus.GetWord(0x208), "MOVSW 5 result failed");
+            Assert.AreEqual(0xa2a1, cpu.Bus.GetData(1, 0x200), "MOVSW 1 result failed");
+            Assert.AreEqual(0xa4a3, cpu.Bus.GetData(1, 0x202), "MOVSW 2 result failed");
+            Assert.AreEqual(0xa6a5, cpu.Bus.GetData(1, 0x204), "MOVSW 3 result failed");
+            Assert.AreEqual(0xa8a7, cpu.Bus.GetData(1, 0x206), "MOVSW 4 result failed");
+            Assert.AreEqual(0xaaa9, cpu.Bus.GetData(1, 0x208), "MOVSW 5 result failed");
         }
 
         [TestMethod]
