@@ -33,7 +33,7 @@ namespace KDS.e8086
         public SegmentOverrideState SegmentOverride { get; set; }
         public bool UsingBasePointer { get; set; }
 
-        public RAM Ram { get; set; }
+        private RAM Ram;
 
         public BusInterface()
         {
