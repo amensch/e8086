@@ -12,7 +12,7 @@ namespace KDS.e8086.Instructions
 
         protected override ushort GetOperand()
         {
-            return Bus.NextIP();
+            return Bus.NextImmediate();
         }
     }
 }

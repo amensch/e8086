@@ -94,7 +94,7 @@ namespace KDS.e8086
         }
 
         // fetch the byte pointed to by the program counter and increment IP
-        public byte NextIP()
+        public byte NextImmediate()
         {
             int pc = GetPhysicalAddress();
 

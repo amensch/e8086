@@ -15,7 +15,7 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            Push(EU.Bus.NextIP());
+            Push(EU.Bus.NextImmediate());
         }
     }
 }

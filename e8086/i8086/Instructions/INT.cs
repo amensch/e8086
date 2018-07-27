@@ -33,7 +33,7 @@ namespace KDS.e8086.Instructions
             base.PreProcessing();
             if(InterruptNumber == 0)
             {
-                InterruptNumber = EU.Bus.NextIP();
+                InterruptNumber = EU.Bus.NextImmediate();
             }
         }
 

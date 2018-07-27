@@ -34,11 +34,11 @@ namespace KDS.e8086.Instructions
 
             if ((OpCode & 0x03) == 0x03)
             {
-                source = SignExtendByteToWord(Bus.NextIP());
+                source = SignExtendByteToWord(Bus.NextImmediate());
             }
             else if (wordSize == 0)
             {
-                source = Bus.NextIP();
+                source = Bus.NextImmediate();
 
             }
             else

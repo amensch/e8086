@@ -17,7 +17,7 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            ushort oper = SignExtendByteToWord(Bus.NextIP());
+            ushort oper = SignExtendByteToWord(Bus.NextImmediate());
             EU.Registers.CX--;
             if(EU.Registers.CX != 0)
             {

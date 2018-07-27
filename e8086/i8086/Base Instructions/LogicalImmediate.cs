@@ -20,7 +20,7 @@ namespace KDS.e8086.Instructions
             else
             {
                 byte lo = secondByte.Value;
-                byte hi = Bus.NextIP();
+                byte hi = Bus.NextImmediate();
                 source = new WordRegister(hi, lo);
             }
 

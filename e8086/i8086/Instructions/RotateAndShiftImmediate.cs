@@ -15,7 +15,7 @@ namespace KDS.e8086.Instructions
             // in this case we need to read the RM data first in the case there
             // is displacement data to read before the immediate data
             int operand1 = GetSourceData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
-            return Bus.NextIP();
+            return Bus.NextImmediate();
         }
     }
 }

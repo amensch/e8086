@@ -13,14 +13,14 @@ namespace e8086UnitTests
             BusInterface bus = new BusInterface(0, 0, new byte[] { 0x05, 0x10, 0x15 });
 
             int i = 0;
-            Assert.AreEqual(0x05, bus.NextIP(), string.Format("NextIP failed {0}",i++));
-            Assert.AreEqual(0x10, bus.NextIP(), string.Format("NextIP failed {0}", i++));
-            Assert.AreEqual(0x15, bus.NextIP(), string.Format("NextIP failed {0}", i++));
+            Assert.AreEqual(0x05, bus.NextImmediate(), string.Format("NextIP failed {0}",i++));
+            Assert.AreEqual(0x10, bus.NextImmediate(), string.Format("NextIP failed {0}", i++));
+            Assert.AreEqual(0x15, bus.NextImmediate(), string.Format("NextIP failed {0}", i++));
 
             bus = new BusInterface(0x100, 0x200, new byte[] { 0x20, 0x25, 0x30 });
-            Assert.AreEqual(0x20, bus.NextIP(), string.Format("NextIP failed {0}", i++));
-            Assert.AreEqual(0x25, bus.NextIP(), string.Format("NextIP failed {0}", i++));
-            Assert.AreEqual(0x30, bus.NextIP(), string.Format("NextIP failed {0}", i++));
+            Assert.AreEqual(0x20, bus.NextImmediate(), string.Format("NextIP failed {0}", i++));
+            Assert.AreEqual(0x25, bus.NextImmediate(), string.Format("NextIP failed {0}", i++));
+            Assert.AreEqual(0x30, bus.NextImmediate(), string.Format("NextIP failed {0}", i++));
         }
 
         [TestMethod]

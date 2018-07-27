@@ -18,24 +18,24 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         dest = GetRMTable1(secondByte.RM);
-                        Bus.SaveByte(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextImmediate());
                         break;
                     }
                 case 0x01:
                     {
                         dest = GetRMTable2(secondByte.MOD, secondByte.RM);
-                        Bus.SaveByte(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextImmediate());
                         break;
                     }
                 case 0x02:
                     {
                         dest = GetRMTable2(secondByte.MOD, secondByte.RM);
-                        Bus.SaveByte(dest, Bus.NextIP());
+                        Bus.SaveByte(dest, Bus.NextImmediate());
                         break;
                     }
                 case 0x03:
                     {
-                        EU.Registers.SaveRegisterValue(0, secondByte.RM, Bus.NextIP());
+                        EU.Registers.SaveRegisterValue(0, secondByte.RM, Bus.NextImmediate());
                         break;
                     }
             }

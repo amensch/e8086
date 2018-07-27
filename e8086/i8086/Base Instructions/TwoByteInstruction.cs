@@ -20,7 +20,7 @@ namespace KDS.e8086.Instructions
             base.PreProcessing();
             if (FetchSecondByte)
             {
-                secondByte = new AddressMode(Bus.NextIP());
+                secondByte = new AddressMode(Bus.NextImmediate());
             }
         }
 

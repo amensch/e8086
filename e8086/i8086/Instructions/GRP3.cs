@@ -33,7 +33,7 @@ namespace KDS.e8086.Instructions
                     {
                         if (wordSize == 0)
                         {
-                            dest = Bus.NextIP();
+                            dest = Bus.NextImmediate();
                         }
                         else
                         {

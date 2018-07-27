@@ -15,8 +15,8 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            byte lo = Bus.NextIP();
-            byte hi = Bus.NextIP();
+            byte lo = Bus.NextImmediate();
+            byte hi = Bus.NextImmediate();
             switch (OpCode)
             {
                 case 0xa0:
