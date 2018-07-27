@@ -152,7 +152,7 @@ namespace KDS.e8086UnitTests
             // take the number in memory 2050, find the sum of the digits and store in 2051
 
             CPU cpu = GetCPU(new byte[] {
-                                        0xa0, 0x02, 0x08, //0x00, 0x00,       // mov al,[2050]
+                                        0xa0, 0x02, 0x08,                   // mov al,[2050]
                                         0x88, 0xc4,                         // mov ah, al
                                         0xb1, 0x04,                         // mov cl, 4
                                         0x24, 0x0f,                         // and al, 0x0f
