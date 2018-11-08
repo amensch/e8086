@@ -77,8 +77,8 @@ namespace KDS.e8086
         public BusInterface Bus { get; private set; }
 
         // External chips
-        private IODevice PIC;  // interrupts (PIC - Intel8259)
-        private IODevice PIT;  // timer (PIT - Intel8253)
+        private Intel8259 PIC;  // interrupts (PIC - Intel8259)
+        private Intel8253 PIT;  // timer (PIT - Intel8253)
 
         // List of interrupts - thread safe FIFO queue
         private ConcurrentQueue<byte> _interrupts;
@@ -102,13 +102,12 @@ namespace KDS.e8086
             // 0x00 - 0x0f: DMA Chip 8237A-5
 
             // 0x20 - 0x21: Interrupt 8259A
-            InitPIC();
+            PIC = new Intel8259();
 
             // 0x40 - 0x43: Timer 8253
-//            Init8253();
+            PIT = new Intel8253(PIC);
 
             // 0x60 - 0x63: PPI 8255 (speaker)
-
 
             // 0x80 - 0x83: DMA page registers
             // 0xa0 - 0xaf: NMI Mask Register
@@ -121,37 +120,8 @@ namespace KDS.e8086
             // 0x3bc: IBM Monochrome Display & Printer Adapter
             // 0x378: Printer Adapter
 
-
-        }
-
-        private void InitPIC()
-        {
-            //_i8259 = new Intel8259(AddInterrupt);
-
-            // i8259 input devices (PIC)
-            //EU.AddInputDevice(0x20, new InputDevice(_i8259.ReadPicCommand, _i8259.ReadPicCommand16));
-            //EU.AddInputDevice(0x21, new InputDevice(_i8259.ReadPicData, _i8259.ReadPicData16));
-
-            //// i8259 output devices (PIC)
-            //EU.AddOutputDevice(0x20, new OutputDevice(_i8259.WritePicCommand, _i8259.WritePicCommand));
-            //EU.AddOutputDevice(0x21, new OutputDevice(_i8259.WritePicData, _i8259.WritePicData));
-        }
-
-        private void InitPIT()
-        {
-            //PIT = new Intel8253(AddInterrupt);
-
-            //i8253 input devices(PIT)
-            //EU.AddInputDevice(0x40, new InputDevice(_i8253.ReadCounter1, _i8253.Read16));
-            //EU.AddInputDevice(0x41, new InputDevice(_i8253.ReadCounter2, _i8253.Read16));
-            //EU.AddInputDevice(0x42, new InputDevice(_i8253.ReadCounter3, _i8253.Read16));
-            //EU.AddInputDevice(0x43, new InputDevice(_i8253.ReadControlWord, _i8253.Read16));
-
-            //////i8253 output devices(PIT)
-            //EU.AddOutputDevice(0x40, new OutputDevice(_i8253.WriteCounter1, _i8253.WriteCounter));
-            //EU.AddOutputDevice(0x41, new OutputDevice(_i8253.WriteCounter2, _i8253.WriteCounter));
-            //EU.AddOutputDevice(0x42, new OutputDevice(_i8253.WriteCounter3, _i8253.WriteCounter));
-            //EU.AddOutputDevice(0x43, new OutputDevice(_i8253.WriteControlWord, _i8253.WriteControlWord));
+            EU.AddDevice(PIT);
+            EU.AddDevice(PIC);
         }
 
         public void Boot(byte[] program)
