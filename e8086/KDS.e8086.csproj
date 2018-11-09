@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chipset\Intel8253Counter.cs" />
     <Compile Include="Chipset\IODevice.cs" />
     <Compile Include="i8086\AddressMode.cs" />
     <Compile Include="Chipset\Intel8253.cs" />
