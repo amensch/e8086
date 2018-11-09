@@ -44,32 +44,44 @@ namespace KDS.e8086
             BothBytes = 3   // read lo then hi
         };
 
+        private enum CounterMode
+        {
+            InterruptOnCount = 0,
+            HardwareOneShot = 1,
+            RateGenerator = 2,
+            SquareWaveGenerator = 3,
+            SoftwareStrobe = 4,
+            HardwareStroge = 5
+                // RateGenerator = 6,
+                // SquareWaveGenerator = 7
+        };
+
         private class Intel8253Timer
         {
             /// <summary>
-            /// Current mode of this counter
+            /// Current access mode of this counter
             /// </summary>
             public TimerAccessMode AccessMode { get; set; }
 
             /// <summary>
-            ///  The actual counter value
+            /// Counting mode of the timer
+            /// </summary>
+            public CounterMode CountMode { get; set; }
+
+            /// <summary>
+            ///  The actual counter value (16 bits)
             /// </summary>
             public int Counter { get; set; }
 
             /// <summary>
-            /// Reset value of the counter
+            /// Reset value of the counter (16 bits)
             /// </summary>
             public int ResetValue { get; set; }
 
             /// <summary>
-            /// Latched value of the counter
+            /// Latched value of the counter (16 bits)
             /// </summary>
             public int LatchValue { get; set; }
-
-            /// <summary>
-            /// Raw byte value of the control word for this timer
-            /// </summary>
-            public byte ControlWord { get; set; }
 
             /// <summary>
             /// Toggle mode for reading and writing both LSB and MSB
@@ -84,6 +96,11 @@ namespace KDS.e8086
             public bool Enabled { get; set; } = false;
 
             /// <summary>
+            /// Used to toggle the output for the rate generators
+            /// </summary>
+            public bool OutputEnabled { get; set; } = false;
+
+            /// <summary>
             /// Indicated if the timer is currently latched
             /// </summary>
             public bool Latched { get; set; }
@@ -92,7 +109,6 @@ namespace KDS.e8086
         private const int TIMERS = 3;
 
         private Intel8253Timer[] Timers;
-        private bool StopTimer = false;
         private IPIC PIC;
 
         public Intel8253(IPIC pic)
@@ -121,6 +137,9 @@ namespace KDS.e8086
 
             var timer = Timers[idx];
             value = timer.Counter;
+
+            // if the timer is latched set the value as the latched value and
+            // clear latched mode unless we are reading the LSB of both bytes
             if(timer.Latched)
             {
                 value = timer.LatchValue;
@@ -132,10 +151,6 @@ namespace KDS.e8086
 
             switch(timer.AccessMode)
             {
-                case TimerAccessMode.Latch:
-                    {
-                        break;
-                    }
                 case TimerAccessMode.LoByte:
                     {
                         value = value & 0xff;
@@ -203,11 +218,37 @@ namespace KDS.e8086
                     Only Operating Modes 0, 2, and 3 are needed for this implementation.
              */
 
-            // Only byte data is written
 
-            if(port == 0x43)
+            // this port is a control word to control the mode of the 3 counters
+            if (port == 0x43)
             {
-                // write the control word
+                byte value = (byte)(data & 0xff);
+                int idx = (value >> 6) & 0x03;
+
+                var timer = Timers[idx];
+
+                // if access mode is 0 then latch the counter
+                byte access = (byte)((value >> 4) & 0x03);
+
+                if (access == 0x00)
+                {
+                    timer.Latched = true;
+                    timer.LatchValue = timer.Counter;
+                }
+                // otherwise use the new control word to set the new modes
+                else
+                {
+                    byte mode = (byte)((value >> 4) & 0x03);
+                    timer.AccessMode = (TimerAccessMode)mode;
+
+                    byte oper = (byte)((value >> 1) & 0x07);
+                    // modes 6 and 7 are the same as 2 and 3
+                    if(oper > 0x05)
+                    {
+                        oper = (byte)(oper & 0x03);
+                    }
+                    timer.CountMode = (CounterMode)oper;
+                }
             }
             else
             {
@@ -216,23 +257,37 @@ namespace KDS.e8086
 
                 switch (timer.AccessMode)
                 {
-                    case TimerAccessMode.Latch:
-                        {
-                            break;
-                        }
                     case TimerAccessMode.LoByte:
                         {
-                            
+                            timer.ResetValue = data & 0xff;
                             break;
                         }
                     case TimerAccessMode.HiByte:
                         {
+                            timer.ResetValue = (data >> 8) & 0xff;
                             break;
                         }
                     case TimerAccessMode.BothBytes:
                         {
+                            if (timer.UseLSB)
+                            {
+                                timer.ResetValue = data & 0xff;
+                            }
+                            else
+                            {
+                                timer.ResetValue = (data >> 8) & 0xff;
+                            }
+                            timer.UseLSB = !timer.UseLSB;
                             break;
                         }
+                }
+
+                if ((timer.AccessMode != TimerAccessMode.BothBytes) || timer.UseLSB)
+                {
+                    timer.Counter = timer.ResetValue;
+                    timer.Enabled = true;
+                    timer.OutputEnabled = (timer.CountMode == CounterMode.RateGenerator) || 
+                                            (timer.CountMode == CounterMode.SquareWaveGenerator);
                 }
             }
 
@@ -244,7 +299,36 @@ namespace KDS.e8086
             // loop through each timer and increment as necessary
             foreach (var timer in Timers)
             {
+                if(timer.Enabled)
+                {
+                    switch(timer.CountMode)
+                    {
+                        case CounterMode.InterruptOnCount:
+                            {
+                                timer.Counter = (timer.Counter - 1) & 0xffff;
+                                if(timer.Counter == 0)
+                                {
+                                    PIC.SetInterrupt(0);
+                                }
+                                break;
+                            }
+                        case CounterMode.RateGenerator:
+                            {
+                                timer.Counter = (timer.Counter - 1) & 0xffff;
 
+                                if(timer.Counter == 1)
+                                {
+                                    timer.Counter = timer.ResetValue;
+                                }
+
+                                break;
+                            }
+                        case CounterMode.SquareWaveGenerator:
+                            {
+                                break;
+                            }
+                    }
+                }
             }
         }
 
