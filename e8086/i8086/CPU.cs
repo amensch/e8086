@@ -103,9 +103,11 @@ namespace KDS.e8086
 
             // 0x20 - 0x21: Interrupt 8259A
             PIC = new Intel8259();
+            EU.AddDevice(PIC);
 
             // 0x40 - 0x43: Timer 8253
             PIT = new Intel8253(PIC);
+            EU.AddDevice(PIT);
 
             // 0x60 - 0x63: PPI 8255 (speaker)
 
@@ -120,8 +122,6 @@ namespace KDS.e8086
             // 0x3bc: IBM Monochrome Display & Printer Adapter
             // 0x378: Printer Adapter
 
-            EU.AddDevice(PIT);
-            EU.AddDevice(PIC);
         }
 
         public void Boot(byte[] program)

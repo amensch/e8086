@@ -33,10 +33,13 @@ namespace KDS.e8086
 
     internal class Intel8259 : IODevice, IPIC
     {
-        private const byte PIC1_COMMAND = 0x20;
-        private const byte PIC1_DATA = PIC1_COMMAND+1;
-        private const byte PIC2_COMMAND = 0xa0;
-        private const byte PIC2_DATA = PIC2_COMMAND+1;
+        private const byte PIC1 = 0x20;
+        private const byte PIC2 = 0xa0;
+
+        private const byte PIC1_COMMAND = PIC1;
+        private const byte PIC1_DATA = PIC1+1;
+        private const byte PIC2_COMMAND = PIC2;
+        private const byte PIC2_DATA = PIC2+1;
 
         /// <summary>
         /// IMR: Interrupt Mask Register
@@ -58,7 +61,14 @@ namespace KDS.e8086
         /// </summary>
         private byte ISR;         
 
-        private byte[] ICW = new byte[4];   // icw - Initialization Command Word
+        /// <summary>
+        /// ICW: Initialization Command Words
+        /// </summary>
+        private byte[] ICW = new byte[4];   
+
+        /// <summary>
+        /// Initialization step
+        /// </summary>
         private byte ICWStep;
 
 
@@ -69,6 +79,8 @@ namespace KDS.e8086
             ISR = 0;
             ICWStep = 0;
         }
+
+
 
         #region IO Device Implementation
 

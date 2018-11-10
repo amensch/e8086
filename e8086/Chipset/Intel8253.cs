@@ -42,10 +42,17 @@ namespace KDS.e8086
         public Intel8253(IPIC pic)
         {
             PIC = pic;
-            Counters = new Dictionary<ushort, Intel8253Counter>();
-            Counters.Add(0x40, new Intel8253Counter(DoInterrupt));
-            Counters.Add(0x41, new Intel8253Counter());
-            Counters.Add(0x42, new Intel8253Counter());
+            Counters = new Dictionary<ushort, Intel8253Counter>
+            {
+                // only process interrupts for Channel 0 counter
+                { 0x40, new Intel8253Counter(DoInterrupt) },
+
+                // for DMCA ram refresh (not applicable)
+                { 0x41, new Intel8253Counter() },
+
+                // for PC speaker use (not implemented)
+                { 0x42, new Intel8253Counter() }
+            };
         }
 
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    public delegate void PITInterruptDelegate();
+    public delegate void InterruptDelegate();
 
     internal class Intel8253Counter
     {
@@ -19,7 +19,7 @@ namespace KDS.e8086
         private bool UseLSB { get; set; }
 
         private bool output;
-        private PITInterruptDelegate InterruptHandler;
+        private InterruptDelegate InterruptHandler = null;
 
         public Intel8253Counter()
         {
@@ -31,7 +31,7 @@ namespace KDS.e8086
             ControlRegister = 0;
         }
 
-        public Intel8253Counter(PITInterruptDelegate interruptHandler) : this()
+        public Intel8253Counter(InterruptDelegate interruptHandler) : this()
         {
             InterruptHandler = interruptHandler;
         }
@@ -141,7 +141,10 @@ namespace KDS.e8086
             {
                 Counter = ResetValue;
                 Enabled = true;
-                Output = (oper == 0x02 || oper == 0x03 || oper == 0x06 || oper == 0x07);
+
+                // set the private variable only
+                // mode 0 output starts low, mode 2 and 3 output starts high
+                output = (oper == 0x02 || oper == 0x03 || oper == 0x06 || oper == 0x07);
             }
 
         }
