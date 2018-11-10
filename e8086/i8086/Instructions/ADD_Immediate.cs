@@ -39,5 +39,11 @@ namespace KDS.e8086.Instructions
             direction = 0;
             ADD_Destination(source, 0x03, 0x00, 0x00);
         }
+
+        protected override void DetermineClocks()
+        {
+            // acc,imm
+            Clocks = 4;
+        }
     }
 }

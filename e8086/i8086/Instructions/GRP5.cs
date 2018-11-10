@@ -41,6 +41,18 @@ namespace KDS.e8086.Instructions
             Push(Bus.IP);
             Bus.IP = (ushort)dest;
         }
+
+        protected override void DetermineClocks()
+        {
+            if(secondByte.MOD == 0x03)
+            {
+                Clocks = 16;
+            }
+            else
+            {
+                Clocks = 21;
+            }
+        }
     }
 
     internal class CALL_Mem : TwoByteInstruction
@@ -55,6 +67,11 @@ namespace KDS.e8086.Instructions
             Push(Bus.IP);
             Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
+        }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 37;
         }
     }
 

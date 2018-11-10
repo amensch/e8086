@@ -45,5 +45,11 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcZeroFlag(0, EU.Registers.AL);
             EU.CondReg.CalcParityFlag(EU.Registers.AL);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 4;
+        }
+
     }
 }

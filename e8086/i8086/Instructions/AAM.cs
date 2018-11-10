@@ -22,5 +22,9 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcZeroFlag(1, EU.Registers.AX);
         }
 
+        protected override void DetermineClocks()
+        {
+            Clocks += 83;
+        }
     }
 }

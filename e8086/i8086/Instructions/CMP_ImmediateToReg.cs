@@ -13,5 +13,18 @@ namespace KDS.e8086.Instructions
             SubWithBorrow = false;
             CompareOnly = false;
         }
-    }
+
+        protected override void DetermineClocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                Clocks = 4;
+            }
+            else
+            {
+                // mem,imm
+                Clocks = 10;
+            }
+        }
 }

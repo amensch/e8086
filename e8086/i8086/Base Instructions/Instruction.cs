@@ -16,8 +16,32 @@ namespace KDS.e8086.Instructions
         protected int direction;
         protected int wordSize;
 
-        private long LastLookupCount = 0;
-        private ushort LastLookupValue = 0;
+        private long LastEACount = 0;
+        private ushort LastEAResult = 0;
+
+        /// <summary>
+        /// Count the numbber of clocks necessary for the instruction.
+        /// 
+        /// NOTES:
+        /// 
+        /// On an 8086:
+        /// Add 4 clocks for each reference to a word operand located at an odd memory address.
+        /// 
+        /// On an 8088:
+        /// Add 4 clocks for each reference to a 16 bit memory operation including the stack
+        /// 
+        /// Effective address Calculation Time:
+        /// Displacement Only                   6 clocks
+        /// Base or Index Only (BX,BP,SI,DI)    5 clocks
+        /// Displacement + Index (BX,BP,SI,DI)  9 clocks
+        /// Base + Index (BP+DI, BX+SI)         7 clocks
+        /// Base + Index (BP+SI, BX+DI)         8 clocks
+        /// Disp+Base+Index (BP+DI+DISP)       11 clocks
+        /// Disp+Base+Index (BX+SI+DISP)       11 clocks
+        /// Disp+Base+Index (BP+SI+DISP)       12 clocks
+        /// Disp+Base+Index (BX+DI+DISP)       12 clocks
+        /// </summary>
+        public long Clocks { get; protected set; }
 
         public Instruction(byte opCode, IExecutionUnit eu, IBus bus)
         {
@@ -31,11 +55,14 @@ namespace KDS.e8086.Instructions
 
         protected virtual void PreProcessing() { }
         protected virtual void ExecuteInstruction() { }
+        protected virtual void DetermineClocks() { }
 
         public void Execute()
         {
+            Clocks = 0;
             PreProcessing();
             ExecuteInstruction();
+            DetermineClocks();
         }
 
         #region Helper and Utility functions
@@ -256,63 +283,67 @@ namespace KDS.e8086.Instructions
         // returns the offset as a result of the operand
         protected int GetRMTable1(byte rm)
         {
+
+            if(LastEACount == EU.InstructionCount)
+            {
+                return LastEAResult;
+            }
+
             ushort result = 0;
             switch (rm)
             {
                 case 0x00:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.SI);
+                        Clocks += 7;
                         break;
                     }
                 case 0x01:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.DI);
+                        Clocks += 8;
                         break;
                     }
                 case 0x02:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.SI);
+                        Clocks += 8;
                         break;
                     }
                 case 0x03:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.DI);
+                        Clocks += 7;
                         break;
                     }
                 case 0x04:
                     {
                         result = EU.Registers.SI;
+                        Clocks += 5;
                         break;
                     }
                 case 0x05:
                     {
                         result = EU.Registers.DI;
+                        Clocks += 5;
                         break;
                     }
                 case 0x06:
                     {
                         // direct address
-                        // There is only one RM table lookup per instruction but this may be invoked more than once
-                        // for certain instructions.  For this reason we preserve the offset in case it is needed again.
-                        if (LastLookupCount == EU.InstructionCount)
-                        {
-                            result = LastLookupValue;
-                        }
-                        else
-                        {
-                            result = GetImmediateWord();
-                            LastLookupValue = result;
-                            LastLookupCount = EU.InstructionCount;
-
-                        }
+                        Clocks += 6;
+                        result = GetImmediateWord();
                         break;
                     }
                 case 0x07:
                     {
                         result = EU.Registers.BX;
+                        Clocks += 5;
                         break;
                     }
             }
+            LastEAResult = result;
+            LastEACount = EU.InstructionCount;
             return result;
         }
 
@@ -325,6 +356,11 @@ namespace KDS.e8086.Instructions
         // Returns the offset address as a result of the operand
         protected int GetRMTable2(byte mod, byte rm)
         {
+            if (LastEACount == EU.InstructionCount)
+            {
+                return LastEAResult;
+            }
+
             ushort result = 0;
             ushort disp = 0;
             switch (rm)
@@ -332,77 +368,67 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.SI);
+                        Clocks += 7;
                         break;
                     }
                 case 0x01:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.DI);
+                        Clocks += 8;
                         break;
                     }
                 case 0x02:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.SI);
+                        Clocks += 8;
                         break;
                     }
                 case 0x03:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.DI);
+                        Clocks += 7;
                         break;
                     }
                 case 0x04:
                     {
                         result = EU.Registers.SI;
+                        Clocks += 5;
                         break;
                     }
                 case 0x05:
                     {
                         result = EU.Registers.DI;
+                        Clocks += 5;
                         break;
                     }
                 case 0x06:
                     {
                         Bus.UsingBasePointer = true;
                         result = EU.Registers.BP;
+                        Clocks += 5;
                         break;
                     }
                 case 0x07:
                     {
                         result = EU.Registers.BX;
+                        Clocks += 5;
                         break;
                     }
             }
             switch (mod)
             {
-                // There is only one RM table lookup per instruction but this may be invoked more than once
-                // for certain instructions.  For this reason we preserve the offset in case it is needed again.
                 case 0x01:
                     {
                         // 8 bit displacement
-                        if (LastLookupCount == EU.InstructionCount)
-                        {
-                            disp = LastLookupValue;
-                        }
-                        else
-                        {
-                            disp = Bus.NextImmediate();
-                            LastLookupValue = disp;
-                            LastLookupCount = EU.InstructionCount;
-                        }
+                        disp = Bus.NextImmediate();
+                        Clocks += 4;
                         break;
                     }
                 case 0x02:
                     {
                         // 16 bit displacement
-                        if (LastLookupCount == EU.InstructionCount)
-                        {
-                            disp = LastLookupValue;
-                        }
-                        else
-                        {
-                            disp = GetImmediateWord();
-                            LastLookupValue = disp;
-                            LastLookupCount = EU.InstructionCount;
-                        }
+                        disp = GetImmediateWord();
+                        Clocks += 4;
                         break;
                     }
                 default:
@@ -410,7 +436,9 @@ namespace KDS.e8086.Instructions
                         throw new ArgumentOutOfRangeException("mod", mod, string.Format("Invalid mod value in opcode={0:X2}", OpCode));
                     }
             }
-            return (ushort)(result + disp);
+            LastEAResult = (ushort)(result + disp);
+            LastEACount = EU.InstructionCount;
+            return LastEAResult;
 
         }
         #endregion

@@ -26,6 +26,25 @@ namespace KDS.e8086.Instructions
             ADD_Destination(source, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
+        protected override void DetermineClocks()
+        {
+            // reg,reg
+            if (secondByte.MOD == 0x03)
+            {
+                Clocks = 3;
+            }
+            // mem,reg
+            else if (direction == 0)
+            {
+                Clocks += 16;
+            }
+            // reg,mem
+            else
+            {
+                Clocks += 9;
+            }
+        }
+
         protected void ADD_Destination(int source, byte mod, byte reg, byte rm)
         {
             int result = 0;

@@ -34,6 +34,7 @@ namespace KDS.e8086
         // Statistics
         public Statistics Stats { get; private set; } = new Statistics();
         public long InstructionCount { get; set; } = 0;
+        public long ClockCount { get; set; } = 0;
 
         // Preserve the current OP code
         private byte CurrentOpCode;

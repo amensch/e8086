@@ -12,7 +12,7 @@ namespace KDS.e8086.Instructions
 
         protected override void LoadInstructionList()
         {
-            instructions.Add(0x00, new ADD_ImmediateToReg(OpCode, EU, Bus));
+            instructions.Add(0x00, new ADD_ImmediateToRegMem(OpCode, EU, Bus));
             instructions.Add(0x01, new OR_ImmediateToReg(OpCode, EU, Bus));
             instructions.Add(0x02, new ADC_ImmediateToReg(OpCode, EU, Bus));
             instructions.Add(0x03, new SBB_ImmediateToReg(OpCode, EU, Bus));

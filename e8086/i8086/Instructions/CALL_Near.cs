@@ -16,5 +16,10 @@ namespace KDS.e8086.Instructions
             Push(Bus.IP);
             Bus.IP += oper;
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 19;
+        }
     }
 }

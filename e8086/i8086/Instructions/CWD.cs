@@ -23,5 +23,9 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        protected override void DetermineClocks()
+        {
+            Clocks = 2;
+        }
     }
 }

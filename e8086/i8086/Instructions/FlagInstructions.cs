@@ -6,7 +6,17 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086.Instructions
 {
-    internal class CMC : Instruction
+    abstract internal class FlagInstruction : Instruction
+    {
+        public FlagInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 2;
+        }
+    }
+
+    internal class CMC : FlagInstruction
     {
         public CMC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -17,7 +27,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class CLC : Instruction
+    internal class CLC : FlagInstruction
     {
         public CLC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -28,7 +38,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class STC : Instruction
+    internal class STC : FlagInstruction
     {
         public STC(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -39,7 +49,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class CLI : Instruction
+    internal class CLI : FlagInstruction
     {
         public CLI(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -50,7 +60,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class STI : Instruction
+    internal class STI : FlagInstruction
     {
         public STI(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -61,7 +71,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class CLD : Instruction
+    internal class CLD : FlagInstruction
     {
         public CLD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
@@ -72,7 +82,7 @@ namespace KDS.e8086.Instructions
         }
     }
 
-    internal class STD : Instruction
+    internal class STD : FlagInstruction
     {
         public STD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 

@@ -46,5 +46,19 @@ namespace KDS.e8086.Instructions
 
             ProcessInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, false);
         }
+
+        protected override void DetermineClocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                Clocks = 4;
+            }
+            else
+            {
+                // mem,imm
+                Clocks = 17;
+            }
+        }
     }
 }

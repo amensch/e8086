@@ -31,5 +31,10 @@ namespace KDS.e8086.Instructions
             // clear high nibble of AL
             EU.Registers.AL = (byte)(EU.Registers.AL & 0x0f);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks += 4;
+        }
     }
 }
