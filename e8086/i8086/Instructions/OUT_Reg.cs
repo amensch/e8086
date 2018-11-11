@@ -15,5 +15,10 @@ namespace KDS.e8086.Instructions
             base.PreProcessing();
             port = EU.Registers.DX;
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 8;
+        }
     }
 }

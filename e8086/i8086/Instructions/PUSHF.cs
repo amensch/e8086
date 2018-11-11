@@ -18,5 +18,10 @@ namespace KDS.e8086.Instructions
         {
             Push(EU.CondReg.Value);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 10;
+        }
     }
 }

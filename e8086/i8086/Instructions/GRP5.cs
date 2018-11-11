@@ -46,11 +46,13 @@ namespace KDS.e8086.Instructions
         {
             if(secondByte.MOD == 0x03)
             {
+                // regptr 16
                 Clocks = 16;
             }
             else
             {
-                Clocks = 21;
+                //memptr 16 + EA
+                Clocks = EffectiveAddressClocks + 21;
             }
         }
     }
@@ -71,7 +73,8 @@ namespace KDS.e8086.Instructions
 
         protected override void DetermineClocks()
         {
-            Clocks = 37;
+            // memptr32 + EA
+            Clocks = EffectiveAddressClocks + 37;
         }
     }
 
@@ -84,6 +87,18 @@ namespace KDS.e8086.Instructions
             // JMP reg/mem-16 (intrasegment)
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             Bus.IP = (ushort)dest;
+        }
+
+        protected override void DetermineClocks()
+        {
+            if(secondByte.MOD == 0x03)
+            {
+                Clocks = 11;
+            }
+            else
+            {
+                Clocks = EffectiveAddressClocks + 18;
+            }
         }
     }
 
@@ -98,6 +113,11 @@ namespace KDS.e8086.Instructions
             Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = EffectiveAddressClocks + 24;
+        }
     }
 
     internal class PUSH_Mem : TwoByteInstruction
@@ -109,6 +129,11 @@ namespace KDS.e8086.Instructions
             // PUSH mem-16
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             Push((ushort)dest);
+        }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = EffectiveAddressClocks + 16;
         }
     }
 }

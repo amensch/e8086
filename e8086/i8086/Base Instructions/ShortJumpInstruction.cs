@@ -29,5 +29,17 @@ namespace KDS.e8086.Instructions
                 Bus.NextImmediate();  // skip over the immediate jump value
             }
         }
+
+        protected override void DetermineClocks()
+        {
+            if (JumpDecision())
+            {
+                Clocks = 16;
+            }
+            else
+            {
+                Clocks = 4;
+            }
+        }
     }
 }

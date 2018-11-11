@@ -15,5 +15,28 @@ namespace KDS.e8086.Instructions
             int source = GetSourceData(direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM, true);
             SaveToDestination(source, direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM, true);
         }
+
+        protected override void DetermineClocks()
+        {
+            // seg-reg, reg or reg, seg-reg
+            if (secondByte.MOD == 0x03)
+            {
+                Clocks = 2;
+            }
+            else
+            {
+                if (direction == 0)
+                {
+                    //seg-reg, mem
+                    Clocks = EffectiveAddressClocks + 8;
+                }
+                else
+                {
+                    //mem, seg-reg
+                    Clocks = EffectiveAddressClocks + 9;
+                }
+            }
+        }
+
     }
 }

@@ -14,5 +14,17 @@ namespace KDS.e8086.Instructions
         {
             return !EU.CondReg.ZeroFlag;
         }
+
+        protected override void DetermineClocks()
+        {
+            if (LoopConditionCheck())
+            {
+                Clocks = 19;
+            }
+            else
+            {
+                Clocks = 5;
+            }
+        }
     }
 }

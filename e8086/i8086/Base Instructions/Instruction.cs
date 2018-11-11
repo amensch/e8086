@@ -42,6 +42,7 @@ namespace KDS.e8086.Instructions
         /// Disp+Base+Index (BX+DI+DISP)       12 clocks
         /// </summary>
         public long Clocks { get; protected set; }
+        protected long EffectiveAddressClocks { get; set; }
 
         public Instruction(byte opCode, IExecutionUnit eu, IBus bus)
         {
@@ -60,6 +61,7 @@ namespace KDS.e8086.Instructions
         public void Execute()
         {
             Clocks = 0;
+            EffectiveAddressClocks = 0;
             PreProcessing();
             ExecuteInstruction();
             DetermineClocks();
@@ -295,50 +297,50 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.SI);
-                        Clocks += 7;
+                        EffectiveAddressClocks += 7;
                         break;
                     }
                 case 0x01:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.DI);
-                        Clocks += 8;
+                        EffectiveAddressClocks += 8;
                         break;
                     }
                 case 0x02:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.SI);
-                        Clocks += 8;
+                        EffectiveAddressClocks += 8;
                         break;
                     }
                 case 0x03:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.DI);
-                        Clocks += 7;
+                        EffectiveAddressClocks += 7;
                         break;
                     }
                 case 0x04:
                     {
                         result = EU.Registers.SI;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
                 case 0x05:
                     {
                         result = EU.Registers.DI;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
                 case 0x06:
                     {
                         // direct address
-                        Clocks += 6;
+                        EffectiveAddressClocks += 6;
                         result = GetImmediateWord();
                         break;
                     }
                 case 0x07:
                     {
                         result = EU.Registers.BX;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
             }
@@ -368,50 +370,50 @@ namespace KDS.e8086.Instructions
                 case 0x00:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.SI);
-                        Clocks += 7;
+                        EffectiveAddressClocks += 7;
                         break;
                     }
                 case 0x01:
                     {
                         result = (ushort)(EU.Registers.BX + EU.Registers.DI);
-                        Clocks += 8;
+                        EffectiveAddressClocks += 8;
                         break;
                     }
                 case 0x02:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.SI);
-                        Clocks += 8;
+                        EffectiveAddressClocks += 8;
                         break;
                     }
                 case 0x03:
                     {
                         result = (ushort)(EU.Registers.BP + EU.Registers.DI);
-                        Clocks += 7;
+                        EffectiveAddressClocks += 7;
                         break;
                     }
                 case 0x04:
                     {
                         result = EU.Registers.SI;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
                 case 0x05:
                     {
                         result = EU.Registers.DI;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
                 case 0x06:
                     {
                         Bus.UsingBasePointer = true;
                         result = EU.Registers.BP;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
                 case 0x07:
                     {
                         result = EU.Registers.BX;
-                        Clocks += 5;
+                        EffectiveAddressClocks += 5;
                         break;
                     }
             }
@@ -421,14 +423,14 @@ namespace KDS.e8086.Instructions
                     {
                         // 8 bit displacement
                         disp = Bus.NextImmediate();
-                        Clocks += 4;
+                        EffectiveAddressClocks += 4;
                         break;
                     }
                 case 0x02:
                     {
                         // 16 bit displacement
                         disp = GetImmediateWord();
-                        Clocks += 4;
+                        EffectiveAddressClocks += 4;
                         break;
                     }
                 default:

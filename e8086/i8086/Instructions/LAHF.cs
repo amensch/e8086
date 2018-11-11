@@ -16,5 +16,10 @@ namespace KDS.e8086.Instructions
         {
             EU.Registers.AH = (byte)(EU.CondReg.Value & 0x00ff);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 15;
+        }
     }
 }

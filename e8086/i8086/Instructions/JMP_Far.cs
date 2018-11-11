@@ -17,5 +17,10 @@ namespace KDS.e8086.Instructions
             Bus.IP = nextIP;
             Bus.CS = nextCS;
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 15;
+        }
     }
 }

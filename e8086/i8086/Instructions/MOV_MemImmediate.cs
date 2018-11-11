@@ -42,5 +42,11 @@ namespace KDS.e8086.Instructions
             }
 
         }
+
+        protected override void DetermineClocks()
+        {
+            //mem,acc and acc,mem
+            Clocks = 10 ;
+        }
     }
 }

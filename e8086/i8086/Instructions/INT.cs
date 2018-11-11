@@ -61,5 +61,17 @@ namespace KDS.e8086.Instructions
                 Bus.CS = Bus.GetWord(0, (InterruptNumber * 4) + 2);
             }
         }
+
+        protected override void DetermineClocks()
+        {
+            if(InterruptNumber == 3)
+            {
+                Clocks = 52;
+            }
+            else
+            {
+                Clocks = 51;
+            }
+        }
     }
 }

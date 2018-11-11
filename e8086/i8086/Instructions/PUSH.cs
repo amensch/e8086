@@ -27,6 +27,18 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        protected override void DetermineClocks()
+        {
+            if (OpCode < 0x50)
+            {
+                Clocks = 10;
+            }
+            else
+            {
+                Clocks = 11;
+            }
+        }
+
     }
 
 }

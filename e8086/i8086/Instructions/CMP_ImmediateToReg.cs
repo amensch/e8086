@@ -24,7 +24,8 @@ namespace KDS.e8086.Instructions
             else
             {
                 // mem,imm
-                Clocks = 10;
+                Clocks = EffectiveAddressClocks + 10;
             }
         }
+    }
 }

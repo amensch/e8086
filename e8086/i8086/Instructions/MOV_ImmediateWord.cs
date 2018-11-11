@@ -21,5 +21,10 @@ namespace KDS.e8086.Instructions
             EU.Registers.SaveRegisterValue(1, reg, value);
         }
 
+        protected override void DetermineClocks()
+        {
+            //reg,imm
+            Clocks = 4;
+        }
     }
 }

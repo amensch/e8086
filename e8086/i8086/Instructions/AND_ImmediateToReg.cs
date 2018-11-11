@@ -57,7 +57,7 @@ namespace KDS.e8086.Instructions
             else
             {
                 // mem,imm
-                Clocks = 17;
+                Clocks = EffectiveAddressClocks + 17;
             }
         }
     }

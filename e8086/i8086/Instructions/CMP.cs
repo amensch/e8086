@@ -21,9 +21,11 @@ namespace KDS.e8086.Instructions
             {
                 Clocks = 3;
             }
+
+            // reg,mem or mem,reg
             else
             {
-                Clocks += 9;
+                Clocks = EffectiveAddressClocks + 9;
             }
         }
     }

@@ -62,5 +62,10 @@ namespace KDS.e8086.Instructions
             Bus.CS = Pop();
             EU.CondReg.Value = Pop();
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 24;
+        }
     }
 }

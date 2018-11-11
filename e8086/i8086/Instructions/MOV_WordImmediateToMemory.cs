@@ -44,5 +44,12 @@ namespace KDS.e8086.Instructions
                     }
             }
         }
+
+
+        protected override void DetermineClocks()
+        {
+            // mem-16, imm-16
+            Clocks = EffectiveAddressClocks + 10;
+        }
     }
 }

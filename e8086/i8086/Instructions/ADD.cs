@@ -36,12 +36,12 @@ namespace KDS.e8086.Instructions
             // mem,reg
             else if (direction == 0)
             {
-                Clocks += 16;
+                Clocks = EffectiveAddressClocks + 16;
             }
             // reg,mem
             else
             {
-                Clocks += 9;
+                Clocks = EffectiveAddressClocks + 9;
             }
         }
 

@@ -16,5 +16,10 @@ namespace KDS.e8086.Instructions
             EU.Halted = true;
         }
 
+        protected override void DetermineClocks()
+        {
+            Clocks = 2;
+        }
+
     }
 }

@@ -27,5 +27,17 @@ namespace KDS.e8086.Instructions
                 }
             }
         }
+
+        protected override void DetermineClocks()
+        {
+            if(LoopConditionCheck())
+            {
+                Clocks = 17;
+            }
+            else
+            {
+                Clocks = 5;
+            }
+        }
     }
 }

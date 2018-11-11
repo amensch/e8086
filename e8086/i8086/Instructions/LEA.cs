@@ -20,5 +20,10 @@ namespace KDS.e8086.Instructions
             int source = Bus.GetData(wordSize, offset);
             SaveToDestination(source, direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = EffectiveAddressClocks + 2;
+        }
     }
 }

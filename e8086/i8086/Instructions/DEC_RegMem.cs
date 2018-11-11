@@ -39,7 +39,8 @@ namespace KDS.e8086.Instructions
             }
             else
             {
-                Clocks = 15;
+                // memory + EA
+                Clocks = EffectiveAddressClocks + 15;
             }
         }
     }

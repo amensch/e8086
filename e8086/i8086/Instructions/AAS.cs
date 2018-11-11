@@ -34,7 +34,7 @@ namespace KDS.e8086.Instructions
 
         protected override void DetermineClocks()
         {
-            Clocks += 4;
+            Clocks = 4;
         }
     }
 }

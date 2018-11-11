@@ -33,9 +33,6 @@ namespace KDS.e8086.Instructions
                 EU.Registers.SI += (ushort)(wordSize + 1);
                 EU.Registers.DI += (ushort)(wordSize + 1);
             }
-
-            Clocks += 22;
-
         }
 
         protected override bool RepeatConditions()
@@ -51,6 +48,11 @@ namespace KDS.e8086.Instructions
             // otherwise no repeat
             else
                 return false;
+        }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = RepeatCount * 22;
         }
 
     }

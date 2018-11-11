@@ -15,5 +15,10 @@ namespace KDS.e8086.Instructions
             base.PreProcessing();
             port = Bus.NextImmediate();
         }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 10;
+        }
     }
 }

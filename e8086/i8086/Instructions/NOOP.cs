@@ -9,5 +9,10 @@ namespace KDS.e8086.Instructions
     internal class NOOP : Instruction
     {
         public NOOP(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
+
+        protected override void DetermineClocks()
+        {
+            Clocks = 3;
+        }
     }
 }

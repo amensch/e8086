@@ -13,7 +13,7 @@ namespace KDS.e8086.Instructions
     {
         public MOV_ImmediateByte(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
-        // MOV MEM-8, IMM-8
+        // MOV REG-8, IMM-8
         // displacement bytes are optional so don't retrieve the immediate value
         // until the destination offset has been determined.
 
@@ -23,6 +23,12 @@ namespace KDS.e8086.Instructions
             byte reg = (byte)(OpCode & 0x07);
             byte value = Bus.NextImmediate();
             EU.Registers.SaveRegisterValue(0, reg, value);
+        }
+
+        protected override void DetermineClocks()
+        {
+            //reg,imm
+            Clocks = 4;
         }
 
     }

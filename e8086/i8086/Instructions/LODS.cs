@@ -31,5 +31,16 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        protected override void DetermineClocks()
+        {
+            if (EU.RepeatMode == RepeatModeEnum.NoRepeat)
+            {
+                Clocks = 12;
+            }
+            else
+            {
+                Clocks = RepeatCount * 13;
+            }
+        }
     }
 }

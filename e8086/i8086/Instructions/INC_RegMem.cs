@@ -30,5 +30,18 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcAuxCarryFlag(source, dest);
             EU.CondReg.CalcParityFlag(result);
         }
+
+        protected override void DetermineClocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                Clocks = 3;
+            }
+            else
+            {
+                // memory + EA
+                Clocks = EffectiveAddressClocks + 15;
+            }
+        }
     }
 }

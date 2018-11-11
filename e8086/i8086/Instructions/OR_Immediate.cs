@@ -19,5 +19,11 @@ namespace KDS.e8086.Instructions
         {
             return (dest | source);
         }
+
+        protected override void DetermineClocks()
+        {
+            // acc,imm
+            Clocks = 4;
+        }
     }
 }

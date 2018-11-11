@@ -191,5 +191,136 @@ namespace KDS.e8086.Instructions
 
         }
 
+        protected override void DetermineClocks()
+        {
+            switch(secondByte.REG)
+            {
+                case 0x00: // TEST
+                    {
+                        break;
+                    }
+                case 0x02: // NOT
+                    {
+                        break;
+                    }
+                case 0x03: // NEG
+                    {
+                        if(secondByte.MOD == 0x03)
+                        {
+                            Clocks = 3;
+                        }
+                        else
+                        {
+                            Clocks = EffectiveAddressClocks + 16;
+                        }
+                        break;
+                    }
+                case 0x04: // MUL
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 70;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 76;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 118;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 124;
+                            }
+                        }
+                        break;
+                    }
+                case 0x05: // IMUL
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 80;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 86;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 128;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 134;
+                            }
+                        }
+                        break;
+                    }
+                case 0x06: // DIV
+                    {
+                        if( wordSize == 0)
+                        {
+                            if(secondByte.MOD == 0x03)
+                            {
+                                Clocks = 80;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 86;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 144;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 150;
+                            }
+                        }
+                        break;
+                    }
+                case 0x07: // IDIV
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 101;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 107;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                Clocks = 165;
+                            }
+                            else
+                            {
+                                Clocks = EffectiveAddressClocks + 171;
+                            }
+                        }
+                        break;
+                    }
+            }
+        }
+
     }
 }
