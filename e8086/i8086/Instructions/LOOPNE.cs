@@ -15,15 +15,15 @@ namespace KDS.e8086.Instructions
             return !EU.CondReg.ZeroFlag;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (LoopConditionCheck())
             {
-                Clocks = 19;
+                return 19;
             }
             else
             {
-                Clocks = 5;
+                return 5;
             }
         }
     }

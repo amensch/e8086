@@ -63,9 +63,9 @@ namespace KDS.e8086.Instructions
             EU.CondReg.Value = Pop();
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 24;
+            return 24;
         }
     }
 }

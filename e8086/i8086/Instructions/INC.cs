@@ -32,9 +32,9 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcParityFlag(result);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 2;
+            return 2;
         }
     }
 }

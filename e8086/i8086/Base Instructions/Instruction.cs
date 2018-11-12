@@ -41,7 +41,6 @@ namespace KDS.e8086.Instructions
         /// Disp+Base+Index (BP+SI+DISP)       12 clocks
         /// Disp+Base+Index (BX+DI+DISP)       12 clocks
         /// </summary>
-        public long Clocks { get; protected set; }
         protected long EffectiveAddressClocks { get; set; }
 
         public Instruction(byte opCode, IExecutionUnit eu, IBus bus)
@@ -56,15 +55,17 @@ namespace KDS.e8086.Instructions
 
         protected virtual void PreProcessing() { }
         protected virtual void ExecuteInstruction() { }
-        protected virtual void DetermineClocks() { }
 
         public void Execute()
         {
-            Clocks = 0;
             EffectiveAddressClocks = 0;
             PreProcessing();
             ExecuteInstruction();
-            DetermineClocks();
+        }
+
+        public virtual long Clocks()
+        {
+            throw new NotImplementedException();
         }
 
         #region Helper and Utility functions

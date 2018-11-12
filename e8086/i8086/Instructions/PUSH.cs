@@ -27,15 +27,15 @@ namespace KDS.e8086.Instructions
             }
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (OpCode < 0x50)
             {
-                Clocks = 10;
+                return 10;
             }
             else
             {
-                Clocks = 11;
+                return 11;
             }
         }
 

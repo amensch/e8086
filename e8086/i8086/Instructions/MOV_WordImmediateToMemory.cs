@@ -46,10 +46,10 @@ namespace KDS.e8086.Instructions
         }
 
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // mem-16, imm-16
-            Clocks = EffectiveAddressClocks + 10;
+            return EffectiveAddressClocks + 10;
         }
     }
 }

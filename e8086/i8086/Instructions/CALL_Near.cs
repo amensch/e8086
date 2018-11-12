@@ -17,9 +17,9 @@ namespace KDS.e8086.Instructions
             Bus.IP += oper;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 19;
+            return 19;
         }
     }
 }

@@ -20,9 +20,9 @@ namespace KDS.e8086.Instructions
             Bus.CS = nextCS;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 28;
+            return 28;
         }
     }
 }

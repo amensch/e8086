@@ -14,10 +14,10 @@ namespace KDS.e8086.Instructions
             CompareOnly = true;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // acc,imm
-            Clocks = 4;
+            return 4;
         }
     }
 }

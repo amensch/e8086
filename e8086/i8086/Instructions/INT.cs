@@ -62,15 +62,15 @@ namespace KDS.e8086.Instructions
             }
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if(InterruptNumber == 3)
             {
-                Clocks = 52;
+                return 52;
             }
             else
             {
-                Clocks = 51;
+                return 51;
             }
         }
     }

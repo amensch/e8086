@@ -43,10 +43,10 @@ namespace KDS.e8086.Instructions
 
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             //mem,acc and acc,mem
-            Clocks = 10 ;
+            return 10 ;
         }
     }
 }

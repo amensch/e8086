@@ -10,9 +10,9 @@ namespace KDS.e8086.Instructions
     {
         public FlagInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 2;
+            return 2;
         }
     }
 

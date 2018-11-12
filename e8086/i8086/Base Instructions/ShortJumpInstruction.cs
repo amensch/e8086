@@ -30,15 +30,15 @@ namespace KDS.e8086.Instructions
             }
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (JumpDecision())
             {
-                Clocks = 16;
+                return 16;
             }
             else
             {
-                Clocks = 4;
+                return 4;
             }
         }
     }

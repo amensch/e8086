@@ -31,16 +31,16 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcParityFlag(result);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (secondByte.MOD == 0x03)
             {
-                Clocks = 3;
+                return 3;
             }
             else
             {
                 // memory + EA
-                Clocks = EffectiveAddressClocks + 15;
+                return EffectiveAddressClocks + 15;
             }
         }
     }

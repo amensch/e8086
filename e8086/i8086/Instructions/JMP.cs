@@ -15,9 +15,9 @@ namespace KDS.e8086.Instructions
             return true;  // unconditional jump
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 15;
+            return 15;
         }
     }
 
@@ -29,15 +29,15 @@ namespace KDS.e8086.Instructions
         {
             return (EU.Registers.CX == 0);
         }
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (JumpDecision())
             {
-                Clocks = 18;
+                return 18;
             }
             else
             {
-                Clocks = 6;
+                return 6;
             }
         }
     }

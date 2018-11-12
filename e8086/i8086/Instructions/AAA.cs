@@ -32,9 +32,9 @@ namespace KDS.e8086.Instructions
             EU.Registers.AL = (byte)(EU.Registers.AL & 0x0f);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 4;
+            return 4;
         }
     }
 }

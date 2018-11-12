@@ -25,15 +25,15 @@ namespace KDS.e8086.Instructions
             }
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (EU.RepeatMode == RepeatModeEnum.NoRepeat)
             {
-                Clocks = 18;
+                return 18;
             }
             else
             {
-                Clocks = RepeatCount * 17;
+                return RepeatCount * 17;
             }
         }
 

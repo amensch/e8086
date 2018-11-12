@@ -40,10 +40,10 @@ namespace KDS.e8086.Instructions
             ADD_Destination(source, 0x03, 0x00, 0x00);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // acc,imm
-            Clocks = 4;
+            return 4;
         }
     }
 }

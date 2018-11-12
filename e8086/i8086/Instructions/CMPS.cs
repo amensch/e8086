@@ -50,9 +50,9 @@ namespace KDS.e8086.Instructions
                 return false;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = RepeatCount * 22;
+            return RepeatCount * 22;
         }
 
     }

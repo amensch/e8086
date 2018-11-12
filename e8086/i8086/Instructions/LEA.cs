@@ -21,9 +21,9 @@ namespace KDS.e8086.Instructions
             SaveToDestination(source, direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = EffectiveAddressClocks + 2;
+            return EffectiveAddressClocks + 2;
         }
     }
 }

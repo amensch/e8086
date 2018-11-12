@@ -42,17 +42,17 @@ namespace KDS.e8086.Instructions
             Bus.IP = (ushort)dest;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if(secondByte.MOD == 0x03)
             {
                 // regptr 16
-                Clocks = 16;
+                return 16;
             }
             else
             {
                 //memptr 16 + EA
-                Clocks = EffectiveAddressClocks + 21;
+                return EffectiveAddressClocks + 21;
             }
         }
     }
@@ -71,10 +71,10 @@ namespace KDS.e8086.Instructions
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // memptr32 + EA
-            Clocks = EffectiveAddressClocks + 37;
+            return EffectiveAddressClocks + 37;
         }
     }
 
@@ -89,15 +89,15 @@ namespace KDS.e8086.Instructions
             Bus.IP = (ushort)dest;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if(secondByte.MOD == 0x03)
             {
-                Clocks = 11;
+                return 11;
             }
             else
             {
-                Clocks = EffectiveAddressClocks + 18;
+                return EffectiveAddressClocks + 18;
             }
         }
     }
@@ -114,9 +114,9 @@ namespace KDS.e8086.Instructions
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = EffectiveAddressClocks + 24;
+            return EffectiveAddressClocks + 24;
         }
     }
 
@@ -131,9 +131,9 @@ namespace KDS.e8086.Instructions
             Push((ushort)dest);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = EffectiveAddressClocks + 16;
+            return EffectiveAddressClocks + 16;
         }
     }
 }

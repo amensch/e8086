@@ -191,8 +191,9 @@ namespace KDS.e8086.Instructions
 
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
+            long clocks = 0;
             switch(secondByte.REG)
             {
                 case 0x00: // TEST
@@ -207,11 +208,11 @@ namespace KDS.e8086.Instructions
                     {
                         if(secondByte.MOD == 0x03)
                         {
-                            Clocks = 3;
+                            clocks = 3;
                         }
                         else
                         {
-                            Clocks = EffectiveAddressClocks + 16;
+                            clocks = EffectiveAddressClocks + 16;
                         }
                         break;
                     }
@@ -221,22 +222,22 @@ namespace KDS.e8086.Instructions
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 70;
+                                clocks = 70;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 76;
+                                clocks = EffectiveAddressClocks + 76;
                             }
                         }
                         else
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 118;
+                                clocks = 118;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 124;
+                                clocks = EffectiveAddressClocks + 124;
                             }
                         }
                         break;
@@ -247,22 +248,22 @@ namespace KDS.e8086.Instructions
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 80;
+                                clocks = 80;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 86;
+                                clocks = EffectiveAddressClocks + 86;
                             }
                         }
                         else
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 128;
+                                clocks = 128;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 134;
+                                clocks = EffectiveAddressClocks + 134;
                             }
                         }
                         break;
@@ -273,22 +274,22 @@ namespace KDS.e8086.Instructions
                         {
                             if(secondByte.MOD == 0x03)
                             {
-                                Clocks = 80;
+                                clocks = 80;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 86;
+                                clocks = EffectiveAddressClocks + 86;
                             }
                         }
                         else
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 144;
+                                clocks = 144;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 150;
+                                clocks = EffectiveAddressClocks + 150;
                             }
                         }
                         break;
@@ -299,27 +300,28 @@ namespace KDS.e8086.Instructions
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 101;
+                                clocks = 101;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 107;
+                                clocks = EffectiveAddressClocks + 107;
                             }
                         }
                         else
                         {
                             if (secondByte.MOD == 0x03)
                             {
-                                Clocks = 165;
+                                clocks = 165;
                             }
                             else
                             {
-                                Clocks = EffectiveAddressClocks + 171;
+                                clocks = EffectiveAddressClocks + 171;
                             }
                         }
                         break;
                     }
             }
+            return clocks;
         }
 
     }

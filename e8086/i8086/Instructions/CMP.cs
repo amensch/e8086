@@ -14,18 +14,18 @@ namespace KDS.e8086.Instructions
             CompareOnly = true;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // reg,reg
             if (secondByte.MOD == 0x03)
             {
-                Clocks = 3;
+                return 3;
             }
 
             // reg,mem or mem,reg
             else
             {
-                Clocks = EffectiveAddressClocks + 9;
+                return EffectiveAddressClocks + 9;
             }
         }
     }

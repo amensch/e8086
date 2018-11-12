@@ -16,24 +16,24 @@ namespace KDS.e8086.Instructions
             SaveToDestination(source, direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (secondByte.MOD == 0x03)
             {
                 // reg, reg
-                Clocks = 2;
+                return 2;
             }
             else
             {
                 if (direction == 0)
                 {
                     // reg, mem
-                    Clocks = EffectiveAddressClocks + 8;
+                    return EffectiveAddressClocks + 8;
                 }
                 else
                 {
                     // mem, reg
-                    Clocks = EffectiveAddressClocks + 9;
+                    return EffectiveAddressClocks + 9;
                 }
             }
         }

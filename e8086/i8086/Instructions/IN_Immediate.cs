@@ -16,9 +16,9 @@ namespace KDS.e8086.Instructions
             port = Bus.NextImmediate();
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = 10;
+            return 10;
         }
     }
 }

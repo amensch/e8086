@@ -51,17 +51,17 @@ namespace KDS.e8086.Instructions
             ADD_Destination(source, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (secondByte.MOD == 0x03)
             {
                 // reg,imm
-                Clocks = 4;
+                return 4;
             }
             else
             {
                 // mem,imm
-                Clocks = EffectiveAddressClocks + 17;
+                return EffectiveAddressClocks + 17;
             }
         }
     }

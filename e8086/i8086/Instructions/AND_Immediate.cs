@@ -20,10 +20,10 @@ namespace KDS.e8086.Instructions
             return (dest & source);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             // acc,imm
-            Clocks = 4;
+            return 4;
         }
     }
 }

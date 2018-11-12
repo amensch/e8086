@@ -18,15 +18,15 @@ namespace KDS.e8086.Instructions
             SaveToDestination(Pop(), 0, 1, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (secondByte.MOD == 0x03)
             {
-                Clocks = 8;
+                return 8;
             }
             else
             {
-                Clocks = EffectiveAddressClocks + 17;
+                return EffectiveAddressClocks + 17;
             }
         }
     }

@@ -15,9 +15,9 @@ namespace KDS.e8086.Instructions
             Bus.ES = (ushort)(Bus.GetData(1, offset + 2) & 0xffff);
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
-            Clocks = EffectiveAddressClocks + 16;
+            return EffectiveAddressClocks + 16;
         }
     }
 }

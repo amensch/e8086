@@ -14,17 +14,17 @@ namespace KDS.e8086.Instructions
             CompareOnly = false;
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if (secondByte.MOD == 0x03)
             {
                 // reg,imm
-                Clocks = 4;
+                return 4;
             }
             else
             {
                 // mem,imm
-                Clocks = EffectiveAddressClocks + 10;
+                return EffectiveAddressClocks + 10;
             }
         }
     }

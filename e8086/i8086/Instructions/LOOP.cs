@@ -28,15 +28,15 @@ namespace KDS.e8086.Instructions
             }
         }
 
-        protected override void DetermineClocks()
+        public override long Clocks()
         {
             if(LoopConditionCheck())
             {
-                Clocks = 17;
+                return 17;
             }
             else
             {
-                Clocks = 5;
+                return 5;
             }
         }
     }
