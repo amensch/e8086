@@ -76,6 +76,35 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        public override long Clocks()
+        {
+            // the direction bit indicates the source
+            // direction = 0 shift or rotate by 1
+            // direction = 1 shift or rotate by the value in CL
+
+            if(direction == 0)
+            {
+                if(secondByte.MOD == 0x03)
+                {
+                    return 2;
+                }
+                else
+                {
+                    return EffectiveAddressClocks + 15;
+                }
+            }
+            else
+            {
+                if(secondByte.MOD == 0x03)
+                {
+                    return 8 + (4 * GetSourceData());
+                }
+                else
+                {
+                    return EffectiveAddressClocks + 20 + (4 * GetSourceData());
+                }
+            }
+        }
         protected virtual int GetSourceData()
         {
             return 1;

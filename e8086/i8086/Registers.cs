@@ -24,6 +24,10 @@ namespace KDS.e8086
             BP = 0;
             SI = 0;
             DI = 0;
+            AX = 0;
+            BX = 0;
+            CX = 0;
+            DX = 0;
         }
 
         public ushort AX

@@ -16,6 +16,11 @@ namespace KDS.e8086.Instructions
             Bus.IP = Pop();
             EU.Registers.SP += operand;
         }
+
+        public override long Clocks()
+        {
+            return 12;  // 0xc2 RET intrasegment, immediate
+        }
     }
 
     internal class RET : Instruction
@@ -25,6 +30,10 @@ namespace KDS.e8086.Instructions
         protected override void ExecuteInstruction()
         {
             Bus.IP = Pop();
+        }
+        public override long Clocks()
+        {
+            return 8;  // 0xc3 RET intrasegment
         }
     }
 
@@ -39,6 +48,11 @@ namespace KDS.e8086.Instructions
             Bus.CS = Pop();
             EU.Registers.SP += operand;
         }
+
+        public override long Clocks()
+        {
+            return 17; // 0xca RET intersegment, immediate
+        }
     }
 
     internal class RETF : Instruction
@@ -49,6 +63,10 @@ namespace KDS.e8086.Instructions
         {
             Bus.IP = Pop();
             Bus.CS = Pop();
+        }
+        public override long Clocks()
+        {
+            return 18; // 0xcb RET intersegment, immediate
         }
     }
 

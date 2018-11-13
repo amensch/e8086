@@ -16,5 +16,10 @@ namespace KDS.e8086.Instructions
         {
             EU.CondReg.Value = new WordRegister((byte)(EU.CondReg.Value >> 8), EU.Registers.AH);
         }
+
+        public override long Clocks()
+        {
+            return 4;
+        }
     }
 }

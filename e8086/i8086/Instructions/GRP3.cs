@@ -198,6 +198,14 @@ namespace KDS.e8086.Instructions
             {
                 case 0x00: // TEST
                     {
+                        if(secondByte.MOD == 0x03)
+                        {
+                            clocks = 5;
+                        }
+                        else
+                        {
+                            clocks = EffectiveAddressClocks + 11;
+                        }
                         break;
                     }
                 case 0x02: // NOT

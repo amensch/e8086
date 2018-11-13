@@ -24,5 +24,10 @@ namespace KDS.e8086.Instructions
 
             // no flags are affected
         }
+
+        public override long Clocks()
+        {
+            return 3;
+        }
     }
 }
