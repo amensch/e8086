@@ -72,6 +72,21 @@ namespace KDS.e8086
 
         */
 
+            /*
+             * List of support chips for the 8086:
+             * 8237: DMA controller
+             * 8251: universal synch/async recv/xmit
+             * 8253: PIT (programmable interval timer) 
+             * 8255: PPI (programmable peripheral interface)
+             * 8259: PIC (programmable interrupt controlleR)
+             * 8279: keyboard/display controllere
+             * 8282/8283: 8-bit latch
+             * 8284: clock generator
+             * 8286/8287: bidirectional 8-bit driver
+             * 8288: bus controller
+             * 8289: bus arbiter
+             * 8272: FDC (floppy disk controller)
+
         public delegate void InterruptFunc(byte int_number);
         public ExecutionUnit EU { get; private set; }
         public BusInterface Bus { get; private set; }
