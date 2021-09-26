@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net48</TargetFramework>
+		<TargetFramework>net5.0-windows</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="System.Windows.Forms" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Remove="Chipset\i8253 - Copy.cs" />
+		<FrameworkReference Include="Microsoft.WindowsDesktop.App" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="Chipset\pcxtbios.bin">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="Chipset\i8253 - Copy.cs" />
 	</ItemGroup>
 
 </Project>
