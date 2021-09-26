@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net5.0-windows</TargetFramework>
-		<OutputType>WinExe</OutputType>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\e8086\KDS.e8086.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\e8086\KDS.e8086.csproj" />
+  </ItemGroup>
 
 </Project>
