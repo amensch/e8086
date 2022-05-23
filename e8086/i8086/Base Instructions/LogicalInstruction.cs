@@ -26,7 +26,7 @@ namespace KDS.e8086.Instructions
 
         protected abstract int Operand(int source, int dest);
 
-        protected void ProcessInstruction(int source, byte mod, byte reg, byte rm, bool test_only)
+        protected void ExecuteInstruction(int source, byte mod, byte reg, byte rm, bool test_only)
         {
             int result = 0;
             int offset;

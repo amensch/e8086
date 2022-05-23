@@ -48,7 +48,7 @@ namespace KDS.e8086.Instructions
             // Direction is always 0
             direction = 0;
 
-            ProcessInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, false);
+            ExecuteInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, false);
         }
     }
 }
