@@ -26,5 +26,10 @@ namespace KDS.e8086.Instructions
             // clear high nibble of AL
             EU.Registers.AL = (byte)(EU.Registers.AL & 0x0f);
         }
+
+        public override long Clocks()
+        {
+            return 4;
+        }
     }
 }

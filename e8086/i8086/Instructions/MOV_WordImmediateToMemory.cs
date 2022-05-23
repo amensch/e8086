@@ -44,5 +44,12 @@ namespace KDS.e8086.Instructions
                     }
             }
         }
+
+
+        public override long Clocks()
+        {
+            // mem-16, imm-16
+            return EffectiveAddressClocks + 10;
+        }
     }
 }

@@ -34,6 +34,7 @@ namespace KDS.e8086
         // Statistics
         public Statistics Stats { get; private set; } = new Statistics();
         public long InstructionCount { get; set; } = 0;
+        public long ClockCount { get; set; } = 0;
 
         // Preserve the current OP code
         private byte CurrentOpCode;
@@ -73,12 +74,16 @@ namespace KDS.e8086
         public void Tick()
         {
             Instruction ins;
+            long ClocksForTick = 0;
 
             // If the trap flag is set, trigger interrupt 1
             if (CondReg.TrapFlag)
             {
                 ins = new INT(0, 1, this, Bus);
                 ins.Execute();
+
+                // non maskable interrupt is 50 clocks
+                ClocksForTick += 50;
             }
 
             // If interrupts are enabled and there is an interrupt waiting,
@@ -87,6 +92,9 @@ namespace KDS.e8086
             if( CondReg.InterruptEnable ) // && i8259 has an interrupt waiting
             {
                 // Interrupt( i8259 next interrupt ) ;
+
+                // external maskable interrupt is 61 clocks
+                ClocksForTick += 61;
             }
 
             // Reset the prefix and base pointer flags.
@@ -108,31 +116,37 @@ namespace KDS.e8086
                     case 0x26:
                         {
                             Bus.SegmentOverride = SegmentOverrideState.UseES;
+                            ClocksForTick += 2;
                             break;
                         }
                     case 0x2e:
                         {
                             Bus.SegmentOverride = SegmentOverrideState.UseCS;
+                            ClocksForTick += 2;
                             break;
                         }
                     case 0x36:
                         {
                             Bus.SegmentOverride = SegmentOverrideState.UseSS;
+                            ClocksForTick += 2;
                             break;
                         }
                     case 0x3e:
                         {
                             Bus.SegmentOverride = SegmentOverrideState.UseDS;
+                            ClocksForTick += 2;
                             break;
                         }
                     case 0xf2:
                         {
                             RepeatMode = RepeatModeEnum.REPNZ;
+                            ClocksForTick += 9;
                             break;
                         }
                     case 0xf3:
                         {
                             RepeatMode = RepeatModeEnum.REP;
+                            ClocksForTick += 9;
                             break;
                         }
                     default:
@@ -150,6 +164,8 @@ namespace KDS.e8086
             }
             ins.Execute();
 
+            ClocksForTick += ins.Clocks();
+
             // NOTE: a current minor flaw here is if there is a repeat instruction because the entire loop
             // will get executed immediately without allowing for any interrupts.  Watch for timing issues
             // with PIT if there is a long loop.
@@ -157,7 +173,7 @@ namespace KDS.e8086
             // Tick the PIT
             // i8253.Tick()
 
-
+            ClockCount += ClocksForTick;
         }
 
         private void LoadInstructionList()

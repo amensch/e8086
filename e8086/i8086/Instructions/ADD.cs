@@ -20,6 +20,25 @@ namespace KDS.e8086.Instructions
             ADD_Destination(source, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
 
+        public override long Clocks()
+        {
+            // reg,reg
+            if (secondByte.MOD == 0x03)
+            {
+                return 3;
+            }
+            // mem,reg
+            else if (direction == 0)
+            {
+                return EffectiveAddressClocks + 16;
+            }
+            // reg,mem
+            else
+            {
+                return EffectiveAddressClocks + 9;
+            }
+        }
+
         protected void ADD_Destination(int source, byte mod, byte reg, byte rm)
         {
             int result = 0;

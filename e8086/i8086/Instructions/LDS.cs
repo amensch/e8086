@@ -15,5 +15,9 @@ namespace KDS.e8086.Instructions
             Bus.DS = (ushort)(Bus.GetData(1, offset + 2) & 0xffff);
         }
 
+        public override long Clocks()
+        {
+            return EffectiveAddressClocks + 15;
+        }
     }
 }

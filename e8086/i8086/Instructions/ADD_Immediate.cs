@@ -38,5 +38,11 @@ namespace KDS.e8086.Instructions
             direction = 0;
             ADD_Destination(source, 0x03, 0x00, 0x00);
         }
+
+        public override long Clocks()
+        {
+            // acc,imm
+            return 4;
+        }
     }
 }

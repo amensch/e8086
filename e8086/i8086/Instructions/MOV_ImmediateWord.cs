@@ -21,5 +21,10 @@ namespace KDS.e8086.Instructions
             EU.Registers.SaveRegisterValue(1, reg, value);
         }
 
+        public override long Clocks()
+        {
+            //reg,imm
+            return 4;
+        }
     }
 }

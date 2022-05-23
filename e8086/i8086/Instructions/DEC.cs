@@ -26,5 +26,10 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcAuxCarryFlag(0x01, dest);
             EU.CondReg.CalcParityFlag(result);
         }
+
+        public override long Clocks()
+        {
+            return 2;
+        }
     }
 }

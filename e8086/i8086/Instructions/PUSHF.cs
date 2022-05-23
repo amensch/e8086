@@ -18,5 +18,10 @@ namespace KDS.e8086.Instructions
         {
             Push(EU.CondReg.Value);
         }
+
+        public override long Clocks()
+        {
+            return 10;
+        }
     }
 }

@@ -36,6 +36,20 @@ namespace KDS.e8086.Instructions
             Push(Bus.IP);
             Bus.IP = (ushort)dest;
         }
+
+        public override long Clocks()
+        {
+            if(secondByte.MOD == 0x03)
+            {
+                // regptr 16
+                return 16;
+            }
+            else
+            {
+                //memptr 16 + EA
+                return EffectiveAddressClocks + 21;
+            }
+        }
     }
 
     internal class CALL_Mem : TwoByteInstruction
@@ -51,6 +65,12 @@ namespace KDS.e8086.Instructions
             Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
+
+        public override long Clocks()
+        {
+            // memptr32 + EA
+            return EffectiveAddressClocks + 37;
+        }
     }
 
     internal class JMP_RegMem : TwoByteInstruction
@@ -62,6 +82,18 @@ namespace KDS.e8086.Instructions
             // JMP reg/mem-16 (intrasegment)
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             Bus.IP = (ushort)dest;
+        }
+
+        public override long Clocks()
+        {
+            if(secondByte.MOD == 0x03)
+            {
+                return 11;
+            }
+            else
+            {
+                return EffectiveAddressClocks + 18;
+            }
         }
     }
 
@@ -76,6 +108,11 @@ namespace KDS.e8086.Instructions
             Bus.IP = (ushort)(Bus.GetData(1, dest) & 0xffff);
             Bus.CS = (ushort)(Bus.GetData(1, dest + 2) & 0xffff);
         }
+
+        public override long Clocks()
+        {
+            return EffectiveAddressClocks + 24;
+        }
     }
 
     internal class PUSH_Mem : TwoByteInstruction
@@ -87,6 +124,11 @@ namespace KDS.e8086.Instructions
             // PUSH mem-16
             int dest = GetDestinationData(0, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
             Push((ushort)dest);
+        }
+
+        public override long Clocks()
+        {
+            return EffectiveAddressClocks + 16;
         }
     }
 }

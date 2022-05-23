@@ -42,5 +42,11 @@ namespace KDS.e8086.Instructions
             }
 
         }
+
+        public override long Clocks()
+        {
+            //mem,acc and acc,mem
+            return 10 ;
+        }
     }
 }

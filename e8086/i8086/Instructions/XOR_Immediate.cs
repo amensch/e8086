@@ -19,5 +19,10 @@ namespace KDS.e8086.Instructions
         {
             return (dest ^ source);
         }
+        public override long Clocks()
+        {
+            // acc,imm
+            return 4;
+        }
     }
 }

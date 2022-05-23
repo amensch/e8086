@@ -12,5 +12,11 @@ namespace KDS.e8086.Instructions
         public CMP_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
         }
+
+        public override long Clocks()
+        {
+            // acc,imm
+            return 4;
+        }
     }
 }

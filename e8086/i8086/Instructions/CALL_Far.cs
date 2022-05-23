@@ -14,5 +14,10 @@ namespace KDS.e8086.Instructions
             Bus.IP = nextIP;
             Bus.CS = nextCS;
         }
+
+        public override long Clocks()
+        {
+            return 28;
+        }
     }
 }

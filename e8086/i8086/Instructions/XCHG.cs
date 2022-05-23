@@ -25,5 +25,17 @@ namespace KDS.e8086.Instructions
             SaveToDestination(dest, direction, wordSize, secondByte.MOD, secondByte.REG, secondByte.RM);
 
         }
+
+        public override long Clocks()
+        {
+            if(secondByte.MOD == 0x03)
+            {
+                return 4;
+            }
+            else
+            {
+                return EffectiveAddressClocks + 17;
+            }
+        }
     }
 }

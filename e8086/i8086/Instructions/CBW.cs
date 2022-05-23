@@ -18,5 +18,10 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        public override long Clocks()
+        {
+            return 2;
+        }
+
     }
 }

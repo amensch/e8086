@@ -40,5 +40,19 @@ namespace KDS.e8086.Instructions
 
             ProcessInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, false);
         }
+
+        public override long Clocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                return 4;
+            }
+            else
+            {
+                // mem,imm
+                return EffectiveAddressClocks + 17;
+            }
+        }
     }
 }

@@ -44,5 +44,18 @@ namespace KDS.e8086.Instructions
 
             SUB_Destination(source, secondByte.MOD, secondByte.REG, secondByte.RM);
         }
+        public override long Clocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                return 4;
+            }
+            else
+            {
+                // mem,imm
+                return EffectiveAddressClocks + 17;
+            }
+        }
     }
 }

@@ -14,5 +14,17 @@ namespace KDS.e8086.Instructions
         {
             return EU.CondReg.ZeroFlag;
         }
+
+        public override long Clocks()
+        {
+            if (LoopConditionCheck())
+            {
+                return 18;
+            }
+            else
+            {
+                return 6;
+            }
+        }
     }
 }

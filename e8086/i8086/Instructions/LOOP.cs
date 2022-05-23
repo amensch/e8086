@@ -27,5 +27,17 @@ namespace KDS.e8086.Instructions
                 }
             }
         }
+
+        public override long Clocks()
+        {
+            if(LoopConditionCheck())
+            {
+                return 17;
+            }
+            else
+            {
+                return 5;
+            }
+        }
     }
 }

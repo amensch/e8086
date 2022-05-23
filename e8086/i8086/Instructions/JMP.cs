@@ -14,6 +14,11 @@ namespace KDS.e8086.Instructions
         {
             return true;  // unconditional jump
         }
+
+        public override long Clocks()
+        {
+            return 15;
+        }
     }
 
     internal class JCXZ : ShortJumpInstruction
@@ -23,6 +28,17 @@ namespace KDS.e8086.Instructions
         protected override bool JumpDecision()
         {
             return (EU.Registers.CX == 0);
+        }
+        public override long Clocks()
+        {
+            if (JumpDecision())
+            {
+                return 18;
+            }
+            else
+            {
+                return 6;
+            }
         }
     }
 

@@ -186,5 +186,146 @@ namespace KDS.e8086.Instructions
 
         }
 
+        public override long Clocks()
+        {
+            long clocks = 0;
+            switch(secondByte.REG)
+            {
+                case 0x00: // TEST
+                    {
+                        if(secondByte.MOD == 0x03)
+                        {
+                            clocks = 5;
+                        }
+                        else
+                        {
+                            clocks = EffectiveAddressClocks + 11;
+                        }
+                        break;
+                    }
+                case 0x02: // NOT
+                    {
+                        break;
+                    }
+                case 0x03: // NEG
+                    {
+                        if(secondByte.MOD == 0x03)
+                        {
+                            clocks = 3;
+                        }
+                        else
+                        {
+                            clocks = EffectiveAddressClocks + 16;
+                        }
+                        break;
+                    }
+                case 0x04: // MUL
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 70;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 76;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 118;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 124;
+                            }
+                        }
+                        break;
+                    }
+                case 0x05: // IMUL
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 80;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 86;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 128;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 134;
+                            }
+                        }
+                        break;
+                    }
+                case 0x06: // DIV
+                    {
+                        if( wordSize == 0)
+                        {
+                            if(secondByte.MOD == 0x03)
+                            {
+                                clocks = 80;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 86;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 144;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 150;
+                            }
+                        }
+                        break;
+                    }
+                case 0x07: // IDIV
+                    {
+                        if (wordSize == 0)
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 101;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 107;
+                            }
+                        }
+                        else
+                        {
+                            if (secondByte.MOD == 0x03)
+                            {
+                                clocks = 165;
+                            }
+                            else
+                            {
+                                clocks = EffectiveAddressClocks + 171;
+                            }
+                        }
+                        break;
+                    }
+            }
+            return clocks;
+        }
+
     }
 }

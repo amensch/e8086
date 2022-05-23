@@ -6,6 +6,7 @@ namespace KDS.e8086.Instructions
     {
         protected int source = 0;
         protected Dictionary<int, TwoByteInstruction> instructions;
+        protected long clocks;
 
         public GroupInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)
         {
@@ -28,6 +29,12 @@ namespace KDS.e8086.Instructions
             var instruction = instructions[secondByte.REG];
             instruction.SetSecondByte(secondByte.Value);
             instruction.Execute();
+            clocks = instruction.Clocks();
+        }
+
+        public override long Clocks()
+        {
+            return clocks;
         }
     }
 }

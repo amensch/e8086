@@ -13,5 +13,19 @@ namespace KDS.e8086.Instructions
         public CMP_ImmediateToReg(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
         }
+
+        public override long Clocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                return 4;
+            }
+            else
+            {
+                // mem,imm
+                return EffectiveAddressClocks + 10;
+            }
+        }
     }
 }

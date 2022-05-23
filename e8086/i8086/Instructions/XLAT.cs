@@ -17,5 +17,10 @@ namespace KDS.e8086.Instructions
             // BX is the beginning of the table and AL is the offset
             EU.Registers.AL = (byte)(Bus.GetData(0, EU.Registers.BX + EU.Registers.AL));
         }
+
+        public override long Clocks()
+        {
+            return 11;
+        }
     }
 }

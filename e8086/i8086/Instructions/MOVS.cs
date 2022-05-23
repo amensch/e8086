@@ -25,5 +25,17 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        public override long Clocks()
+        {
+            if (EU.RepeatMode == RepeatModeEnum.NoRepeat)
+            {
+                return 18;
+            }
+            else
+            {
+                return RepeatCount * 17;
+            }
+        }
+
     }
 }

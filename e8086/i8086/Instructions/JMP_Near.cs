@@ -15,5 +15,10 @@ namespace KDS.e8086.Instructions
             ushort oper = GetImmediateWord();
             Bus.IP += oper;
         }
+
+        public override long Clocks()
+        {
+            return 15;
+        }
     }
 }

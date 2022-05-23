@@ -9,5 +9,10 @@ namespace KDS.e8086.Instructions
     internal class NOOP_TwoByte : TwoByteInstruction
     {
         public NOOP_TwoByte(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
+
+        public override long Clocks()
+        {
+            return 3;
+        }
     }
 }

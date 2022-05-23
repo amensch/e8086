@@ -27,6 +27,18 @@ namespace KDS.e8086.Instructions
             }
         }
 
+        public override long Clocks()
+        {
+            if (OpCode < 0x50)
+            {
+                return 10;
+            }
+            else
+            {
+                return 11;
+            }
+        }
+
     }
 
 }

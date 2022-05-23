@@ -11,5 +11,10 @@ namespace KDS.e8086.Instructions
             Push(Bus.IP);
             Bus.IP += oper;
         }
+
+        public override long Clocks()
+        {
+            return 19;
+        }
     }
 }

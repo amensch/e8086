@@ -10,5 +10,10 @@ namespace KDS.e8086.Instructions
             base.PreProcessing();
             port = Bus.NextImmediate();
         }
+
+        public override long Clocks()
+        {
+            return 10;
+        }
     }
 }

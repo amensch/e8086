@@ -1,9 +1,9 @@
 ﻿
 namespace KDS.e8086.Instructions
 {
-    internal class ADD_ImmediateToReg : ADD
+    internal class ADD_ImmediateToRegMem : ADD
     {
-        public ADD_ImmediateToReg(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
+        public ADD_ImmediateToRegMem(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus) { }
 
         protected override void PreProcessing()
         {
@@ -43,6 +43,20 @@ namespace KDS.e8086.Instructions
             direction = 0;
 
             ADD_Destination(source, secondByte.MOD, secondByte.REG, secondByte.RM);
+        }
+
+        public override long Clocks()
+        {
+            if (secondByte.MOD == 0x03)
+            {
+                // reg,imm
+                return 4;
+            }
+            else
+            {
+                // mem,imm
+                return EffectiveAddressClocks + 17;
+            }
         }
     }
 }

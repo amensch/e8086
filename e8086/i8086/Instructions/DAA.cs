@@ -42,5 +42,9 @@ namespace KDS.e8086.Instructions
             EU.CondReg.CalcParityFlag(EU.Registers.AL);
         }
 
+        public override long Clocks()
+        {
+            return 4;
+        }
     }
 }

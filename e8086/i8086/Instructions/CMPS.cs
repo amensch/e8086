@@ -45,5 +45,10 @@ namespace KDS.e8086.Instructions
                 return false;
         }
 
+        public override long Clocks()
+        {
+            return RepeatCount * 22;
+        }
+
     }
 }
