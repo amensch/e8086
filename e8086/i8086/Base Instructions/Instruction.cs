@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KDS.e8086.Instructions
 {
@@ -25,7 +21,7 @@ namespace KDS.e8086.Instructions
             EU = eu;
             Bus = bus;
             direction = (OpCode >> 1) & 0x01;
-            wordSize = (OpCode & 0x01);
+            wordSize = OpCode & 0x01;
             OpCodeMode = new AddressMode(opCode);
         }
 
@@ -49,7 +45,7 @@ namespace KDS.e8086.Instructions
         }
 
         // Sign extend 8 bits to 16 bits
-        protected ushort SignExtendByteToWord(byte num)
+        protected static ushort SignExtendByteToWord(byte num)
         {
             if (num < 0x80)
                 return num;
@@ -58,7 +54,7 @@ namespace KDS.e8086.Instructions
         }
 
         // Sign extend 16 bits to 32 bits
-        protected uint SignExtendWordToDW(ushort num)
+        protected static uint SignExtendWordToDW(ushort num)
         {
             if (num < 0x8000)
                 return num;

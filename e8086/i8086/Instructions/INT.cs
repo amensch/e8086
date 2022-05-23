@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace KDS.e8086.Instructions
 {
     internal class INT : Instruction
     {
         private int InterruptNumber = 0;
-        private bool DoInterrupt = false;
+        private bool DoInterrupt;
 
         public INT(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Collections.Concurrent;
 
@@ -81,7 +76,7 @@ namespace KDS.e8086
         private IODevice PIT;  // timer (PIT - Intel8253)
 
         // List of interrupts - thread safe FIFO queue
-        private ConcurrentQueue<byte> _interrupts;
+        private ConcurrentQueue<byte> interruptQueue;
 
         public CPU()
         {
@@ -90,7 +85,7 @@ namespace KDS.e8086
 
         public void Reset()
         {
-            _interrupts = new ConcurrentQueue<byte>();
+            interruptQueue = new ConcurrentQueue<byte>();
             Bus = new BusInterface();
             Bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
@@ -163,18 +158,16 @@ namespace KDS.e8086
 
         public void AddInterrupt(byte int_number)
         {
-            _interrupts.Enqueue(int_number);
+            interruptQueue.Enqueue(int_number);
         }
 
         public long Run()
         {
             long count = 1;
-            byte int_number;
             do
             {
-
                 // check for interrupt
-                if( _interrupts.TryDequeue(out int_number))
+                if( interruptQueue.TryDequeue(out var int_number))
                 {
                     if( EU.CondReg.InterruptEnable )
                     {
@@ -201,13 +194,9 @@ namespace KDS.e8086
 
         public void NextInstructionDebug()
         {
-            string dasm;
-            Disassembler.DisassembleNext(Bus.GetNext6Bytes(), 0, 0, out dasm);
+            Disassembler.DisassembleNext(Bus.GetNext6Bytes(), 0, 0, out var dasm);
             Debug.WriteLine(Bus.CS.ToString("X4") + ":" + Bus.IP.ToString("X4") + " " + dasm);
             NextInstruction();
         }
-
-
-
     }
 }

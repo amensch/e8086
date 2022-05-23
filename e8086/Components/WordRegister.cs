@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace KDS.e8086
+﻿namespace KDS.e8086
 {
     internal class WordRegister
     {

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KDS.e8086.Instructions
 {
@@ -46,11 +42,6 @@ namespace KDS.e8086.Instructions
             }
 
             EU.Registers.SaveRegisterValue(1, secondByte.REG, Bus.GetData(1, offset));
-        }
-
-        protected override void ExecuteInstruction()
-        {
-            base.ExecuteInstruction();
         }
     }
 }

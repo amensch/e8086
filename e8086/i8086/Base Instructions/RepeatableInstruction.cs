@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace KDS.e8086.Instructions
 {
     internal abstract class RepeatableInstruction : Instruction
@@ -35,7 +30,7 @@ namespace KDS.e8086.Instructions
 
         protected virtual bool RepeatConditions()
         {
-            return (EU.RepeatMode != RepeatModeEnum.NoRepeat);
+            return EU.RepeatMode != RepeatModeEnum.NoRepeat;
         }
 
     }

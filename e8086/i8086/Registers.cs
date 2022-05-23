@@ -8,10 +8,10 @@ namespace KDS.e8086
 {
     public class Registers
     {
-        private WordRegister _ax = new WordRegister();
-        private WordRegister _bx = new WordRegister();
-        private WordRegister _cx = new WordRegister();
-        private WordRegister _dx = new WordRegister();
+        private WordRegister ax = new WordRegister();
+        private WordRegister bx = new WordRegister();
+        private WordRegister cx = new WordRegister();
+        private WordRegister dx = new WordRegister();
 
         public ushort SP { get; set; }
         public ushort BP { get; set; }
@@ -28,63 +28,63 @@ namespace KDS.e8086
 
         public ushort AX
         {
-            get { return _ax.Value; }
-            set { _ax.Value = value; }
+            get { return ax.Value; }
+            set { ax.Value = value; }
         }
         public ushort BX
         {
-            get { return _bx.Value; }
-            set { _bx.Value = value; }
+            get { return bx.Value; }
+            set { bx.Value = value; }
         }
         public ushort CX
         {
-            get { return _cx.Value; }
-            set { _cx.Value = value; }
+            get { return cx.Value; }
+            set { cx.Value = value; }
         }
         public ushort DX
         {
-            get { return _dx.Value; }
-            set { _dx.Value = value; }
+            get { return dx.Value; }
+            set { dx.Value = value; }
         }
         public byte AH
         {
-            get { return _ax.HI; }
-            set { _ax.HI = value; }
+            get { return ax.HI; }
+            set { ax.HI = value; }
         }
         public byte AL
         {
-            get { return _ax.LO; }
-            set { _ax.LO = value; }
+            get { return ax.LO; }
+            set { ax.LO = value; }
         }
         public byte BH
         {
-            get { return _bx.HI; }
-            set { _bx.HI = value; }
+            get { return bx.HI; }
+            set { bx.HI = value; }
         }
         public byte BL
         {
-            get { return _bx.LO; }
-            set { _bx.LO = value; }
+            get { return bx.LO; }
+            set { bx.LO = value; }
         }
         public byte CH
         {
-            get { return _cx.HI; }
-            set { _cx.HI = value; }
+            get { return cx.HI; }
+            set { cx.HI = value; }
         }
         public byte CL
         {
-            get { return _cx.LO; }
-            set { _cx.LO = value; }
+            get { return cx.LO; }
+            set { cx.LO = value; }
         }
         public byte DH
         {
-            get { return _dx.HI; }
-            set { _dx.HI = value; }
+            get { return dx.HI; }
+            set { dx.HI = value; }
         }
         public byte DL
         {
-            get { return _dx.LO; }
-            set { _dx.LO = value; }
+            get { return dx.LO; }
+            set { dx.LO = value; }
         }
 
         public int GetRegisterValue(int wordSize, byte reg)

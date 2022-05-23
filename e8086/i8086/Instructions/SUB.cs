@@ -14,13 +14,11 @@ namespace KDS.e8086.Instructions
     /// </summary>
     internal class SUB : TwoByteInstruction
     {
-        protected bool SubWithBorrow;
-        protected bool CompareOnly;
+        protected virtual bool SubWithBorrow => false;
+        protected virtual bool CompareOnly => false;
 
         public SUB(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
-            SubWithBorrow = false;
-            CompareOnly = false;
         }
 
         protected override void ExecuteInstruction()

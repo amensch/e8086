@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace KDS.e8086
 {
     public class ConditionalRegister
@@ -22,11 +17,7 @@ namespace KDS.e8086
             OVERFLOW_FLAG = 0x800
         };
         
-        public ushort Value
-        {
-            get;
-            set;
-        }
+        public ushort Value { get; set; }
 
         public ConditionalRegister()
         {
