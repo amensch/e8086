@@ -15,7 +15,6 @@ namespace KDS.e8086.Instructions
     {
         public ADD_Immediate(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
-            AddWithCarry = false;
         }
 
         protected override void ExecuteInstruction()
