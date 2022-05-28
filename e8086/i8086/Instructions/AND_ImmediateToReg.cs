@@ -31,7 +31,11 @@ namespace KDS.e8086.Instructions
             // Get source data
             int source = 0;
 
-            if (wordSize == 0)
+            if ((OpCode & 0x03) == 0x03)
+            {
+                source = SignExtendByteToWord(Bus.NextImmediate());
+            }
+            else if (wordSize == 0)
             {
                 source = Bus.NextImmediate();
             }
