@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using KDS.e8086;
@@ -28,8 +29,37 @@ namespace CPU_Monitor
         private void Boot()
         {
             _cpu = new CPU();
+            var program = LoadFile(@"C:\Users\adam\source\repos\e8086\Resources\codegolf.bin");
+            _cpu.Boot(0, 0, program);
+            _cpu.EU.Registers.SP = 0x0100;
             RefreshData();
         }
+
+        private static byte[] LoadFile(string fileName)
+        {
+            byte[] buffer;
+            FileStream fs = File.Open(fileName, FileMode.Open, FileAccess.Read);
+
+            try
+            {
+                int length = (int)fs.Length;
+                buffer = new byte[length];
+                int bytes_read;
+                int total_bytes = 0;
+
+                do
+                {
+                    bytes_read = fs.Read(buffer, total_bytes, length - total_bytes);
+                    total_bytes += bytes_read;
+                } while (bytes_read > 0);
+            }
+            finally
+            {
+                fs.Close();
+            }
+            return buffer;
+        }
+
 
         private void RefreshData()
         {
@@ -149,7 +179,11 @@ namespace CPU_Monitor
 
         private void RunButton_Click(object sender, EventArgs e)
         {
-
+            do
+            {
+                _cpu.NextInstruction();
+            } while (_cpu.Bus.IP != 0x0044 && _cpu.Bus.IP != 0x0006);
+            RefreshData();
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

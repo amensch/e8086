@@ -72,13 +72,11 @@ namespace KDS.e8086
 
         public void Tick()
         {
-            Instruction ins;
-
             // If the trap flag is set, trigger interrupt 1
             if (CondReg.TrapFlag)
             {
-                ins = new INT(0, 1, this, Bus);
-                ins.Execute();
+                var interrupt = new INT(0, 1, this, Bus);
+                interrupt.Execute();
             }
 
             // If interrupts are enabled and there is an interrupt waiting,
@@ -144,11 +142,11 @@ namespace KDS.e8086
             } while (more);
 
             // Process the next instruction. 
-            if(!instructions.TryGetValue(CurrentOpCode, out ins))
+            if(!instructions.TryGetValue(CurrentOpCode, out var instruction))
             {
-                ins = new InvalidInstruction(CurrentOpCode, this, Bus);
+                instruction = new InvalidInstruction(CurrentOpCode, this, Bus);
             }
-            ins.Execute();
+            instruction.Execute();
 
             // NOTE: a current minor flaw here is if there is a repeat instruction because the entire loop
             // will get executed immediately without allowing for any interrupts.  Watch for timing issues

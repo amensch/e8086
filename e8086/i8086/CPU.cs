@@ -81,7 +81,7 @@ namespace KDS.e8086
         private IODevice PIT;  // timer (PIT - Intel8253)
 
         // List of interrupts - thread safe FIFO queue
-        private ConcurrentQueue<byte> _interrupts;
+        private ConcurrentQueue<byte> interruptQueue = new ConcurrentQueue<byte>();
 
         public CPU()
         {
@@ -90,9 +90,9 @@ namespace KDS.e8086
 
         public void Reset()
         {
-            _interrupts = new ConcurrentQueue<byte>();
+            interruptQueue = new ConcurrentQueue<byte>();
             Bus = new BusInterface();
-            Bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
+            //Bus.LoadBIOS(File.ReadAllBytes("Chipset\\pcxtbios.bin"));
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\ide_xt.bin"), 0xd0000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\rombasic.bin"), 0xf6000);
             //_bus.LoadROM(File.ReadAllBytes("Chipset\\videorom.bin"), 0xc0000);
@@ -161,9 +161,16 @@ namespace KDS.e8086
             EU = new ExecutionUnit(Bus);
         }
 
+        public void Boot(ushort startupCS, ushort startupIP, byte[] program)
+        {
+            // For now we will hard code the BIOS to start at a particular code segment.
+            Bus = new BusInterface(startupCS, startupIP, program);
+            EU = new ExecutionUnit(Bus);
+        }
+
         public void AddInterrupt(byte int_number)
         {
-            _interrupts.Enqueue(int_number);
+            interruptQueue.Enqueue(int_number);
         }
 
         public long Run()
@@ -174,7 +181,7 @@ namespace KDS.e8086
             {
 
                 // check for interrupt
-                if( _interrupts.TryDequeue(out int_number))
+                if( interruptQueue.TryDequeue(out int_number))
                 {
                     if( EU.CondReg.InterruptEnable )
                     {

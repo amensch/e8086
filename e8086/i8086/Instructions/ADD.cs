@@ -13,11 +13,10 @@ namespace KDS.e8086.Instructions
     /// </summary>
     internal class ADD : TwoByteInstruction
     {
-        protected bool AddWithCarry;
+        protected virtual bool AddWithCarry => false;
 
         public ADD(byte opCode, IExecutionUnit eu, IBus bus) : base(opCode, eu, bus)
         {
-            AddWithCarry = false;
         }
 
         protected override void ExecuteInstruction()

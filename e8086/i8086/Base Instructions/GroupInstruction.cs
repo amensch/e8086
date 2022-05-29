@@ -8,7 +8,6 @@ namespace KDS.e8086.Instructions
 {
     internal abstract class GroupInstruction : TwoByteInstruction
     {
-        protected int source = 0;
         protected Dictionary<int, TwoByteInstruction> instructions;
 
         public GroupInstruction(byte opCode, IExecutionUnit eu, IBus bus) : base (opCode, eu, bus)

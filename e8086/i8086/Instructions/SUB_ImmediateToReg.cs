@@ -16,14 +16,13 @@ namespace KDS.e8086.Instructions
 
             // If displacement offset is needed, those bytes will appear before the immediate data so we need to retrieve that first.
             // The offset isn't needed within here but we need to retrieve it first.
-            int dest = 0;
             if (secondByte.MOD == 0x00)
             {
-                dest = GetRMTable1(secondByte.RM);
+                _ = GetRMTable1(secondByte.RM);
             }
             else if ((secondByte.MOD == 0x01) || (secondByte.MOD == 0x02))
             {
-                dest = GetRMTable2(secondByte.MOD, secondByte.RM);
+                _ = GetRMTable2(secondByte.MOD, secondByte.RM);
             }
         }
 

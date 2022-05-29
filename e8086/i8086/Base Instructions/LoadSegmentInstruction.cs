@@ -26,6 +26,7 @@ namespace KDS.e8086.Instructions
         protected override void PreProcessing()
         {
             base.PreProcessing();
+
             switch (secondByte.MOD)
             {
                 case 0x00:

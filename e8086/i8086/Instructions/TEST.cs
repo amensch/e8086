@@ -12,7 +12,7 @@ namespace KDS.e8086.Instructions
 
         protected override void ExecuteInstruction()
         {
-            ProcessInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, true);
+            ExecuteInstruction(source, secondByte.MOD, secondByte.REG, secondByte.RM, true);
         }
     }
 }

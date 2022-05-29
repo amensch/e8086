@@ -100,9 +100,9 @@ namespace KDS.e8086.Instructions
         private void RotateByteLeft(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
             int original = 0;
-            byte result = 0;
+            byte result;
             bool old_CF;
-            int offset = 0;
+            int offset;
             switch (mod)
             {
                 case 0x00:
@@ -179,8 +179,8 @@ namespace KDS.e8086.Instructions
         private void RotateWordLeft(int source, byte mod, byte rm, bool through_carry, bool shift_only)
         {
             int original = 0;
-            int result = 0;
-            int offset = 0;
+            int result;
+            int offset;
             bool old_CF;
             switch (mod)
             {
@@ -258,8 +258,8 @@ namespace KDS.e8086.Instructions
         private void RotateByteRight(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
         {
             int original = 0;
-            int result = 0;
-            int offset = 0;
+            int result;
+            int offset;
             bool old_CF = false;
             switch (mod)
             {
@@ -352,8 +352,8 @@ namespace KDS.e8086.Instructions
         private void RotateWordRight(int source, byte mod, byte rm, bool through_carry, bool shift_only, bool arithmetic_shift)
         {
             int original = 0;
-            int result = 0;
-            int offset = 0;
+            int result;
+            int offset;
             bool old_CF = false;
             switch (mod)
             {
