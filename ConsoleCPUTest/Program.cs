@@ -33,8 +33,15 @@ namespace ConsoleCPUTest
             {
                 for(ushort col = 0; col < 80; col++)
                 {
-                    char ch = (char) bus.GetData(0, baseAddress + (row * 25) + col);
-                    scn.Append(ch);
+                    char ch = (char) bus.GetData(0, baseAddress++);
+                    if (ch == '\0')
+                    {
+                        scn.Append(" ");
+                    }
+                    else
+                    {
+                        scn.Append(ch);
+                    }
                 }
                 scn.AppendLine();
             }
