@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086.Instructions
 {
-    public abstract class TwoByteInstruction : Instruction
+    internal abstract class TwoByteInstruction : Instruction
     {
         private bool FetchSecondByte = true;
         protected AddressMode secondByte;

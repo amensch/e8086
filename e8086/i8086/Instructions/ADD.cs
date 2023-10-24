@@ -11,7 +11,7 @@ namespace KDS.e8086.Instructions
     /// operand1 = operand1 + operand2
     /// Flags: O S Z A P C    
     /// </summary>
-    public class ADD : TwoByteInstruction
+    internal class ADD : TwoByteInstruction
     {
         protected virtual bool AddWithCarry => false;
 
