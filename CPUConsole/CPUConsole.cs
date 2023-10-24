@@ -33,7 +33,9 @@ namespace CPUConsole
         {
             //DisassembleThings();
 
-            Console.SetWindowSize(100, 50);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+
+            //Console.SetWindowSize(100, 50);
             cpu = new CPU();
             
             // laptop
@@ -43,29 +45,6 @@ namespace CPUConsole
 
             //cpu.EU.Registers.SP = 0x100;
 
-            // Addition overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
-            //cpu.Boot(new byte[] {
-            //                            0xc6, 0x06, 0x00, 0x10, 0x27,
-            //                            0xc6, 0xc0, 0x1a,
-            //                            0x40,
-            //                            0x80, 0xc0, 0x4c,
-            //                            0x02, 0x06, 0x00, 0x10,
-            //                            0x88, 0xc4,
-            //                            0x00, 0xe0
-            //});
-    
-            // Subtraction overflow test from http://www.c-jump.com/CIS77/ASM/Flags/lecture.html
-            //cpu.Boot(new byte[] {
-            //                            0xc6, 0xc0, 0x5f,
-            //                            0x48,
-            //                            0x80, 0xe8, 0x17,
-            //                            0xc6, 0x06, 0x00, 0x10, 0x7a,
-            //                            0x2a, 0x06, 0x00, 0x10,
-            //                            //0xb4, 0x77,
-            //                            0xc6, 0xc4, 0x77,
-            //                            0x28, 0xe0
-            //});
-
             do
             {
                 Console.Clear();
@@ -73,13 +52,6 @@ namespace CPUConsole
                 //DisplayVRAM();
                 DisplayMenu();
             } while (!exit);
-
-            //StreamWriter sw = new StreamWriter("C:\\Users\\menschas\\Source\\e8086\\Resources\\codegolf_stats.txt");
-            //sw.WriteLine(string.Format("Total Instructions Executed: {0}", cpu.EU.Stats.InstructionCount));
-            //sw.WriteLine();
-            //sw.WriteLine("Count per op code:");
-            //sw.Write(cpu.EU.Stats.GetOpReport());
-            //sw.Close();
 
         }
 

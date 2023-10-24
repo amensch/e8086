@@ -11,9 +11,12 @@ namespace ConsoleCPUTest
         {
 
             var cpu = new CPU();
-            var program = LoadFile(@"C:\Users\adam\source\repos\e8086\Resources\codegolf.bin");
+            var program = LoadFile(@"..\..\..\..\Resources\codegolf.bin");
             cpu.Boot(0, 0, program);
             cpu.EU.Registers.SP = 0x0100;
+
+            var result = (0xf0000 << 4) + 0xe0000;
+            Console.WriteLine(result.ToString("X8"));
 
             do
             {
