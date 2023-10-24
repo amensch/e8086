@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDS.e8086
 {
-    internal class AddressMode
+    public class AddressMode
     {
         private byte value;
 

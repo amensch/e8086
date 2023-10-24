@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,25 @@ namespace KDS.e8086
 {
     public class Registers
     {
+        public const byte REGISTER_AL = 0x00;
+        public const byte REGISTER_CL = 0x01;
+        public const byte REGISTER_DL = 0x02;
+        public const byte REGISTER_BL = 0x03;
+        public const byte REGISTER_AH = 0x04;
+        public const byte REGISTER_CH = 0x05;
+        public const byte REGISTER_DH = 0x06;
+        public const byte REGISTER_BH = 0x07;
+
+        public const byte REGISTER_AX = 0x00;
+        public const byte REGISTER_CX = 0x01;
+        public const byte REGISTER_DX = 0x02;
+        public const byte REGISTER_BX = 0x03;
+        public const byte REGISTER_SP = 0x04;
+        public const byte REGISTER_BP = 0x05;
+        public const byte REGISTER_SI = 0x06;
+        public const byte REGISTER_DI = 0x07;
+
+
         private WordRegister ax = new WordRegister();
         private WordRegister bx = new WordRegister();
         private WordRegister cx = new WordRegister();
@@ -117,42 +137,42 @@ namespace KDS.e8086
             byte result = 0;
             switch (reg)
             {
-                case 0x00:
+                case REGISTER_AL:
                     {
                         result = AL;
                         break;
                     }
-                case 0x01:
+                case REGISTER_CL:
                     {
                         result = CL;
                         break;
                     }
-                case 0x02:
+                case REGISTER_DL:
                     {
                         result = DL;
                         break;
                     }
-                case 0x03:
+                case REGISTER_BL:
                     {
                         result = BL;
                         break;
                     }
-                case 0x04:
+                case REGISTER_AH:
                     {
                         result = AH;
                         break;
                     }
-                case 0x05:
+                case REGISTER_CH:
                     {
                         result = CH;
                         break;
                     }
-                case 0x06:
+                case REGISTER_DH:
                     {
                         result = DH;
                         break;
                     }
-                case 0x07:
+                case REGISTER_BH:
                     {
                         result = BH;
                         break;
@@ -167,42 +187,42 @@ namespace KDS.e8086
             ushort result = 0;
             switch (reg)
             {
-                case 0x00:
+                case REGISTER_AX:
                     {
                         result = AX;
                         break;
                     }
-                case 0x01:
+                case REGISTER_CX:
                     {
                         result = CX;
                         break;
                     }
-                case 0x02:
+                case REGISTER_DX:
                     {
                         result = DX;
                         break;
                     }
-                case 0x03:
+                case REGISTER_BX:
                     {
                         result = BX;
                         break;
                     }
-                case 0x04:
+                case REGISTER_SP:
                     {
                         result = SP;
                         break;
                     }
-                case 0x05:
+                case REGISTER_BP:
                     {
                         result = BP;
                         break;
                     }
-                case 0x06:
+                case REGISTER_SI:
                     {
                         result = SI;
                         break;
                     }
-                case 0x07:
+                case REGISTER_DI:
                     {
                         result = DI;
                         break;
@@ -216,42 +236,42 @@ namespace KDS.e8086
         {
             switch (reg)
             {
-                case 0x00:
+                case REGISTER_AL:
                     {
                         AL = value;
                         break;
                     }
-                case 0x01:
+                case REGISTER_CL:
                     {
                         CL = value;
                         break;
                     }
-                case 0x02:
+                case REGISTER_DL:
                     {
                         DL = value;
                         break;
                     }
-                case 0x03:
+                case REGISTER_BL:
                     {
                         BL = value;
                         break;
                     }
-                case 0x04:
+                case REGISTER_AH:
                     {
                         AH = value;
                         break;
                     }
-                case 0x05:
+                case REGISTER_CH:
                     {
                         CH = value;
                         break;
                     }
-                case 0x06:
+                case REGISTER_DH:
                     {
                         DH = value;
                         break;
                     }
-                case 0x07:
+                case REGISTER_BH:
                     {
                         BH = value;
                         break;
@@ -265,48 +285,47 @@ namespace KDS.e8086
         {
             switch (reg)
             {
-                case 0x00:
+                case REGISTER_AX:
                     {
                         AX = value;
                         break;
                     }
-                case 0x01:
+                case REGISTER_CX:
                     {
                         CX = value;
                         break;
                     }
-                case 0x02:
+                case REGISTER_DX:
                     {
                         DX = value;
                         break;
                     }
-                case 0x03:
+                case REGISTER_BX:
                     {
                         BX = value;
                         break;
                     }
-                case 0x04:
+                case REGISTER_SP:
                     {
                         SP = value;
                         break;
                     }
-                case 0x05:
+                case REGISTER_BP:
                     {
                         BP = value;
                         break;
                     }
-                case 0x06:
+                case REGISTER_SI:
                     {
                         SI = value;
                         break;
                     }
-                case 0x07:
+                case REGISTER_DI:
                     {
                         DI = value;
                         break;
                     }
             }
-
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace KDS.e8086
 {
-    internal class WordRegister
+    public class WordRegister
     {
         public byte HI { get; set; }
         public byte LO { get; set; }

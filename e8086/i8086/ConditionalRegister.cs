@@ -22,11 +22,7 @@ namespace KDS.e8086
             OVERFLOW_FLAG = 0x800
         };
         
-        public ushort Value
-        {
-            get;
-            set;
-        }
+        public ushort Value { get; set; }
 
         public ConditionalRegister()
         {
