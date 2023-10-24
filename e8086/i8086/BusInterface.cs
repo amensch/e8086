@@ -108,8 +108,6 @@ namespace KDS.e8086
             return mem;
         }
 
-
-
         #region Get and Save data with segment calculation
 
         public int GetData(int word_size, int offset)
